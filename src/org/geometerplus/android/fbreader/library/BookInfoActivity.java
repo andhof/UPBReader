@@ -30,8 +30,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.method.LinkMovementMethod;
 import android.util.DisplayMetrics;
-import android.view.View;
-import android.view.Window;
+import android.view.*;
 import android.widget.*;
 
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
@@ -50,7 +49,7 @@ import org.geometerplus.fbreader.network.HtmlUtil;
 import org.geometerplus.android.fbreader.FBReader;
 import org.geometerplus.android.fbreader.preferences.EditBookInfoActivity;
 
-public class BookInfoActivity extends Activity {
+public class BookInfoActivity extends Activity implements MenuItem.OnMenuItemClickListener {
 	private static final boolean ENABLE_EXTENDED_FILE_INFO = false;
 
 	public static final String CURRENT_BOOK_PATH_KEY = "CurrentBookPath";
@@ -78,7 +77,7 @@ public class BookInfoActivity extends Activity {
 			new SQLiteBooksDatabase(this, "LIBRARY");
 		}
 
-		requestWindowFeature(Window.FEATURE_NO_TITLE);
+		requestWindowFeature(Window.FEATURE_ACTION_BAR);
 		setContentView(R.layout.book_info);
 
 		setResult(1, getIntent());
@@ -97,6 +96,7 @@ public class BookInfoActivity extends Activity {
 			setupFileInfo(book);
 		}
 
+		/*
 		if (myHideOpenButton) {
 			findButton(R.id.book_info_button_open).setVisibility(View.GONE);
 		} else {
@@ -128,6 +128,7 @@ public class BookInfoActivity extends Activity {
 				}
 			}
 		});
+		*/
 
 		final View root = findViewById(R.id.book_info_root);
 		root.invalidate();
@@ -144,13 +145,6 @@ public class BookInfoActivity extends Activity {
 
 	private Button findButton(int buttonId) {
 		return (Button)findViewById(buttonId);
-	}
-
-	private void setupButton(int buttonId, String resourceKey, View.OnClickListener listener) {
-		final ZLResource buttonResource = ZLResource.resource("dialog").getResource("button");
-		final Button button = findButton(buttonId);
-		button.setText(buttonResource.getResource(resourceKey).getValue());
-		button.setOnClickListener(listener);
 	}
 
 	private void setupInfoPair(int id, String key, CharSequence value) {
@@ -270,7 +264,7 @@ public class BookInfoActivity extends Activity {
 		setupInfoPair(R.id.file_name, "name", book.File.getPath());
 		if (ENABLE_EXTENDED_FILE_INFO) {
 			setupInfoPair(R.id.file_type, "type", book.File.getExtension());
-        
+
 			final ZLFile physFile = book.File.getPhysicalFile();
 			final File file = physFile == null ? null : new File(physFile.getPath());
 			if (file != null && file.exists() && file.isFile()) {
@@ -309,5 +303,60 @@ public class BookInfoActivity extends Activity {
 			return null;
 		}
 		return DateFormat.getDateTimeInstance().format(new Date(date));
+	}
+
+	private static final int OPEN_BOOK = 1;
+	private static final int EDIT_INFO = 2;
+	private static final int RELOAD_INFO = 3;
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		if (!myHideOpenButton) {
+			addMenuItem(menu, OPEN_BOOK, "openBook", R.drawable.ic_menu_read_book);
+		}
+		addMenuItem(menu, EDIT_INFO, "editInfo", R.drawable.ic_menu_edit);
+		addMenuItem(menu, RELOAD_INFO, "reloadInfo", R.drawable.ic_menu_refresh);
+		return true;
+	}
+
+	private void addMenuItem(Menu menu, int index, String resourceKey, int iconId) {
+		final String label =
+			ZLResource.resource("dialog").getResource("button").getResource(resourceKey).getValue();
+		final MenuItem item = menu.add(0, index, Menu.NONE, label);
+		item.setIcon(iconId);
+		item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+		item.setOnMenuItemClickListener(this);
+	}
+
+	public boolean onMenuItemClick(MenuItem item) {
+		switch (item.getItemId()) {
+			case OPEN_BOOK:
+				startActivity(
+					new Intent(getApplicationContext(), FBReader.class)
+						.setAction(Intent.ACTION_VIEW)
+						.putExtra(FBReader.BOOK_PATH_KEY, myFile.getPath())
+						.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+				);
+				return true;
+			case EDIT_INFO:
+				startActivityForResult(
+					new Intent(getApplicationContext(), EditBookInfoActivity.class)
+						.putExtra(CURRENT_BOOK_PATH_KEY, myFile.getPath()),
+					1
+				);
+				return true;
+			case RELOAD_INFO:
+			{
+				final Book book = Book.getByFile(myFile);
+				if (book != null) {
+					book.reloadInfoFromFile();
+					setupBookInfo(book);
+				}
+				return true;
+			}
+			default:
+				return true;
+		}
 	}
 }
