@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2011 Geometer Plus <contact@geometerplus.com>
+ * Copyright (C) 2007-2012 Geometer Plus <contact@geometerplus.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -196,12 +196,12 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 			if (files != null) {
 				try {
 					if (files[style] != null) {
-						tf = AndroidFontUtil.createFontFromFile(files[style]);
+						tf = Typeface.createFromFile(files[style]);
 					} else {
 						for (int i = 0; i < 4; ++i) {
 							if (files[i] != null) {
 								tf = (typefaces[i] != null) ?
-									typefaces[i] : AndroidFontUtil.createFontFromFile(files[i]);
+									typefaces[i] : Typeface.createFromFile(files[i]);
 								typefaces[i] = tf;
 								break;
 							}
@@ -252,7 +252,26 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 	
 	@Override
 	public int getStringWidth(char[] string, int offset, int length) {
-		return (int)(myTextPaint.measureText(string, offset, length) + 0.5f);
+		boolean containsSoftHyphen = false;
+		for (int i = offset; i < offset + length; ++i) {
+			if (string[i] == (char)0xAD) {
+				containsSoftHyphen = true;
+				break;
+			}
+		}
+		if (!containsSoftHyphen) {
+			return (int)(myTextPaint.measureText(new String(string, offset, length)) + 0.5f);
+		} else {
+			final char[] corrected = new char[length];
+			int len = 0;
+			for (int o = offset; o < offset + length; ++o) {
+				final char chr = string[o];
+				if (chr != (char)0xAD) {
+					corrected[len++] = chr;
+				}
+			}
+			return (int)(myTextPaint.measureText(corrected, 0, len) + 0.5f);
+		}
 	}
 	@Override
 	protected int getSpaceWidthInternal() {
@@ -268,25 +287,39 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 	}
 	@Override
 	public void drawString(int x, int y, char[] string, int offset, int length) {
-		myCanvas.drawText(string, offset, length, x, y, myTextPaint);
+		boolean containsSoftHyphen = false;
+		for (int i = offset; i < offset + length; ++i) {
+			if (string[i] == (char)0xAD) {
+				containsSoftHyphen = true;
+				break;
+			}
+		}
+		if (!containsSoftHyphen) {
+			myCanvas.drawText(string, offset, length, x, y, myTextPaint);
+		} else {
+			final char[] corrected = new char[length];
+			int len = 0;
+			for (int o = offset; o < offset + length; ++o) {
+				final char chr = string[o];
+				if (chr != (char)0xAD) {
+					corrected[len++] = chr;
+				}
+			}
+			myCanvas.drawText(corrected, 0, len, x, y, myTextPaint);
+		}
 	}
 
 	@Override
-	public int imageWidth(ZLImageData imageData) {
-		Bitmap bitmap = ((ZLAndroidImageData)imageData).getBitmap(myWidth, myHeight);
-		return ((bitmap != null) && !bitmap.isRecycled()) ? bitmap.getWidth() : 0;
+	public Size imageSize(ZLImageData imageData, Size maxSize, ScalingType scaling) {
+		final Bitmap bitmap = ((ZLAndroidImageData)imageData).getBitmap(maxSize, scaling);
+		return (bitmap != null && !bitmap.isRecycled())
+			? new Size(bitmap.getWidth(), bitmap.getHeight()) : null;
 	}
 
 	@Override
-	public int imageHeight(ZLImageData imageData) {
-		Bitmap bitmap = ((ZLAndroidImageData)imageData).getBitmap(myWidth, myHeight);
-		return ((bitmap != null) && !bitmap.isRecycled())  ? bitmap.getHeight() : 0;
-	}
-
-	@Override
-	public void drawImage(int x, int y, ZLImageData imageData) {
-		Bitmap bitmap = ((ZLAndroidImageData)imageData).getBitmap(myWidth, myHeight);
-		if ((bitmap != null) && !bitmap.isRecycled()) {
+	public void drawImage(int x, int y, ZLImageData imageData, Size maxSize, ScalingType scaling) {
+		final Bitmap bitmap = ((ZLAndroidImageData)imageData).getBitmap(maxSize, scaling);
+		if (bitmap != null && !bitmap.isRecycled()) {
 			myCanvas.drawBitmap(bitmap, x, y - bitmap.getHeight(), myFillPaint);
 		}
 	}

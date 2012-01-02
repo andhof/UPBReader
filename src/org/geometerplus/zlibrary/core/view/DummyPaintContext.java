@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2011 Geometer Plus <contact@geometerplus.com>
+ * Copyright (C) 2007-2012 Geometer Plus <contact@geometerplus.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,15 +95,11 @@ final class DummyPaintContext extends ZLPaintContext {
 	}
 
 	@Override
-	public int imageWidth(ZLImageData image) {
-		return 1;
+	public Size imageSize(ZLImageData image, Size maxSize, ScalingType scaling) {
+		return null;
 	}
 	@Override
-	public int imageHeight(ZLImageData image) {
-		return 1;
-	}
-	@Override
-	public void drawImage(int x, int y, ZLImageData image) {
+	public void drawImage(int x, int y, ZLImageData image, Size maxSize, ScalingType scaling) {
 	}
 
 	@Override

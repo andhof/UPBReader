@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2011 Geometer Plus <contact@geometerplus.com>
+ * Copyright (C) 2007-2012 Geometer Plus <contact@geometerplus.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -344,25 +344,7 @@ public final class FBView extends ZLTextView {
 			(diffY > 0 ? Direction.down : Direction.up) :
 			(diffX > 0 ? Direction.leftToRight : Direction.rightToLeft);
 
-		ZLTextRegion region = getSelectedRegion();
-		final ZLTextRegion.Filter filter =
-			(region != null && region.getSoul() instanceof ZLTextWordRegionSoul)
-				|| myReader.NavigateAllWordsOption.getValue()
-					? ZLTextRegion.AnyRegionFilter : ZLTextRegion.ImageOrHyperlinkFilter;
-		region = nextRegion(direction, filter);
-		if (region != null) {
-			selectRegion(region);
-		} else {
-			if (direction == Direction.down) {
-				scrollPage(true, ZLTextView.ScrollingMode.SCROLL_LINES, 1);
-			} else if (direction == Direction.up) {
-				scrollPage(false, ZLTextView.ScrollingMode.SCROLL_LINES, 1);
-			}
-		}
-
-		myReader.getViewWidget().reset();
-		myReader.getViewWidget().repaint();
-
+		new MoveCursorAction(myReader, direction).run();
 		return true;
 	}
 

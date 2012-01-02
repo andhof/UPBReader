@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2011 Geometer Plus <contact@geometerplus.com>
+ * Copyright (C) 2007-2012 Geometer Plus <contact@geometerplus.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,7 +129,6 @@ public final class FBReaderApp extends ZLApplication {
 
 		addAction(ActionCode.INCREASE_FONT, new ChangeFontSizeAction(this, +2));
 		addAction(ActionCode.DECREASE_FONT, new ChangeFontSizeAction(this, -2));
-		addAction(ActionCode.ROTATE, new RotateAction(this));
 
 		addAction(ActionCode.FIND_NEXT, new FindNextAction(this));
 		addAction(ActionCode.FIND_PREVIOUS, new FindPreviousAction(this));
@@ -139,6 +138,11 @@ public final class FBReaderApp extends ZLApplication {
 
 		addAction(ActionCode.TURN_PAGE_FORWARD, new TurnPageAction(this, true));
 		addAction(ActionCode.TURN_PAGE_BACK, new TurnPageAction(this, false));
+
+		addAction(ActionCode.MOVE_CURSOR_UP, new MoveCursorAction(this, FBView.Direction.up));
+		addAction(ActionCode.MOVE_CURSOR_DOWN, new MoveCursorAction(this, FBView.Direction.down));
+		addAction(ActionCode.MOVE_CURSOR_LEFT, new MoveCursorAction(this, FBView.Direction.rightToLeft));
+		addAction(ActionCode.MOVE_CURSOR_RIGHT, new MoveCursorAction(this, FBView.Direction.leftToRight));
 
 		addAction(ActionCode.VOLUME_KEY_SCROLL_FORWARD, new VolumeKeyTurnPageAction(this, true));
 		addAction(ActionCode.VOLUME_KEY_SCROLL_BACK, new VolumeKeyTurnPageAction(this, false));
@@ -716,5 +720,29 @@ public final class FBReaderApp extends ZLApplication {
 			maxLength,
 			visible
 		);
+	}
+
+	public TOCTree getCurrentTOCElement() {
+		final ZLTextWordCursor cursor = BookTextView.getStartCursor();
+		if (Model == null || cursor == null) {
+			return null;
+		}
+
+		int index = cursor.getParagraphIndex();	
+		if (cursor.isEndOfParagraph()) {
+			++index;
+		}
+		TOCTree treeToSelect = null;
+		for (TOCTree tree : Model.TOCTree) {
+			final TOCTree.Reference reference = tree.getReference();
+			if (reference == null) {
+				continue;
+			}
+			if (reference.ParagraphIndex > index) {
+				break;
+			}
+			treeToSelect = tree;
+		}
+		return treeToSelect;
 	}
 }

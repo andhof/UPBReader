@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Geometer Plus <contact@geometerplus.com>
+ * Copyright (C) 2009-2012 Geometer Plus <contact@geometerplus.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,12 +42,13 @@ class BookTitlePreference extends ZLStringPreference {
 	BookTitlePreference(Context context, ZLResource rootResource, String resourceKey, Book book) {
 		super(context, rootResource, resourceKey);
 		myBook = book;
-		setValue(book.getTitle());
+		super.setValue(book.getTitle());
 	}
 
 	@Override
-	public void onAccept() {
-		myBook.setTitle(getValue());
+	protected void setValue(String value) {
+		super.setValue(value);
+		myBook.setTitle(value);
 	}
 }
 
@@ -81,9 +82,12 @@ class LanguagePreference extends ZLStringListPreference {
 	}
 
 	@Override
-	public void onAccept() {
-		final String value = getValue();
-		myBook.setLanguage((value.length() != 0) ? value : null);
+	protected void onDialogClosed(boolean result) {
+		super.onDialogClosed(result);
+		if (result) {
+			final String value = getValue();
+			myBook.setLanguage(value.length() > 0 ? value : null);
+		}
 	}
 }
 

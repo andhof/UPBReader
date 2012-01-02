@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 Geometer Plus <contact@geometerplus.com>
+ * Copyright (C) 2010-2012 Geometer Plus <contact@geometerplus.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,6 +50,9 @@ public class NetworkCatalogTree extends NetworkTree {
 	NetworkCatalogTree(NetworkCatalogTree parent, NetworkCatalogItem item, int position) {
 		super(parent, position);
 		myLink = parent.myLink;
+		if (item == null) {
+			throw new IllegalArgumentException("item cannot be null");
+		}
 		Item = item;
 		addSpecialTrees();
 	}

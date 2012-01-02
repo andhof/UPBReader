@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 Geometer Plus <contact@geometerplus.com>
+ * Copyright (C) 2010-2012 Geometer Plus <contact@geometerplus.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,7 +101,13 @@ public abstract class NetworkBookActions {
 	}
 
 	public static List<NBAction> getContextMenuActions(Activity activity, NetworkBookTree tree, BookDownloaderServiceConnection connection) {
+		if (tree == null) {
+			throw new IllegalArgumentException("tree == null");
+		}
 		final NetworkBookItem book = tree.Book;
+		if (book == null) {
+			throw new IllegalArgumentException("book == null");
+		}
 		List<NBAction> actions = new LinkedList<NBAction>();
 		if (useFullReferences(book)) {
 			final BookUrlInfo reference = book.reference(UrlInfo.Type.Book);
@@ -130,7 +136,7 @@ public abstract class NetworkBookActions {
 			final BookBuyUrlInfo reference = book.buyInfo();
 			final int id = reference.InfoType == UrlInfo.Type.BookBuy
 				? ActionCode.BUY_DIRECTLY : ActionCode.BUY_IN_BROWSER;
-			final String priceString = reference.Price != null ? reference.Price.toString() : "";
+			final String priceString = reference.Price != null ? String.valueOf(reference.Price) : "";
 			actions.add(new NBAction(activity, id, "buy", priceString, R.drawable.ic_menu_buy_book));
 			final BasketItem basketItem = book.Link.getBasketItem();
 			if (basketItem != null) {

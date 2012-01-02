@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2011 Geometer Plus <contact@geometerplus.com>
+ * Copyright (C) 2007-2012 Geometer Plus <contact@geometerplus.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,20 +17,21 @@
  * 02110-1301, USA.
  */
 
-package org.geometerplus.fbreader.fbreader;
+package org.geometerplus.android.fbreader;
 
-class RotateAction extends FBAction {
-	RotateAction(FBReaderApp fbreader) {
-		super(fbreader);
+import org.geometerplus.fbreader.fbreader.FBReaderApp;
+
+class ToggleBarsAction extends FBAndroidAction {
+	ToggleBarsAction(FBReader baseActivity, FBReaderApp fbreader) {
+		super(baseActivity, fbreader);
 	}
 
 	@Override
 	protected void run(Object ... params) {
-		Reader.rotateScreen();
-	}
-
-	@Override
-	public boolean isVisible() {
-		return Reader.canRotateScreen();
+		if (BaseActivity.barsAreShown()) {
+			BaseActivity.hideBars();
+		} else {
+			BaseActivity.showBars();
+		}
 	}
 }
