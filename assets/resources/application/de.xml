@@ -684,6 +684,42 @@
 		<node name="languageFilterDialog">
 			<node name="title" value="Sprachfilter"/>
 		</node>
+		<node name="UPBLoginDialog">
+            <node name="title" value="Uni Bibliothek Authentifizierung"/>
+            <node name="unencryptedWarning" value="Ihr Passwort wird unverschlüsselt übertragen."/>
+            <node name="login" value="Benutzername"/>
+            <node name="password" value="Passwort"/>
+            <node name="loginIsEmpty" value="Es sollte ein Benutzername angegeben werden."/>
+            <node name="register" value="Anmelden"/>
+        </node>
+        <node name="SelectionHighlightDialog">
+            <node name="title" value="Markierung"/>
+            <node name="color" value="Farbe:"/>
+            <node name="underline" value="Unterstreichen"/>
+            <node name="crossout" value="Durchstreichen"/>
+        </node>
+        <node name="SelectionNoteDialog">
+            <node name="title" value="Notiz"/>
+            <node name="author" value="Author: Localuser"/>
+            <node name="input" value="Notiz eingeben:"/>
+            <node name="tags" value="Tags: (Z.B.: Android, eBook, ...)"/>
+            <node name="categories" value="Kategorie wählen:"/>
+            <node name="category1" value="Notiz"/>
+            <node name="category2" value="Frage"/>
+            <node name="category3" value="Problem"/>
+        </node>
+        <node name="QuickActionBar">
+            <node name="copy" value="Kopieren"/>
+            <node name="share" value="Teilen"/>
+            <node name="translate" value="Wörterbuch"/>
+            <node name="bookmark" value="Lesezeichen"/>
+            <node name="highlight" value="Markierung"/>
+            <node name="note" value="Notiz"/>
+            <node name="clear" value="Abbruch"/>
+            <node name="edit" value="Bearbeiten"/>
+            <node name="comment" value="Kommentieren"/>
+            <node name="remove" value="Entfernen"/>
+        </node>
 	</node>
 	<node name="errorMessage">
 		<node name="cannotRunAndroidMarket" value="Es kann nicht auf den Android Market zugegriffen werden. Bitte, installieren Sie %s manuell."/>

@@ -34,6 +34,7 @@ public class HtmlMetaInfoReader extends ZLXMLReaderAdapter {
 		myBook.setTitle("");
 	}
 
+	@Override
 	public boolean dontCacheAttributeValues() {
 		return true;
 	}
@@ -43,6 +44,7 @@ public class HtmlMetaInfoReader extends ZLXMLReaderAdapter {
 		return readDocument(myBook.File);
 	}
 
+	@Override
 	public boolean startElementHandler(String tagName, ZLStringMap attributes) {
 		switch (HtmlTag.getTagByName(tagName)) {
 			case HtmlTag.TITLE:
@@ -54,6 +56,7 @@ public class HtmlMetaInfoReader extends ZLXMLReaderAdapter {
 		return false;
 	}
 
+	@Override
 	public boolean endElementHandler(String tag) {
 		switch (HtmlTag.getTagByName(tag)) {
 			case HtmlTag.TITLE:
@@ -65,6 +68,7 @@ public class HtmlMetaInfoReader extends ZLXMLReaderAdapter {
 		return false;
 	}
 
+	@Override
 	public void characterDataHandler(char[] ch, int start, int length) {
 		// TODO + length -- remove
 		final String text = new String(ch).substring(start, start + length);

@@ -67,11 +67,12 @@ public final class HtmlTag {
 	public static final byte TAG_NUMBER = 37;
 	
 	private static final HashMap<String,Byte> ourTagByName = new HashMap<String,Byte>(256, 0.2f);
+	private static final HashMap<Byte,String> ourNameByTag = new HashMap<Byte,String>(256, 0.2f);
 	private static final Byte ourUnknownTag;
 
 	static {
 		ourTagByName.put("unknown", UNKNOWN);
-		ourUnknownTag = (Byte)ourTagByName.get("unknown");
+		ourUnknownTag = ourTagByName.get("unknown");
 		ourTagByName.put("html", HTML);
 		ourTagByName.put("head", HEAD);
 		ourTagByName.put("body", BODY);
@@ -107,6 +108,13 @@ public final class HtmlTag {
 		ourTagByName.put("hr", HR);
 		ourTagByName.put("guide", GUIDE);
 		ourTagByName.put("reference", REFERENCE);
+		
+		ourNameByTag.put(UNKNOWN, "unknown");
+		ourNameByTag.put(HTML, "html");
+		ourNameByTag.put(HEAD, "head");
+		ourNameByTag.put(BODY, "body");
+		ourNameByTag.put(TITLE, "title");
+		ourNameByTag.put(P, "p");
 	}
 
 	public static byte getTagByName(String name) {
@@ -114,7 +122,7 @@ public final class HtmlTag {
 		Byte num = tagByName.get(name);
 		if (num == null) {
 			final String lowerCaseName = name.toLowerCase().intern();
-			num = (Byte)tagByName.get(lowerCaseName);
+			num = tagByName.get(lowerCaseName);
 			if (num == null) {
 				num = ourUnknownTag;
 				tagByName.put(lowerCaseName, num);
@@ -122,5 +130,10 @@ public final class HtmlTag {
 			tagByName.put(name, num);
 		}
 		return num.byteValue();
+	}
+	
+	public static String getNameByTag(byte tag) {
+		final HashMap<Byte,String> nameByTag = ourNameByTag;
+		return nameByTag.get(tag);
 	}
 }

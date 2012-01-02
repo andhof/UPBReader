@@ -26,6 +26,7 @@ import org.geometerplus.zlibrary.core.filesystem.*;
 import org.geometerplus.zlibrary.core.image.ZLImage;
 
 public class OEBPlugin extends FormatPlugin {
+	@Override
 	public boolean acceptsFile(ZLFile file) {
 		final String extension = file.getExtension();
 		return

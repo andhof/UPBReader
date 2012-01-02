@@ -44,6 +44,7 @@ public abstract class UIUtil {
 	};
 	private static final Queue<Pair> ourTaskQueue = new LinkedList<Pair>();
 	private static final Handler ourProgressHandler = new Handler() {
+		@Override
 		public void handleMessage(Message message) {
 			try {
 				synchronized (ourMonitor) {
@@ -94,6 +95,7 @@ public abstract class UIUtil {
 		final ProgressDialog progress = ProgressDialog.show(context, null, message, true, false);
 
 		final Handler handler = new Handler() {
+			@Override
 			public void handleMessage(Message message) {
 				progress.dismiss();
 				postAction.run();

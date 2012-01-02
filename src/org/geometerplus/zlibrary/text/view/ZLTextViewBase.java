@@ -28,6 +28,8 @@ import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.text.view.style.ZLTextStyleCollection;
 import org.geometerplus.zlibrary.text.view.style.ZLTextStyleDecoration;
 
+import android.util.Log;
+
 abstract class ZLTextViewBase extends ZLView {
 	private ZLTextStyle myTextStyle;
 	private int myWordHeight = -1;
@@ -197,7 +199,12 @@ abstract class ZLTextViewBase extends ZLView {
 				length = word.Length - start;
 			}
 			if (!addHyphenationSign) {
-				drawString(x, y, word.Data, word.Offset + start, length, word.getMark(), start);
+				try {
+					drawString(x, y, word.Data, word.Offset + start, length, word.getMark(), start);
+				} catch(Exception e) {
+					Log.e("ZLTextViewBase", e.toString());
+				}
+				
 			} else {
 				char[] part = myWordPartArray;
 				if (length + 1 > part.length) {

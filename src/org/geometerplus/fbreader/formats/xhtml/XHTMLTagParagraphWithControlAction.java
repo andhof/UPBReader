@@ -30,7 +30,8 @@ class XHTMLTagParagraphWithControlAction extends XHTMLTagAction {
 		myControl = control;
 	}
 
-	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes) {
+	@Override
+	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag) {
 		final BookReader modelReader = reader.getModelReader();
 		switch (myControl) {
 			case FBTextKind.TITLE:
@@ -43,9 +44,10 @@ class XHTMLTagParagraphWithControlAction extends XHTMLTagAction {
 				break;
 		}
 		modelReader.pushKind(myControl);
-		modelReader.beginParagraph();
+		modelReader.beginNewParagraph(tag);
 	}
 
+	@Override
 	protected void doAtEnd(XHTMLReader reader) {
 		final BookReader modelReader = reader.getModelReader();
 		modelReader.endParagraph();

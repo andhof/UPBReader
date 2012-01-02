@@ -26,6 +26,10 @@ public interface ActionCode {
 	String SHOW_TOC = "toc";
 	String SHOW_BOOKMARKS = "bookmarks";
 	String SHOW_NETWORK_LIBRARY = "networkLibrary";
+	
+	String SHOW_UPB_LOGIN_SCREEN = "upbLibrary";
+	String SHOW_SEMAPPS_LIST = "semAppsList";
+	String SHOW_EPUB_LIST = "ePubList";
 
 	String SWITCH_TO_NIGHT_PROFILE = "night";
 	String SWITCH_TO_DAY_PROFILE = "day";
@@ -63,4 +67,17 @@ public interface ActionCode {
 	String SELECTION_SHARE = "selectionShare";
 	String SELECTION_TRANSLATE = "selectionTranslate";
 	String SELECTION_BOOKMARK = "selectionBookmark";
+	String SELECTION_HIGHLIGHT = "selectionHighlight";
+	String SELECTION_NOTE = "selectionNote";
+	
+	String SELECTION_SHOW_ANNOTATION_PANEL = "selectionShowAnnotationPanel";
+	String SELECTION_EDIT_ANNOTATION = "selectionEditAnnotation";
+	String SELECTION_COMMENT_ANNOTATION = "selectionCommentAnnotation";
+	String SELECTION_REMOVE_ANNOTATION = "selectionRemoveAnnotation";
+	
+	String SELECTION_SHOW_ANNOTATION_LIST = "showAnnotationList";
+	String SELECTION_SHOW_ANNOTATION = "annotationShowAnnotation";
+	String SELECTION_SHOW_EDIT_ANNOTATION = "annotationShowEditAnnotation";
+	String SELECTION_LIST_ELEMENT_HIGHLIGHT = "annotationListElementHighlight";
+	String SELECTION_LIST_ELEMENT_NOTE = "annotationListElementNote";
 }

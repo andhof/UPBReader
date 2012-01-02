@@ -22,6 +22,7 @@ package org.geometerplus.android.fbreader.preferences;
 import android.content.Intent;
 import android.view.KeyEvent;
 
+import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.application.ZLKeyBindings;
 import org.geometerplus.zlibrary.core.options.ZLIntegerOption;
 import org.geometerplus.zlibrary.core.options.ZLIntegerRangeOption;
@@ -45,7 +46,7 @@ public class PreferenceActivity extends ZLPreferenceActivity {
 
 	@Override
 	protected void init(Intent intent) {
-		final FBReaderApp fbReader = (FBReaderApp)FBReaderApp.Instance();
+		final FBReaderApp fbReader = (FBReaderApp)ZLApplication.Instance();
 		final ZLAndroidApplication androidApp = ZLAndroidApplication.Instance();
 		final ColorProfile profile = fbReader.getColorProfile();
 
@@ -308,6 +309,7 @@ public class PreferenceActivity extends ZLPreferenceActivity {
 			displayScreen.Resource,
 			"allowScreenBrightnessAdjustment"
 		) {
+			@Override
 			public void onAccept() {
 				super.onAccept();
 				if (!isChecked()) {

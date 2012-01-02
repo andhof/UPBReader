@@ -21,6 +21,7 @@ package org.geometerplus.fbreader.formats.oeb;
 
 import java.util.*;
 
+import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.constants.XMLNamespaces;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.image.ZLFileImage;
@@ -28,6 +29,7 @@ import org.geometerplus.zlibrary.core.util.MimeType;
 import org.geometerplus.zlibrary.core.xml.*;
 
 import org.geometerplus.fbreader.bookmodel.*;
+import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.formats.xhtml.XHTMLReader;
 import org.geometerplus.fbreader.formats.util.MiscUtil;
 
@@ -41,12 +43,12 @@ class Reference {
 	}
 }
 
-class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
+public class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 	private static final char[] Dots = new char[] {'.', '.', '.'};
 
 	private final BookReader myModelReader;
 	private final HashMap<String,String> myIdToHref = new HashMap<String,String>();
-	private final ArrayList<String> myHtmlFileNames = new ArrayList<String>();
+	private  final ArrayList<String> myHtmlFileNames = new ArrayList<String>();
 	private final ArrayList<Reference> myTourTOC = new ArrayList<Reference>();
 	private final ArrayList<Reference> myGuideTOC = new ArrayList<Reference>();
 
@@ -140,9 +142,11 @@ class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 						while (++level <= point.Level) {
 							myModelReader.beginContentsParagraph(-2);
 							myModelReader.addContentsData(Dots);
+							myModelReader.addPathData(Dots);
 						}
 						myModelReader.beginContentsParagraph(index);
 						myModelReader.addContentsData(point.Text.toCharArray());
+						myModelReader.addPathData(point.ContentHRef.toCharArray());
 					}
 					while (level > 0) {
 						myModelReader.endContentsParagraph();
@@ -160,6 +164,7 @@ class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 				if (index != -1) {
 					myModelReader.beginContentsParagraph(index);
 					myModelReader.addContentsData(ref.Title.toCharArray());
+					myModelReader.addPathData(ref.HRef.toCharArray());
 					myModelReader.endContentsParagraph();
 				}
 			}
@@ -214,6 +219,8 @@ class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 				final String fileName = myIdToHref.get(id);
 				if (fileName != null) {
 					myHtmlFileNames.add(fileName);
+					final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+					fbreader.setHTMLFileNames(myHtmlFileNames);
 				}
 			}
 		} else if (myState == READ_GUIDE && REFERENCE == tag) {

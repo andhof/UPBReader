@@ -22,6 +22,6 @@ package org.geometerplus.fbreader.formats.xhtml;
 import org.geometerplus.zlibrary.core.xml.ZLStringMap;
 
 public abstract class XHTMLTagAction {
-	protected abstract void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes);
+	protected abstract void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag);
 	protected abstract void doAtEnd(XHTMLReader reader);
 };

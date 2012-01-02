@@ -19,21 +19,35 @@
 
 package org.geometerplus.zlibrary.ui.android.library;
 
+import java.io.File;
 import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.content.*;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.util.Log;
 import android.view.*;
 import android.os.PowerManager;
 
+import org.geometerplus.android.fbreader.annotation.model.Annotation;
+import org.geometerplus.android.fbreader.annotation.model.Annotations;
+import org.geometerplus.fbreader.Paths;
+import org.geometerplus.fbreader.bookmodel.TOCTree;
+import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
+import org.geometerplus.zlibrary.core.library.ZLibrary;
 
-import org.geometerplus.zlibrary.ui.android.R;
+import org.geometerplus.zlibrary.text.model.ZLTextParagraph;
+import org.geometerplus.zlibrary.text.view.ZLTextParagraphCursor;
+import de.upb.android.reader.R;
 import org.geometerplus.zlibrary.ui.android.application.ZLAndroidApplicationWindow;
+import org.simpleframework.xml.Serializer;
+import org.simpleframework.xml.core.Persister;
 
 public abstract class ZLAndroidActivity extends Activity {
 	protected abstract ZLApplication createApplication(ZLFile file);
@@ -115,7 +129,7 @@ public abstract class ZLAndroidActivity extends Activity {
 		}
 		ZLApplication.Instance().getViewWidget().repaint();
 	}
-
+	
 	@Override
 	public void onStart() {
 		super.onStart();
@@ -218,7 +232,7 @@ public abstract class ZLAndroidActivity extends Activity {
 	}
 
 	private static ZLAndroidLibrary getLibrary() {
-		return (ZLAndroidLibrary)ZLAndroidLibrary.Instance();
+		return (ZLAndroidLibrary)ZLibrary.Instance();
 	}
 
 	@Override
@@ -290,6 +304,7 @@ public abstract class ZLAndroidActivity extends Activity {
 	}
 
 	BroadcastReceiver myBatteryInfoReceiver = new BroadcastReceiver() {
+		@Override
 		public void onReceive(Context context, Intent intent) {
 			final int level = intent.getIntExtra("level", 100);
 			((ZLAndroidApplication)getApplication()).myMainWindow.setBatteryLevel(level);

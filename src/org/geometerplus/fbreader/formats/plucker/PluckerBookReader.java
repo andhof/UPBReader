@@ -155,7 +155,7 @@ public class PluckerBookReader extends BookReader {
 					boolean doProcess = false;
 					if (type == 0) {//?
 						byte[] buf = new byte[size];
-						doProcess = myStream.read(buf, 0, (int)size) == size;
+						doProcess = myStream.read(buf, 0, size) == size;
 						if (doProcess) {
 							// TODO: use encoding!!!!
 							// TODO: don't create any new objects!!!!
@@ -169,7 +169,7 @@ public class PluckerBookReader extends BookReader {
 							myCharBuffer = new String(buf).toCharArray();
 						}
 					} else if (myCompressionVersion == 2) {
-						byte input [] = new byte[(int) (recordSize - 10 - 4 * paragraphs)];
+						byte input [] = new byte[(recordSize - 10 - 4 * paragraphs)];
 						final int inputSize = myStream.read(input);
 						Inflater decompressor = new Inflater();
 						decompressor.setInput(input, 0, inputSize);
@@ -455,7 +455,7 @@ public class PluckerBookReader extends BookReader {
 
     private void safeAddControl(byte kind, boolean start) {
     	if (myParagraphStarted) {
-    		addControl((Byte)kind, (Boolean)start);
+    		addControl(kind, start);
     	} else {
     		myDelayedControls.add(new Pair(kind, start));
     	}

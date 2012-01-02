@@ -20,15 +20,17 @@
 package org.geometerplus.android.fbreader;
 
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.RelativeLayout;
 
 import org.geometerplus.fbreader.fbreader.ActionCode;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
-import org.geometerplus.zlibrary.ui.android.R;
+
+import de.upb.android.reader.R;
 
 class SelectionPopup extends ButtonsPopupPanel {
 	final static String ID = "SelectionPopup";
-
+	
 	SelectionPopup(FBReaderApp fbReader) {
 		super(fbReader);
 	}
@@ -45,22 +47,49 @@ class SelectionPopup extends ButtonsPopupPanel {
 		}
 
 		myWindow = new PopupWindow(activity, root, location, false);
-
+		
         addButton(ActionCode.SELECTION_COPY_TO_CLIPBOARD, true, R.drawable.selection_copy);
         addButton(ActionCode.SELECTION_SHARE, true, R.drawable.selection_share);
         addButton(ActionCode.SELECTION_TRANSLATE, true, R.drawable.selection_translate);
         addButton(ActionCode.SELECTION_BOOKMARK, true, R.drawable.selection_bookmark);
         addButton(ActionCode.SELECTION_CLEAR, true, R.drawable.selection_close);
+        
+      //################################################
+//        ActionItem nextItem	= new ActionItem(ID_DOWN, "kopieren");
+//		ActionItem prevItem	= new ActionItem(ID_UP, "senden");
+//        ActionItem searchItem	= new ActionItem(ID_SEARCH, "übersetzen");
+//        ActionItem infoItem = new ActionItem(ID_INFO, "Lesezeichen setzen");
+//        ActionItem eraseItem = new ActionItem(ID_ERASE, "Notiz");
+//        ActionItem okItem = new ActionItem(ID_OK, "abbrechen");
+//        
+//        prevItem.setSticky(true);
+//        nextItem.setSticky(true);
+//        
+//        final QuickAction quickAction = new QuickAction(activity);
+//        
+//        quickAction.addActionItem(nextItem);
+//		quickAction.addActionItem(prevItem);
+//        quickAction.addActionItem(searchItem);
+//        quickAction.addActionItem(infoItem);
+//        quickAction.addActionItem(eraseItem);
+//        quickAction.addActionItem(okItem);
+      //################################################
     }
     
+	/**
+	 * Look, if selected text is on top part of the screen. Then draw the icon bar on the bottom.
+	 * 
+	 * @param selectionStartY
+	 * @param selectionEndY
+	 */
     public void move(int selectionStartY, int selectionEndY) {
 		if (myWindow == null) {
 			return;
 		}
 
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-			RelativeLayout.LayoutParams.WRAP_CONTENT,
-            RelativeLayout.LayoutParams.WRAP_CONTENT
+			LayoutParams.WRAP_CONTENT,
+            LayoutParams.WRAP_CONTENT
 		);
         layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
 

@@ -19,13 +19,13 @@
 
 package org.geometerplus.android.fbreader;
 
+import de.upb.android.reader.R;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.*;
 import android.view.*;
-
-import org.geometerplus.zlibrary.ui.android.R;
+import android.view.ViewGroup.LayoutParams;
 
 public class CancelActivity extends ListActivity {
 	static final String LIST_SIZE = "listSize";
@@ -74,12 +74,12 @@ public class CancelActivity extends ListActivity {
 				summaryView.setVisibility(View.VISIBLE);
 				summaryView.setText(summary);
 				titleView.setLayoutParams(new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+					LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT
 				));
 			} else {
 				summaryView.setVisibility(View.GONE);
 				titleView.setLayoutParams(new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT
+					LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT
 				));
 			}
 			return view;

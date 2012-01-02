@@ -26,15 +26,17 @@ import org.geometerplus.fbreader.bookmodel.BookReader;
 class XHTMLTagItemAction extends XHTMLTagAction {
 	private final char[] BULLET = { '\u2022', '\240' };
 
-	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes) {
+	@Override
+	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag) {
 		final BookReader modelReader = reader.getModelReader();
 		modelReader.endParagraph();
 		// TODO: increase left indent
-		modelReader.beginParagraph();
+		modelReader.beginNewParagraph(tag);
 		// TODO: replace bullet sign by number inside OL tag
 		modelReader.addData(BULLET);
 	}
 
+	@Override
 	protected void doAtEnd(XHTMLReader reader) {
 		reader.getModelReader().endParagraph();
 	}

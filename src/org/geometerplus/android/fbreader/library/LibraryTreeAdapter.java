@@ -24,12 +24,13 @@ import android.view.*;
 import android.widget.*;
 
 import org.geometerplus.zlibrary.core.image.ZLImage;
+import org.geometerplus.zlibrary.core.image.ZLImageManager;
 import org.geometerplus.zlibrary.core.image.ZLLoadableImage;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 
 import org.geometerplus.zlibrary.ui.android.image.ZLAndroidImageData;
 import org.geometerplus.zlibrary.ui.android.image.ZLAndroidImageManager;
-import org.geometerplus.zlibrary.ui.android.R;
+import de.upb.android.reader.R;
 
 import org.geometerplus.fbreader.library.*;
 
@@ -46,7 +47,7 @@ class LibraryTreeAdapter extends TreeAdapter {
 		}
 
 		ZLAndroidImageData data = null;
-		final ZLAndroidImageManager mgr = (ZLAndroidImageManager)ZLAndroidImageManager.Instance();
+		final ZLAndroidImageManager mgr = (ZLAndroidImageManager)ZLImageManager.Instance();
 		if (cover instanceof ZLLoadableImage) {
 			final ZLLoadableImage img = (ZLLoadableImage)cover;
 			if (img.isSynchronized()) {

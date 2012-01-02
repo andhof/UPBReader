@@ -323,6 +323,7 @@ public class ZLNetworkManager {
 
 	public final void downloadToFile(String url, String sslCertificate, final File outFile, final int bufferSize) throws ZLNetworkException {
 		perform(new ZLNetworkRequest(url, sslCertificate, null) {
+			@Override
 			public void handleStream(InputStream inputStream, int length) throws IOException, ZLNetworkException {
 				OutputStream outStream = new FileOutputStream(outFile);
 				try {

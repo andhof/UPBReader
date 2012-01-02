@@ -26,7 +26,7 @@ import android.widget.*;
 
 import org.geometerplus.zlibrary.core.tree.ZLTree;
 
-import org.geometerplus.zlibrary.ui.android.R;
+import de.upb.android.reader.R;
 
 abstract class ZLTreeAdapter extends BaseAdapter implements AdapterView.OnItemClickListener, View.OnCreateContextMenuListener {
 	private final ListView myParent;
@@ -140,10 +140,12 @@ abstract class ZLTreeAdapter extends BaseAdapter implements AdapterView.OnItemCl
 		return item;
 	}
 
+	@Override
 	public final boolean areAllItemsEnabled() {
 		return true;
 	}
 
+	@Override
 	public final boolean isEnabled(int position) {
 		return true;
 	}

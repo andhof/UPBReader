@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="horizontal"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content">
+    <TextView 
+        android:layout_height="2px"
+	    android:gravity="center_horizontal|center_vertical"
+	    android:layout_width="100dip"
+	    android:text=" "
+	    android:background="#FFFFFF"/>
+</RelativeLayout>

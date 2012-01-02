@@ -23,6 +23,7 @@ import android.content.Context;
 import android.graphics.*;
 import android.view.*;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import org.geometerplus.zlibrary.core.view.ZLView;
 import org.geometerplus.zlibrary.core.view.ZLViewWidget;
@@ -299,8 +300,11 @@ public class ZLAndroidWidget extends View implements ZLViewWidget, View.OnLongCl
 	private volatile boolean myPendingDoubleTap;
 	private int myPressedX, myPressedY;
 	private boolean myScreenIsTouched;
+	int bewegung = 0;
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
+		bewegung++;
+		Log.v("FBView", "onTouchEvent: wie of löst es aus: "+bewegung);
 		int x = (int)event.getX();
 		int y = (int)event.getY();
 

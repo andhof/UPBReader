@@ -50,6 +50,7 @@ public class FB2MetaInfoReader extends ZLXMLReaderAdapter {
 		myBook.setLanguage(null);
 	}
 	
+	@Override
 	public boolean dontCacheAttributeValues() {
 		return true;
 	}
@@ -63,6 +64,7 @@ public class FB2MetaInfoReader extends ZLXMLReaderAdapter {
 		return readDocument(myBook.File);
 	}
 
+	@Override
 	public boolean startElementHandler(String tagName, ZLStringMap attributes) {
 		switch (FB2Tag.getTagByName(tagName)) {
 			case FB2Tag.BODY:
@@ -128,6 +130,7 @@ public class FB2MetaInfoReader extends ZLXMLReaderAdapter {
 		return false;
 	}
 	
+	@Override
 	public boolean endElementHandler(String tag) {
 		switch (FB2Tag.getTagByName(tag)) {
 			case FB2Tag.TITLE_INFO:
@@ -204,6 +207,7 @@ public class FB2MetaInfoReader extends ZLXMLReaderAdapter {
 		return false;
 	}
 	
+	@Override
 	public void characterDataHandler(char[] data, int start, int length) {
 		switch (myReadState) {
 			case READ_AUTHOR_NAME_0:

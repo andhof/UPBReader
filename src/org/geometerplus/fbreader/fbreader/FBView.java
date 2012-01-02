@@ -24,6 +24,7 @@ import java.util.*;
 import org.geometerplus.zlibrary.core.util.ZLColor;
 import org.geometerplus.zlibrary.core.library.ZLibrary;
 import org.geometerplus.zlibrary.core.view.ZLPaintContext;
+import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.filesystem.ZLResourceFile;
 
@@ -33,6 +34,9 @@ import org.geometerplus.zlibrary.text.view.*;
 import org.geometerplus.fbreader.bookmodel.BookModel;
 import org.geometerplus.fbreader.bookmodel.FBHyperlinkType;
 import org.geometerplus.fbreader.bookmodel.TOCTree;
+
+import android.text.Selection;
+import android.util.Log;
 
 public final class FBView extends ZLTextView {
 	private FBReaderApp myReader;
@@ -82,7 +86,7 @@ public final class FBView extends ZLTextView {
 			myReader.doAction(ActionCode.PROCESS_HYPERLINK);
 			return true;
 		}
-
+		
 		myReader.doAction(getZoneMap().getActionByCoordinates(
 			x, y, myContext.getWidth(), myContext.getHeight(),
 			isDoubleTapSupported() ? TapZoneMap.Tap.singleNotDoubleTap : TapZoneMap.Tap.singleTap
@@ -148,7 +152,10 @@ public final class FBView extends ZLTextView {
 		myReader.getViewWidget().startManualScrolling(x, y, direction);
 	}
 
+	int bewegung = 0;
 	public boolean onFingerMove(int x, int y) {
+		bewegung++;
+		Log.v("FBView", "Finger bewegt sich: "+bewegung);
 		if (super.onFingerMove(x, y)) {
 			return true;
 		}
@@ -205,11 +212,13 @@ public final class FBView extends ZLTextView {
 	}
 
 	public boolean onFingerLongPress(int x, int y) {
+		
+		y = y + 20;
 		if (super.onFingerLongPress(x, y)) {
 			return true;
 		}
 
-		final ZLTextRegion region = findRegion(x, y, MAX_SELECTION_DISTANCE, ZLTextRegion.AnyRegionFilter);
+		final ZLTextRegion region = findRegion(x, y-20, MAX_SELECTION_DISTANCE, ZLTextRegion.AnyRegionFilter);
 		if (region != null) {
 			final ZLTextRegion.Soul soul = region.getSoul();
 			boolean doSelectRegion = false;
@@ -221,6 +230,9 @@ public final class FBView extends ZLTextView {
 						final ZLTextSelectionCursor cursor = findSelectionCursor(x, y);
 						if (cursor != ZLTextSelectionCursor.None) {
 							moveSelectionCursorTo(cursor, x, y);
+						}
+						if (getCountOfSelectedWords() > 0) {
+							myReader.doAction(ActionCode.SELECTION_SHOW_PANEL);
 						}
 						return true;
 					case selectSingleWord:

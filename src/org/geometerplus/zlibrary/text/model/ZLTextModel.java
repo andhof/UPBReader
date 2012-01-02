@@ -27,7 +27,10 @@ public interface ZLTextModel {
 
 	int getParagraphsNumber();
 	ZLTextParagraph getParagraph(int index);
-
+	byte getParagraphHtmlTag(int index);
+	int getParagraphTagNumbers(int index);
+	CharStorage getCharStorage();
+	
 	void removeAllMarks();
 	ZLTextMark getFirstMark();
 	ZLTextMark getLastMark();

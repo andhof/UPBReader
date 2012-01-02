@@ -34,7 +34,7 @@ import android.content.Intent;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
-import org.geometerplus.zlibrary.ui.android.R;
+import de.upb.android.reader.R;
 
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.core.network.*;
@@ -257,9 +257,10 @@ public class BookDownloaderService extends Service {
 		notificationManager.notify(notificationId, progressNotification);
 
 		final Handler progressHandler = new Handler() {
+			@Override
 			public void handleMessage(Message message) {
 				final int progress = message.what;
-				final RemoteViews contentView = (RemoteViews)progressNotification.contentView;
+				final RemoteViews contentView = progressNotification.contentView;
 
 				if (progress < 0) {
 					contentView.setTextViewText(R.id.download_notification_progress_text, "");
@@ -274,6 +275,7 @@ public class BookDownloaderService extends Service {
 		};
 
 		final Handler downloadFinishHandler = new Handler() {
+			@Override
 			public void handleMessage(Message message) {
 				myDownloadingURLs.remove(urlString);
 				final NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -289,6 +291,7 @@ public class BookDownloaderService extends Service {
 		};
 
 		final ZLNetworkRequest request = new ZLNetworkRequest(urlString, sslCertificate, null) {
+			@Override
 			public void handleStream(InputStream inputStream, int length) throws IOException, ZLNetworkException {
 				final int updateIntervalMillis = 1000; // FIXME: remove hardcoded time constant
 

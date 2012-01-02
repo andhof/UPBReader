@@ -58,6 +58,7 @@ public final class ZLEncodingCollection {
 		public ZLEncodingCollectionReader() {
 		}
 
+		@Override
 		public boolean dontCacheAttributeValues() {
 			return true;
 		}
@@ -68,6 +69,7 @@ public final class ZLEncodingCollection {
 		private static final String CODE = "code";
 		private static final String NUMBER = "number";
 
+		@Override
 		public boolean startElementHandler(String tag, ZLStringMap attributes) {
 			if (ENCODING == tag) {
 				myCurrentEncodingName = attributes.getValue(NAME);
@@ -85,6 +87,7 @@ public final class ZLEncodingCollection {
 			return false;
 		}
 
+		@Override
 		public boolean endElementHandler(String tag) {
 			if (ENCODING == tag) {
 				myCurrentEncodingName = null;

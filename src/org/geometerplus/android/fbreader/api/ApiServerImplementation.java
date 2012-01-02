@@ -22,6 +22,7 @@ package org.geometerplus.android.fbreader.api;
 import java.util.*;
 
 import org.geometerplus.zlibrary.core.library.ZLibrary;
+import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.config.ZLConfig;
 
 import org.geometerplus.zlibrary.text.view.*;
@@ -29,7 +30,7 @@ import org.geometerplus.zlibrary.text.view.*;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 
 public class ApiServerImplementation extends ApiInterface.Stub implements Api, ApiMethods {
-	private final FBReaderApp myReader = (FBReaderApp)FBReaderApp.Instance();
+	private final FBReaderApp myReader = (FBReaderApp)ZLApplication.Instance();
 
 	private ApiObject.Error unsupportedMethodError(int method) {
 		return new ApiObject.Error("Unsupported method code: " + method);

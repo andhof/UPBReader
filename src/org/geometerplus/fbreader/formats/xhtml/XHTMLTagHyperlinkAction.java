@@ -37,7 +37,8 @@ class XHTMLTagHyperlinkAction extends XHTMLTagAction {
 			text.startsWith("ftp://");
 	}
 
-	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes) {
+	@Override
+	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag) {
 		final BookReader modelReader = reader.getModelReader();
 		final String href = xmlattributes.getValue("href");
 		if (myHyperlinkStackSize == myHyperlinkStack.length) {
@@ -70,6 +71,7 @@ class XHTMLTagHyperlinkAction extends XHTMLTagAction {
 		}
 	}
 
+	@Override
 	protected void doAtEnd(XHTMLReader reader) {
 		byte kind = myHyperlinkStack[--myHyperlinkStackSize];
 		if (kind != FBTextKind.REGULAR) {

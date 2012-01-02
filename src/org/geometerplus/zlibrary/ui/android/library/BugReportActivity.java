@@ -26,7 +26,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.text.method.ScrollingMovementMethod;
 
-import org.geometerplus.zlibrary.ui.android.R;
+import de.upb.android.reader.R;
 
 public class BugReportActivity extends Activity {
 	static final String STACKTRACE = "fbreader.stacktrace";
@@ -39,6 +39,7 @@ public class BugReportActivity extends Activity {
 		}
 	}
 
+	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 		setContentView(R.layout.bug_report_view);

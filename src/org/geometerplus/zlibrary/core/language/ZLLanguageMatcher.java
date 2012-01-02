@@ -88,11 +88,13 @@ public abstract class ZLLanguageMatcher {
 			reset();
 		}
 
+		@Override
 		public void reset() {
 			myProCounter = 1;
 			myContraCounter = 1;
 		}
 		
+		@Override
 		public	void processWord(String word, int length) {
 			if (length < 5) {
 				if (myDictionary.contains(word)) {
@@ -103,6 +105,7 @@ public abstract class ZLLanguageMatcher {
 			}
 		}
 
+		@Override
 		public	int criterion() {
 			return myProCounter * 2000 / (myProCounter + myContraCounter) - 1000;
 		}

@@ -35,11 +35,12 @@ import android.widget.*;
 
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.image.ZLImage;
+import org.geometerplus.zlibrary.core.image.ZLImageManager;
 import org.geometerplus.zlibrary.core.image.ZLLoadableImage;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.core.language.ZLLanguageUtil;
 
-import org.geometerplus.zlibrary.ui.android.R;
+import de.upb.android.reader.R;
 import org.geometerplus.zlibrary.ui.android.image.ZLAndroidImageData;
 import org.geometerplus.zlibrary.ui.android.image.ZLAndroidImageManager;
 
@@ -73,7 +74,7 @@ public class BookInfoActivity extends Activity implements MenuItem.OnMenuItemCli
 
 		myImage = Library.getCover(myFile);
 
-		if (SQLiteBooksDatabase.Instance() == null) {
+		if (BooksDatabase.Instance() == null) {
 			new SQLiteBooksDatabase(this, "LIBRARY");
 		}
 
@@ -181,7 +182,7 @@ public class BookInfoActivity extends Activity implements MenuItem.OnMenuItemCli
 			}
 		}
 		final ZLAndroidImageData data =
-			((ZLAndroidImageManager)ZLAndroidImageManager.Instance()).getImageData(myImage);
+			((ZLAndroidImageManager)ZLImageManager.Instance()).getImageData(myImage);
 		if (data == null) {
 			return;
 		}

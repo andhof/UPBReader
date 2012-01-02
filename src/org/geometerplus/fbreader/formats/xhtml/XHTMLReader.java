@@ -27,13 +27,14 @@ import org.geometerplus.zlibrary.core.filesystem.ZLArchiveEntryFile;
 import org.geometerplus.zlibrary.core.constants.XMLNamespaces;
 
 import org.geometerplus.fbreader.bookmodel.*;
+import org.geometerplus.fbreader.formats.html.HtmlTag;
 import org.geometerplus.fbreader.formats.util.MiscUtil;
 
 public class XHTMLReader extends ZLXMLReaderAdapter {
 	private static final HashMap<String,XHTMLTagAction> ourTagActions = new HashMap<String,XHTMLTagAction>();
 
 	public static XHTMLTagAction addAction(String tag, XHTMLTagAction action) {
-		XHTMLTagAction old = (XHTMLTagAction)ourTagActions.get(tag);
+		XHTMLTagAction old = ourTagActions.get(tag);
 		ourTagActions.put(tag, action);
 		return old;
 	}
@@ -166,16 +167,16 @@ public class XHTMLReader extends ZLXMLReaderAdapter {
 			myModelReader.addHyperlinkLabel(myReferencePrefix + id);
 		}
 
-		XHTMLTagAction action = (XHTMLTagAction)ourTagActions.get(tag.toLowerCase());
+		XHTMLTagAction action = ourTagActions.get(tag.toLowerCase());
 		if (action != null) {
-			action.doAtStart(this, attributes);
+			action.doAtStart(this, attributes, HtmlTag.getTagByName(tag.toLowerCase()));
 		}
 		return false;
 	}
 
 	@Override
 	public boolean endElementHandler(String tag) {
-		XHTMLTagAction action = (XHTMLTagAction)ourTagActions.get(tag.toLowerCase());
+		XHTMLTagAction action = ourTagActions.get(tag.toLowerCase());
 		if (action != null) {
 			action.doAtEnd(this);
 		}
@@ -215,7 +216,7 @@ cycle:
 		}
 		if (len > 0) {
 			if (myInsideBody && !myModelReader.paragraphIsOpen()) {
-				myModelReader.beginParagraph();
+				myModelReader.beginNewParagraph((byte) 0);
 			}
 			myModelReader.addData(data, start, len, false);
 		}

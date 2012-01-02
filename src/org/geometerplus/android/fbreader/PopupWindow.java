@@ -19,12 +19,11 @@
 
 package org.geometerplus.android.fbreader;
 
+import de.upb.android.reader.R;
 import android.app.Activity;
 import android.content.Context;
 import android.view.*;
 import android.widget.*;
-
-import org.geometerplus.zlibrary.ui.android.R;
 
 public class PopupWindow extends LinearLayout {
 	public static enum Location {
@@ -51,7 +50,7 @@ public class PopupWindow extends LinearLayout {
 
 		RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
 			fillWidth ? ViewGroup.LayoutParams.FILL_PARENT : ViewGroup.LayoutParams.WRAP_CONTENT,
-			RelativeLayout.LayoutParams.WRAP_CONTENT
+			android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 		);
 		p.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
 		p.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -85,6 +84,7 @@ public class PopupWindow extends LinearLayout {
 		});
 	}
 	
+	@Override
 	public void addView(View view) {
 		((LinearLayout)findViewById(R.id.tools_plate)).addView(view);
 	}

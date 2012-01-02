@@ -169,6 +169,15 @@ public class Book {
 	public List<Author> authors() {
 		return (myAuthors != null) ? Collections.unmodifiableList(myAuthors) : Collections.<Author>emptyList();
 	}
+	
+	public ArrayList<String> authorNames() {
+		ArrayList<String> bookAuthorList = new ArrayList<String>();
+		for (Iterator i = myAuthors.iterator(); i.hasNext(); ) {
+			Author a = (Author) i.next();
+			bookAuthorList.add(a.DisplayName);
+		}
+		return (myAuthors != null) ? bookAuthorList : new ArrayList<String>();
+	}
 
 	void addAuthorWithNoCheck(Author author) {
 		if (myAuthors == null) {

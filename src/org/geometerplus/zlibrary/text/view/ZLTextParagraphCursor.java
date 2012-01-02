@@ -25,6 +25,8 @@ import org.vimgadgets.linebreak.LineBreaker;
 import org.geometerplus.zlibrary.core.image.*;
 import org.geometerplus.zlibrary.text.model.*;
 
+import android.util.Log;
+
 public final class ZLTextParagraphCursor {
 	private static final class Processor {
 		private final ZLTextParagraph myParagraph;
@@ -43,13 +45,13 @@ public final class ZLTextParagraphCursor {
 			final ZLTextMark mark = new ZLTextMark(paragraphIndex, 0, 0);
 			int i;
 			for (i = 0; i < myMarks.size(); i++) {
-				if (((ZLTextMark)myMarks.get(i)).compareTo(mark) >= 0) {
+				if ((myMarks.get(i)).compareTo(mark) >= 0) {
 					break;
 				}
 			}
 			myFirstMark = i;
 			myLastMark = myFirstMark;
-			for (; (myLastMark != myMarks.size()) && (((ZLTextMark)myMarks.get(myLastMark)).ParagraphIndex == paragraphIndex); myLastMark++);
+			for (; (myLastMark != myMarks.size()) && ((myMarks.get(myLastMark)).ParagraphIndex == paragraphIndex); myLastMark++);
 			myOffset = 0;
 		}
 
@@ -175,7 +177,7 @@ public final class ZLTextParagraphCursor {
 		private final void addWord(char[] data, int offset, int len, int paragraphOffset, ZLTextHyperlink hyperlink) {
 			ZLTextWord word = new ZLTextWord(data, offset, len, paragraphOffset);
 			for (int i = myFirstMark; i < myLastMark; ++i) {
-				final ZLTextMark mark = (ZLTextMark)myMarks.get(i);
+				final ZLTextMark mark = myMarks.get(i);
 				if ((mark.Offset < paragraphOffset + len) && (mark.Offset + mark.Length > paragraphOffset)) {
 					word.addMark(mark.Offset - paragraphOffset, mark.Length);
 				}
@@ -197,7 +199,7 @@ public final class ZLTextParagraphCursor {
 		fill();
 	}
 
-	static ZLTextParagraphCursor cursor(ZLTextModel model, int index) {
+	public static ZLTextParagraphCursor cursor(ZLTextModel model, int index) {
 		ZLTextParagraphCursor result = ZLTextParagraphCursorCache.get(model, index);
 		if (result == null) {
 			result = new ZLTextParagraphCursor(model, index);
@@ -237,7 +239,7 @@ public final class ZLTextParagraphCursor {
 		return (Model.getParagraph(Index).getKind() == ZLTextParagraph.Kind.END_OF_SECTION_PARAGRAPH);
 	}
 
-	int getParagraphLength() {
+	public int getParagraphLength() {
 		return myElements.size();
 	}
 
@@ -249,7 +251,7 @@ public final class ZLTextParagraphCursor {
 		return isLast() ? null : cursor(Model, Index + 1);
 	}
 
-	ZLTextElement getElement(int index) {
+	public ZLTextElement getElement(int index) {
 		try {
 			return myElements.get(index);
 		} catch (IndexOutOfBoundsException e) {

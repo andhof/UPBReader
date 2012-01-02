@@ -1,0 +1,83 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" 
+    android:clickable="true"
+    android:focusable="false"
+    android:background="@drawable/action_item_btn">
+    
+    <LinearLayout
+        android:id="@+id/annotation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <TextView 
+	        android:id="@+id/annotation_title"
+	        android:layout_width="wrap_content" 
+	        android:layout_height="25dip" 
+	        android:layout_centerHorizontal="true"
+	        android:gravity="center_horizontal|center_vertical"
+	        android:paddingLeft="3dip"
+	        android:paddingRight="6dip"
+	        android:text="Chart"
+	        android:textColor="#fff"/>
+
+        <LinearLayout 
+	        android:id="@+id/annotation_info1"
+	        android:layout_width="wrap_content" 
+	        android:layout_height="wrap_content"
+	        android:orientation="vertical" >
+	        <TextView 
+	            android:id="@+id/annotation_author"
+	            android:layout_width="wrap_content" 
+	            android:layout_height="25dip" 
+	            android:layout_centerHorizontal="true"
+	            android:gravity="center_horizontal|center_vertical"
+	            android:paddingLeft="6dip"
+	            android:paddingRight="3dip"
+	            android:text="Chart"
+	            android:textColor="#fff"/>
+	        <TextView 
+                android:id="@+id/annotation_created"
+                android:layout_width="wrap_content" 
+                android:layout_height="25dip" 
+                android:layout_centerHorizontal="true"
+                android:gravity="center_horizontal|center_vertical"
+                android:paddingLeft="6dip"
+                android:paddingRight="3dip"
+                android:text="blablaasdfjklsdf"
+                android:textColor="#fff"/>
+        </LinearLayout>
+        <LinearLayout 
+            android:id="@+id/annotation_info2"
+            android:layout_width="wrap_content" 
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+            <TextView 
+                android:id="@+id/annotation_tags"
+                android:layout_width="wrap_content" 
+                android:layout_height="25dip" 
+                android:layout_centerHorizontal="true"
+                android:gravity="right|center_vertical"
+                android:paddingLeft="6dip"
+                android:paddingRight="3dip"
+                android:text="Chart"
+                android:textColor="#fff"/>
+
+            <TextView 
+                android:id="@+id/annotation_content"
+                android:layout_width="wrap_content" 
+                android:layout_height="25dip" 
+                android:layout_centerHorizontal="true"
+                android:gravity="center_horizontal|center_vertical"
+                android:paddingLeft="6dip"
+                android:paddingRight="3dip"
+                android:text="blabla"
+                android:textColor="#fff"/>
+        </LinearLayout>
+               
+    </LinearLayout>
+                                             
+</RelativeLayout>         

@@ -33,7 +33,7 @@ import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.core.network.ZLNetworkException;
 import org.geometerplus.zlibrary.core.money.Money;
 
-import org.geometerplus.zlibrary.ui.android.R;
+import de.upb.android.reader.R;
 
 import org.geometerplus.android.util.UIUtil;
 
@@ -41,8 +41,7 @@ import org.geometerplus.fbreader.network.*;
 import org.geometerplus.fbreader.network.tree.NetworkBookTree;
 import org.geometerplus.fbreader.network.urlInfo.BookBuyUrlInfo;
 import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
-
-import org.geometerplus.android.fbreader.network.*;
+import org.geometerplus.android.fbreader.tree.TreeActivity;
 
 public class BuyBooksActivity extends Activity implements NetworkLibrary.ChangeListener {
 	public static void run(Activity activity, NetworkBookTree tree) {
@@ -60,7 +59,7 @@ public class BuyBooksActivity extends Activity implements NetworkLibrary.ChangeL
 		for (NetworkBookTree t : trees) {
 			keys.add(t.getUniqueKey());
 		}
-		intent.putExtra(NetworkLibraryActivity.TREE_KEY_KEY, keys);
+		intent.putExtra(TreeActivity.TREE_KEY_KEY, keys);
 		activity.startActivity(intent);
 	}
 
@@ -80,7 +79,7 @@ public class BuyBooksActivity extends Activity implements NetworkLibrary.ChangeL
 
 		final List<NetworkTree.Key> keys =
 			(List<NetworkTree.Key>)getIntent().getSerializableExtra(
-				NetworkLibraryActivity.TREE_KEY_KEY
+				TreeActivity.TREE_KEY_KEY
 			);
 		if (keys == null || keys.isEmpty()) {
 			finish();

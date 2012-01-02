@@ -33,6 +33,8 @@ public class ZLTextPlainModel implements ZLTextModel {
 	protected int[] myParagraphLengths;
 	protected int[] myTextSizes;
 	protected byte[] myParagraphKinds;
+	protected byte[] myParagraphHtmlTags;
+	protected int[] myParagraphTagNumbers;
 
 	protected int myParagraphsNumber;
 
@@ -137,8 +139,8 @@ public class ZLTextPlainModel implements ZLTextModel {
 			switch (type) {
 				case ZLTextParagraph.Entry.TEXT:
 					myTextLength =
-						((int)data[dataOffset++] << 16) +
-						(int)data[dataOffset++];
+						(data[dataOffset++] << 16) +
+						data[dataOffset++];
 					myTextData = data;
 					myTextOffset = dataOffset;
 					dataOffset += myTextLength;
@@ -170,7 +172,7 @@ public class ZLTextPlainModel implements ZLTextModel {
 					break;
 				case ZLTextParagraph.Entry.FORCED_CONTROL:
 				{
-					final int mask = (int)data[dataOffset++];
+					final int mask = data[dataOffset++];
 					final ZLTextForcedControlEntry entry = new ZLTextForcedControlEntry();
 					if ((mask & ZLTextForcedControlEntry.SUPPORTS_LEFT_INDENT) ==
 								ZLTextForcedControlEntry.SUPPORTS_LEFT_INDENT) {
@@ -200,8 +202,14 @@ public class ZLTextPlainModel implements ZLTextModel {
 		myParagraphLengths = new int[arraySize];
 		myTextSizes = new int[arraySize];
 		myParagraphKinds = new byte[arraySize];
+		myParagraphHtmlTags = new byte[arraySize];
 		myStorage = new CachedCharStorage(dataBlockSize, directoryName, extension);
 		myImageMap = imageMap;
+		myParagraphTagNumbers = new int[arraySize];
+	}
+	
+	public final CharStorage getCharStorage() {
+		return myStorage;
 	}
 
 	public final String getId() {
@@ -293,6 +301,26 @@ public class ZLTextPlainModel implements ZLTextModel {
 
 	public final int getParagraphsNumber() {
 		return myParagraphsNumber;
+	}
+	
+	/**
+	 * Get the HTML tag type of the paragraph
+	 * 
+	 * @param index
+	 * @return byte
+	 */
+	public final byte getParagraphHtmlTag(int index) {
+		return myParagraphHtmlTags[index];
+	}
+	
+	/**
+	 * Get the position from this type of tag. first p or second p for example
+	 * 
+	 * @param index
+	 * @return int
+	 */
+	public final int getParagraphTagNumbers(int index) {
+		return myParagraphTagNumbers[index];
 	}
 
 	public final ZLTextParagraph getParagraph(int index) {

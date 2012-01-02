@@ -31,7 +31,7 @@ import org.geometerplus.zlibrary.core.options.ZLStringOption;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 
-import org.geometerplus.zlibrary.ui.android.R;
+import de.upb.android.reader.R;
 
 import org.geometerplus.fbreader.library.*;
 import org.geometerplus.fbreader.tree.FBTree;
@@ -52,7 +52,7 @@ public class LibraryActivity extends TreeActivity implements MenuItem.OnMenuItem
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 
-		myDatabase = SQLiteBooksDatabase.Instance();
+		myDatabase = BooksDatabase.Instance();
 		if (myDatabase == null) {
 			myDatabase = new SQLiteBooksDatabase(this, "LIBRARY");
 		}

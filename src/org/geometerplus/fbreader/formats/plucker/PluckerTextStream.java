@@ -35,6 +35,7 @@ public class PluckerTextStream extends PdbStream {
 		myFullBuffer = null;
 	}
 	
+	@Override
 	public int read() {
 		return 0;
 	}
@@ -54,6 +55,7 @@ public class PluckerTextStream extends PdbStream {
 		return true;
 	}
 	
+	@Override
 	public	void close() throws IOException {
 		if (myFullBuffer != null) {
 			myFullBuffer = null;
@@ -61,6 +63,7 @@ public class PluckerTextStream extends PdbStream {
 		super.close();
 	}
 
+	@Override
 	protected boolean fillBuffer() {
 		while (myBufferOffset == myBufferLength) {
 			if (myRecordIndex + 1 > myHeader.Offsets.length - 1) {

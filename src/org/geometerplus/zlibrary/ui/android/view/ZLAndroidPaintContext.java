@@ -125,6 +125,7 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 		return myBackgroundColor;
 	}
 
+	@Override
 	public void fillPolygon(int[] xs, int ys[]) {
 		final Path path = new Path();
 		final int last = xs.length - 1;
@@ -135,6 +136,7 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 		myCanvas.drawPath(path, myFillPaint);
 	}
 
+	@Override
 	public void drawPolygonalLine(int[] xs, int ys[]) {
 		final Path path = new Path();
 		final int last = xs.length - 1;
@@ -145,6 +147,7 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 		myCanvas.drawPath(path, myLinePaint);
 	}
 
+	@Override
 	public void drawOutline(int[] xs, int ys[]) {
 		final int last = xs.length - 1;
 		int xStart = (xs[0] + xs[last]) / 2;
@@ -178,6 +181,7 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 		myCanvas.drawPath(path, myOutlinePaint);
 	}
 
+	@Override
 	protected void setFontInternal(String family, int size, boolean bold, boolean italic, boolean underline) {
 		family = realFontFamilyName(family);
 		final int style = (bold ? Typeface.BOLD : 0) | (italic ? Typeface.ITALIC : 0);
@@ -237,39 +241,49 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 		myFillPaint.setColor(ZLAndroidColorUtil.rgba(color, alpha));
 	}
 
+	@Override
 	public int getWidth() {
 		return myWidth;
 	}
+	@Override
 	public int getHeight() {
 		return myHeight;
 	}
 	
+	@Override
 	public int getStringWidth(char[] string, int offset, int length) {
 		return (int)(myTextPaint.measureText(string, offset, length) + 0.5f);
 	}
+	@Override
 	protected int getSpaceWidthInternal() {
 		return (int)(myTextPaint.measureText(" ", 0, 1) + 0.5f);
 	}
+	@Override
 	protected int getStringHeightInternal() {
 		return (int)(myTextPaint.getTextSize() + 0.5f);
 	}
+	@Override
 	protected int getDescentInternal() {
 		return (int)(myTextPaint.descent() + 0.5f);
 	}
+	@Override
 	public void drawString(int x, int y, char[] string, int offset, int length) {
 		myCanvas.drawText(string, offset, length, x, y, myTextPaint);
 	}
 
+	@Override
 	public int imageWidth(ZLImageData imageData) {
 		Bitmap bitmap = ((ZLAndroidImageData)imageData).getBitmap(myWidth, myHeight);
 		return ((bitmap != null) && !bitmap.isRecycled()) ? bitmap.getWidth() : 0;
 	}
 
+	@Override
 	public int imageHeight(ZLImageData imageData) {
 		Bitmap bitmap = ((ZLAndroidImageData)imageData).getBitmap(myWidth, myHeight);
 		return ((bitmap != null) && !bitmap.isRecycled())  ? bitmap.getHeight() : 0;
 	}
 
+	@Override
 	public void drawImage(int x, int y, ZLImageData imageData) {
 		Bitmap bitmap = ((ZLAndroidImageData)imageData).getBitmap(myWidth, myHeight);
 		if ((bitmap != null) && !bitmap.isRecycled()) {
@@ -277,6 +291,7 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 		}
 	}
 
+	@Override
 	public void drawLine(int x0, int y0, int x1, int y1) {
 		final Canvas canvas = myCanvas;
 		final Paint paint = myLinePaint;
@@ -287,6 +302,7 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 		paint.setAntiAlias(true);
 	}
 
+	@Override
 	public void fillRectangle(int x0, int y0, int x1, int y1) {
 		if (x1 < x0) {
 			int swap = x1;
@@ -300,14 +316,17 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 		}
 		myCanvas.drawRect(x0, y0, x1 + 1, y1 + 1, myFillPaint);
 	}
+	@Override
 	public void drawFilledCircle(int x, int y, int r) {
 		// TODO: implement
 	}
 
+	@Override
 	public String realFontFamilyName(String fontFamily) {
 		return AndroidFontUtil.realFontFamilyName(fontFamily);
 	}
 
+	@Override
 	protected void fillFamiliesList(ArrayList<String> families) {
 		AndroidFontUtil.fillFamiliesList(families, false);
 	}

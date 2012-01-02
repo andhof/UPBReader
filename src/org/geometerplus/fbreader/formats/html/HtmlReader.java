@@ -33,6 +33,8 @@ import org.geometerplus.zlibrary.text.model.ZLTextParagraph;
 import org.geometerplus.zlibrary.core.xml.ZLXMLProcessor;
 import org.geometerplus.fbreader.formats.xhtml.XHTMLReader;
 
+import android.util.Log;
+
 public class HtmlReader extends BookReader implements ZLHtmlReader {
 	private final byte[] myStyleTable = new byte[HtmlTag.TAG_NUMBER];
 	{
@@ -234,6 +236,7 @@ public class HtmlReader extends BookReader implements ZLHtmlReader {
 	}
 
 	public void startElementHandler(byte tag, int offset, ZLHtmlAttributeMap attributes) {
+		Log.v("Tags", "Tag: "+tag);
 		switch (tag) {
 			case HtmlTag.HTML:
 				break;
@@ -241,7 +244,7 @@ public class HtmlReader extends BookReader implements ZLHtmlReader {
 			case HtmlTag.BODY:
 				setMainTextModel();
 				pushKind(FBTextKind.REGULAR);
-				beginParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH);
+				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
 				break;
 
 			case HtmlTag.P:
@@ -250,7 +253,7 @@ public class HtmlReader extends BookReader implements ZLHtmlReader {
 				} else if (myInsideTitle) {
 					addContentsData(SPACE);
 				}
-				beginParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH);
+				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
 				break;
 
 			case HtmlTag.A:{
@@ -308,7 +311,8 @@ public class HtmlReader extends BookReader implements ZLHtmlReader {
 			case HtmlTag.H4:
 			case HtmlTag.H5:
 			case HtmlTag.H6:
-				startNewParagraph();
+				endParagraph();
+				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
 				openControl(myStyleTable[tag]);
 				break;
 				
@@ -321,7 +325,8 @@ public class HtmlReader extends BookReader implements ZLHtmlReader {
 				break;
 				
 			case HtmlTag.LI:
-				startNewParagraph();
+				endParagraph();
+				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
 				if (myOrderedListIsStarted) {
 					char[] number = (new Integer(++myOLCounter)).toString().toCharArray();
 					addData(number);
@@ -339,7 +344,8 @@ public class HtmlReader extends BookReader implements ZLHtmlReader {
 				
 			case HtmlTag.TR: 
 			case HtmlTag.BR:
-				startNewParagraph();
+				endParagraph();
+				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
 				break;
 			default:
 				break;

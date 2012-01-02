@@ -692,6 +692,42 @@
 			<node name="dontShowAgain" value="Don't show again" />
 			<node name="more" value="Next tip" />
 		</node>
+		<node name="UPBLoginDialog">
+            <node name="title" value="Authentication" />
+            <node name="unencryptedWarning" value="Your password will be sent unencrypted" />
+            <node name="login" value="Username" />
+            <node name="password" value="Password" />
+            <node name="loginIsEmpty" value="Username should be non-empty" />
+            <node name="register" value="Sign up" />
+        </node>
+        <node name="SelectionHighlightDialog">
+            <node name="title" value="Highlight"/>
+            <node name="color" value="Color:"/>
+            <node name="underline" value="Underline"/>
+            <node name="crossout" value="Cross out"/>
+        </node>
+        <node name="SelectionNoteDialog">
+            <node name="title" value="Note"/>
+            <node name="author" value="Author: Localuser"/>
+            <node name="input" value="Note input:"/>
+            <node name="tags" value="Tags: (E.g.: Android, eBook, ...)"/>
+            <node name="categories" value="Choose a category:"/>
+            <node name="category1" value="Note"/>
+            <node name="category2" value="Question"/>
+            <node name="category3" value="Issue"/>
+        </node>
+        <node name="QuickActionBar">
+            <node name="copy" value="Copy"/>
+            <node name="share" value="Share"/>
+            <node name="translate" value="Dictionary"/>
+            <node name="bookmark" value="Bookmark"/>
+            <node name="highlight" value="Highlight"/>
+            <node name="note" value="Note"/>
+            <node name="clear" value="Cancel"/>
+            <node name="edit" value="Edit"/>
+            <node name="comment" value="Comment"/>
+            <node name="remove" value="Remove"/>
+        </node>
 	</node>
 	<node name="errorMessage">
 		<node name="cannotRunAndroidMarket" value="Cannot access Android Market. Please, install %s manually"/>

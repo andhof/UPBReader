@@ -19,7 +19,10 @@
 
 package org.geometerplus.fbreader.fbreader;
 
+import java.io.File;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.geometerplus.zlibrary.core.library.ZLibrary;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
@@ -29,10 +32,26 @@ import org.geometerplus.zlibrary.core.options.*;
 import org.geometerplus.zlibrary.core.util.ZLColor;
 
 import org.geometerplus.zlibrary.text.hyphenation.ZLTextHyphenator;
+import org.geometerplus.zlibrary.text.model.ZLTextModel;
+import org.geometerplus.zlibrary.text.model.ZLTextParagraph;
+import org.geometerplus.zlibrary.text.view.ZLTextElement;
+import org.geometerplus.zlibrary.text.view.ZLTextFixedPosition;
+import org.geometerplus.zlibrary.text.view.ZLTextParagraphCursor;
+import org.geometerplus.zlibrary.text.view.ZLTextPosition;
+import org.geometerplus.zlibrary.text.view.ZLTextWord;
 import org.geometerplus.zlibrary.text.view.ZLTextWordCursor;
 
+import org.geometerplus.android.fbreader.annotation.model.Annotation;
+import org.geometerplus.android.fbreader.annotation.model.Annotations;
+import org.geometerplus.fbreader.Paths;
 import org.geometerplus.fbreader.bookmodel.BookModel;
+import org.geometerplus.fbreader.bookmodel.TOCTree;
+import org.geometerplus.fbreader.formats.oeb.OEBBookReader;
 import org.geometerplus.fbreader.library.*;
+import org.simpleframework.xml.Serializer;
+import org.simpleframework.xml.core.Persister;
+
+import android.util.Log;
 
 public final class FBReaderApp extends ZLApplication {
 	public final ZLBooleanOption AllowScreenBrightnessAdjustmentOption =
@@ -99,6 +118,9 @@ public final class FBReaderApp extends ZLApplication {
 
 	public final FBView BookTextView;
 	public final FBView FootnoteView;
+	public Annotations Annotations;
+
+	public ArrayList<String> HTMLFileNames;
 
 	public BookModel Model;
 
@@ -130,10 +152,12 @@ public final class FBReaderApp extends ZLApplication {
 
 		BookTextView = new FBView(this);
 		FootnoteView = new FBView(this);
+		Annotations = new Annotations();
 
 		setView(BookTextView);
 	}
 
+	@Override
 	public void initWindow() {
 		super.initWindow();
 		wait("loadingBook", new Runnable() {
@@ -165,6 +189,100 @@ public final class FBReaderApp extends ZLApplication {
 			}
 		});
 	}
+	
+	public void setHTMLFileNames(final ArrayList<String> htmlFileNames) {
+		this.HTMLFileNames = htmlFileNames;
+	}
+	
+	/**
+	 * Return the path to the file with paragraph with index paragraphindex
+	 * 
+	 * @param paragraphIndex
+	 * @return
+	 */
+	public String getPathToChapterFile(int paragraphIndex) {
+		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+		if (fbreader.Model.TOCTree == null) {
+			return "";
+		}
+		
+		ZLTextModel textModel = fbreader.BookTextView.getModel();
+		
+		String name = "";
+		String path = "";
+		List<TOCTree> trees = fbreader.Model.TOCTree.subTrees();
+		
+		int thisParagraphIndex;
+		int nextParagraphIndex;
+				
+		for (int i = 0; i < trees.size(); i++) {
+			TOCTree tree = trees.get(i);
+			thisParagraphIndex = tree.getReference().ParagraphIndex;
+			nextParagraphIndex = (i+1 < trees.size()) ? trees.get(i+1).getReference().ParagraphIndex : textModel.getParagraphsNumber();
+			
+			if (thisParagraphIndex <= paragraphIndex && paragraphIndex < nextParagraphIndex) {
+				name = tree.getText();
+				path = tree.getPath();
+			}
+		}
+		
+		return path;
+	}
+	
+	/**
+	 * computes the charOffset from the beginning of the paragraph to the selected element
+	 * 
+	 * @param cursor
+	 * @param elementIndex
+	 * @param isSelectionStartElement
+	 * @return
+	 */
+	public int computeCharOffset(ZLTextParagraphCursor cursor, int elementIndex, boolean isSelectionStartElement) {
+		final ZLTextElement startelement = cursor.getElement(1);
+		final ZLTextElement element = cursor.getElement(elementIndex);
+		int charOffset = 0;
+		
+		if (startelement instanceof ZLTextWord && element instanceof ZLTextWord) {
+			if (isSelectionStartElement) {
+				charOffset = ((ZLTextWord)element).Offset - ((ZLTextWord)startelement).Offset;
+			} else {
+				charOffset = ((ZLTextWord)element).Offset - ((ZLTextWord)startelement).Offset + ((ZLTextWord)element).Length;
+			}
+		}
+		
+		return charOffset;
+	}
+	
+	/**
+	 * Return tree with paragraph index paragraphindex
+	 * 
+	 * @param paragraphIndex
+	 * @return
+	 */
+	public TOCTree getTreeByParagraphIndex(int paragraphIndex) {
+		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+		
+		ZLTextModel textModel = fbreader.BookTextView.getModel();
+		
+		String name = "";
+		String path = "";
+		List<TOCTree> trees = fbreader.Model.TOCTree.subTrees();
+		
+		int thisParagraphIndex;
+		int nextParagraphIndex;
+		
+		for (int i = 0; i < trees.size(); i++) {
+			TOCTree tree = trees.get(i);
+			thisParagraphIndex = tree.getReference().ParagraphIndex;
+			nextParagraphIndex = (i+1 < trees.size()) ? trees.get(i+1).getReference().ParagraphIndex : textModel.getParagraphsNumber();
+			
+			if (thisParagraphIndex <= paragraphIndex && paragraphIndex < nextParagraphIndex) {
+				return tree;
+			}
+		}
+		
+		return null;
+	}
 
 	private ColorProfile myColorProfile;
 
@@ -184,6 +302,7 @@ public final class FBReaderApp extends ZLApplication {
 		myColorProfile = null;
 	}
 
+	@Override
 	public ZLKeyBindings keyBindings() {
 		return myBindings;
 	}
@@ -250,10 +369,175 @@ public final class FBReaderApp extends ZLApplication {
 					title.append(")");
 				}
 				setTitle(title.toString());
+				
+				loadFromXMLFile();
+				loadAnnotationHighlighting();
 			}
 		}
 		getViewWidget().repaint();
 	}
+	
+	/**
+	 * load the XML structure into the annotations object structure
+	 */
+	public void loadFromXMLFile() {
+		final FBReaderApp fbReader = (FBReaderApp)ZLApplication.Instance();
+		
+		try {
+    		Serializer serializer = new Persister();
+    		String path = Paths.BooksDirectoryOption().getValue()+"/annotations.xml";
+    		File annotationXML = new File(path);
+    		fbReader.Annotations = serializer.read(Annotations.class, annotationXML);
+    	} catch (Exception e) {
+    		Log.e("loadFromXMLFile", e.toString());
+    	}
+	}
+	
+	/**
+	 * load an XML String of annotations into the annotations object structure
+	 * @param xml
+	 */
+	public void loadAnnotationsFromXMLString(String xml) {
+		try {
+    		Serializer serializer = new Persister();
+    		Annotations = serializer.read(Annotations.class, xml);
+    	} catch (Exception e) {
+    		Log.e("loadFromXMLString", e.toString());
+    	}
+	}
+	
+//	/**
+//	 * load an XML String of annotations into the annotations object structure
+//	 * @param xml
+//	 */
+//	public void loadSemAppFromXMLString(String xml) {
+//		try {
+//    		Serializer serializer = new Persister();
+//    		SemApp = serializer.read(Annotations.class, xml);
+//    	} catch (Exception e) {
+//    		Log.e("loadFromXMLString", e.toString());
+//    	}
+//	}
+	
+	/**
+	 * reads the xpath and the charoffset of each annotation and convert it to fbreader positions
+	 */
+	public void loadAnnotationHighlighting() {
+		final FBReaderApp fbReader = (FBReaderApp)ZLApplication.Instance();
+		ArrayList<Annotation> annotations = fbReader.Annotations.getAnnotations();
+		String startPart;
+		String startXPath;
+		String endPart;
+		String endXPath;
+		int startCharOffset;
+		int endCharOffset;
+		int startParagraphIndexOfChapter;
+		int endParagraphIndexOfChapter;
+		List<TOCTree> trees;
+		int charCount;
+		boolean startPartReady;
+		boolean endPartReady;
+		int startParagraphIndex;
+		int startElementIndex;
+		int endParagraphIndex;
+		int endElementIndex;
+		
+		for (Annotation a : annotations) {
+			startPart = a.getAnnotationTarget().getRange().getStart().getPart();
+			startXPath = a.getAnnotationTarget().getRange().getStart().getPath().getXPath();
+			startCharOffset = a.getAnnotationTarget().getRange().getStart().getPath().getCharOffset();
+			
+			endPart = a.getAnnotationTarget().getRange().getEnd().getPart();
+			endXPath = a.getAnnotationTarget().getRange().getEnd().getPath().getXPath();
+			endCharOffset = a.getAnnotationTarget().getRange().getEnd().getPath().getCharOffset();
+			
+			trees = fbReader.Model.TOCTree.subTrees();
+			
+			startParagraphIndex = 0;
+			startElementIndex = 0;
+			endParagraphIndex = 0;
+			endElementIndex = 0;
+			startPartReady = false;
+			endPartReady = false;
+			
+			Matcher matcher = Pattern.compile( "\\d+" ).matcher(startXPath);
+			startParagraphIndexOfChapter = 0;
+			while ( matcher.find() ) {
+				startParagraphIndexOfChapter = new Integer(matcher.group());
+			}
+			matcher = Pattern.compile( "\\d+" ).matcher(endXPath);
+			endParagraphIndexOfChapter = 0;
+			while ( matcher.find() ) {
+				endParagraphIndexOfChapter = new Integer(matcher.group());
+			}
+			
+			
+			
+			int absoluteParagraphIndex = 0;
+			for (TOCTree tree : trees) {
+				String path = tree.getPath();
+				
+//				int maxParagraphNumber = fbReader.Model.BookTextModel.getParagraphsNumber();
+				absoluteParagraphIndex = tree.getReference().ParagraphIndex;
+				
+				ZLTextParagraphCursor cursor = ZLTextParagraphCursor.cursor(fbReader.Model.BookTextModel, absoluteParagraphIndex);
+				
+				charCount = 0;
+				// calculate paragraphIndex and elementIndex of the first element
+				if (path.equals(startPart)) {
+					startParagraphIndex = absoluteParagraphIndex + startParagraphIndexOfChapter;
+					cursor = ZLTextParagraphCursor.cursor(fbReader.Model.BookTextModel, startParagraphIndex);
+					int startParagraphCharIndex = 0;
+					if (cursor.getElement(1) instanceof ZLTextWord) {
+						startParagraphCharIndex = ((ZLTextWord)cursor.getElement(1)).Offset;
+					}
+					for (int i = 0; i < cursor.getParagraphLength(); i++) {
+						ZLTextElement element = cursor.getElement(i);
+						if (element instanceof ZLTextWord) {
+							charCount = ((ZLTextWord) element).Offset - startParagraphCharIndex;
+							if (charCount == startCharOffset) {
+								startElementIndex = i;
+								startPartReady = true;
+								break;
+							}
+						}
+					}
+				}
+				
+				charCount = 0;
+				// calculate paragraphIndex and elementIndex of the last element
+				if (path.equals(endPart)) {
+					endParagraphIndex = absoluteParagraphIndex + endParagraphIndexOfChapter;
+					cursor = ZLTextParagraphCursor.cursor(fbReader.Model.BookTextModel, endParagraphIndex);
+					int endParagraphCharIndex = 0;
+					if (cursor.getElement(1) instanceof ZLTextWord) {
+						endParagraphCharIndex = ((ZLTextWord)cursor.getElement(1)).Offset;
+					}
+					for (int i = 0; i < cursor.getParagraphLength(); i++) {
+						ZLTextElement element = cursor.getElement(i);
+						if (element instanceof ZLTextWord) {
+							charCount = ((ZLTextWord) element).Offset - endParagraphCharIndex + ((ZLTextWord) element).Length;
+							if (charCount == endCharOffset) {
+								endElementIndex = i;
+								endPartReady = true;
+								break;
+							}
+						}
+					}
+				}
+				// add the highlight of this annotation
+				if (startPartReady && endPartReady) {
+					ZLTextPosition start = new ZLTextFixedPosition(startParagraphIndex, startElementIndex, 0);
+					ZLTextPosition end = new ZLTextFixedPosition(endParagraphIndex, endElementIndex, 0);
+					ZLColor color = new ZLColor(a.getRenderingInfo().getHighlightColor());
+					fbReader.BookTextView.addAnnotationHighlight(start, end, color, true, a);
+					break;
+				}
+			}
+		}
+		fbReader.BookTextView.repaintAll();
+	}
+
 
 	public void gotoBookmark(Bookmark bookmark) {
 		addInvisibleBookmark();
@@ -302,6 +586,7 @@ public final class FBReaderApp extends ZLApplication {
 		}
 	}
 
+	@Override
 	public void onWindowClosing() {
 		if (Model != null && BookTextView != null) {
 			Model.Book.storePosition(BookTextView.getStartCursor());

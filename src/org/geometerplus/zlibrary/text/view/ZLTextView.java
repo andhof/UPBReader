@@ -21,8 +21,14 @@ package org.geometerplus.zlibrary.text.view;
 
 import java.util.*;
 
+import org.geometerplus.android.fbreader.FBReader;
+import org.geometerplus.android.fbreader.annotation.model.Annotation;
+import org.geometerplus.android.fbreader.library.LibraryActivity;
+import org.geometerplus.fbreader.fbreader.ActionCode;
+import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.view.ZLPaintContext;
+import org.geometerplus.zlibrary.core.view.ZLView.PageIndex;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.filesystem.ZLResourceFile;
 import org.geometerplus.zlibrary.core.util.ZLColor;
@@ -30,6 +36,9 @@ import org.geometerplus.zlibrary.core.util.ZLColor;
 import org.geometerplus.zlibrary.text.model.*;
 import org.geometerplus.zlibrary.text.hyphenation.*;
 import org.geometerplus.zlibrary.text.view.style.ZLTextStyleCollection;
+
+import android.content.Intent;
+import android.util.Log;
 
 public abstract class ZLTextView extends ZLTextViewBase {
 	public static final int MAX_SELECTION_DISTANCE = 10;
@@ -60,13 +69,19 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	private ZLTextRegion.Soul mySelectedRegionSoul;
 	private boolean myHighlightSelectedRegion = true;
 
+	private FBReaderApp myApplication;
 	private ZLTextSelection mySelection;
 	private ZLTextHighlighting myHighlighting;
+	private ArrayList<ZLTextAnnotationHighlighting> myAnnotationHighlightings;
+	private ArrayList <ZLColor> myAnnotationHighlightingColors;
 
 	public ZLTextView(ZLApplication application) {
 		super(application);
+		myApplication =(FBReaderApp) application;
 		mySelection = new ZLTextSelection(this);
 		myHighlighting = new ZLTextHighlighting();
+		myAnnotationHighlightings = new  ArrayList<ZLTextAnnotationHighlighting>();
+		myAnnotationHighlightingColors = new ArrayList<ZLColor>();
 	}
 
 	public synchronized void setModel(ZLTextModel model) {
@@ -204,6 +219,9 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		return (myModel == null) || myModel.getMarks().isEmpty();
 	}
 
+	/**
+	 * After swipe to the next or previous Page
+	 */
 	@Override
 	public synchronized void onScrollingFinished(PageIndex pageIndex) {
 		switch (pageIndex) {
@@ -246,6 +264,14 @@ public abstract class ZLTextView extends ZLTextViewBase {
 			}
 		}
 	}
+	
+//	public ZLTextPage getCurrentTextPage() {
+//		return myCurrentPage;
+//	}
+//	
+//	public ZLTextSelection getTextSelection() {
+//		return mySelection;
+//	}
 
 	public void highlight(ZLTextPosition start, ZLTextPosition end) {
 		myHighlighting.setup(start, end);
@@ -259,8 +285,50 @@ public abstract class ZLTextView extends ZLTextViewBase {
 			Application.getViewWidget().repaint();
 		}
 	}
+	
+	/**
+	 * Add one Highlight to the list of annotation highlights
+	 * 
+	 * @param start
+	 * @param end
+	 */
+	public void addAnnotationHighlight(ZLTextPosition start, ZLTextPosition end, ZLColor color, boolean isNote, Annotation annotation) {
+		ZLTextAnnotationHighlighting newAnnotationHighlight = new ZLTextAnnotationHighlighting(isNote, annotation);
+		newAnnotationHighlight.setup(start, end);
+		myAnnotationHighlightings.add(newAnnotationHighlight);
+		myAnnotationHighlightingColors.add(color);
+		computeAnnotationHighlightPosition(newAnnotationHighlight);
+	}
+	
+	public void repaintAll() {
+		Application.getViewWidget().reset();
+		Application.getViewWidget().repaint();
+	}
+	
+	/**
+	 * Get the List of Highlights, that are annotated 
+	 * 
+	 * @return
+	 */
+	public ArrayList<ZLTextAnnotationHighlighting> getAnnotationHighlights() {
+		return myAnnotationHighlightings;
+	}
+	
+	public void removeAnnotationHighlight(Annotation annotation) {
+		ZLTextAnnotationHighlighting highlight;
+		for ( int i = 0; i < myAnnotationHighlightings.size(); i++) {
+			highlight = myAnnotationHighlightings.get(i);
+			if (highlight.getAnnotation().equals(annotation)) {
+				myAnnotationHighlightings.remove(i);
+				myAnnotationHighlightingColors.remove(i);
+			}
+		}
+		Application.getViewWidget().reset();
+		Application.getViewWidget().repaint();
+	}
 
 	protected void moveSelectionCursorTo(ZLTextSelectionCursor cursor, int x, int y) {
+		Log.v("ZLTextView", "moveSelectionCursorTo: "+ x + " - " + y);
 		y -= ZLTextSelectionCursor.getHeight() / 2 + ZLTextSelectionCursor.getAccent() / 2;
 		mySelection.setCursorInMovement(cursor, x, y);
 		mySelection.expandTo(x, y);
@@ -358,16 +426,22 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		}
 	}
 
+	/**
+	 * Draw a selection cursor under the selected begin or end character 
+	 * @param context
+	 * @param pt
+	 */
 	private void drawSelectionCursor(ZLPaintContext context, ZLTextSelection.Point pt) {
 		if (pt == null) {
 			return;
 		}
-
+		
+		final int halftextHeight = getWordHeight()/2;
 		final int w = ZLTextSelectionCursor.getWidth() / 2;
 		final int h = ZLTextSelectionCursor.getHeight();
 		final int a = ZLTextSelectionCursor.getAccent();
 		final int[] xs = { pt.X, pt.X + w, pt.X + w, pt.X - w, pt.X - w };
-		final int[] ys = { pt.Y - a, pt.Y, pt.Y + h, pt.Y + h, pt.Y };
+		final int[] ys = { pt.Y - a + halftextHeight, pt.Y + halftextHeight, pt.Y + h + halftextHeight, pt.Y + h + halftextHeight, pt.Y + halftextHeight};
 		context.setFillColor(context.getBackgroundColor(), 192);
 		context.fillPolygon(xs, ys);
 		context.setLineColor(getTextColor(ZLTextHyperlink.NO_LINK));
@@ -446,7 +520,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		drawSelectionCursor(context, getSelectionCursorPoint(page, ZLTextSelectionCursor.Right));
 	}
 
-	private ZLTextPage getPage(PageIndex pageIndex) {
+	public ZLTextPage getPage(PageIndex pageIndex) {
 		switch (pageIndex) {
 			default:
 			case current:
@@ -464,6 +538,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
 
 	public abstract int scrollbarType();
 
+	@Override
 	public final boolean isScrollbarShown() {
 		return scrollbarType() == SCROLLBAR_SHOW || scrollbarType() == SCROLLBAR_SHOW_AS_PROGRESS;
 	}
@@ -747,11 +822,187 @@ public abstract class ZLTextView extends ZLTextViewBase {
 			}
 		}
 	}
+	
+	/**
+	 * 
+	 * 
+	 * @param highlighting
+	 * @param color
+	 * @param page
+	 * @param info
+	 * @param from
+	 * @param to
+	 * @param y
+	 */
+	private void drawAnnotationBackground(
+			ZLTextAbstractHighlighting highlighting, ZLColor color,
+			ZLTextPage page, ZLTextLineInfo info, int from, int to, int y
+		) {
+			if (!highlighting.isEmpty() && from != to) {
+				final ZLTextElementArea fromArea = page.TextElementMap.get(from);
+				final ZLTextElementArea toArea = page.TextElementMap.get(to - 1);
+				final ZLTextElementArea selectionStartArea = highlighting.getStartArea(page);
+				final ZLTextElementArea selectionEndArea = highlighting.getEndArea(page);
+				if (selectionStartArea != null
+					&& selectionEndArea != null
+					&& selectionStartArea.compareTo(toArea) <= 0
+					&& selectionEndArea.compareTo(fromArea) >= 0) {
+					final int top = y + 1;
+					int left, right, bottom = y + info.Height + info.Descent;
+					if (selectionStartArea.compareTo(fromArea) < 0) {
+						left = getLeftMargin();
+					} else {
+						left = selectionStartArea.XStart;
+					}
+					if (selectionEndArea.compareTo(toArea) > 0) {
+						right = getRightLine();
+						bottom += info.VSpaceAfter;
+					} else {
+						right = selectionEndArea.XEnd;
+					}
+					
+					myContext.setFillColor(color);
+					myContext.fillRectangle(left, top+1, right, bottom-1);
+				}
+			}
+		}
+	
+	/**
+	 * compute the coordinates of each line of the highlight
+	 * 
+	 * @param newAnnotationHighlight
+	 */
+	private void computeAnnotationHighlightPosition(ZLTextAnnotationHighlighting newAnnotationHighlight) {
+		myCurrentPage.TextElementMap.clear();
 
+		preparePaintInfo(myCurrentPage);
+		
+		final ArrayList<ZLTextLineInfo> lineInfos = myCurrentPage.LineInfos;
+		final int[] labels = new int[lineInfos.size() + 1];
+		int y = getTopMargin();
+		int index = 0;
+		for (ZLTextLineInfo info : lineInfos) {
+			prepareTextLine(myCurrentPage, info, y);
+			y += info.Height + info.Descent + info.VSpaceAfter;
+			labels[++index] = myCurrentPage.TextElementMap.size();
+		}
+		
+		y = getTopMargin();
+		index = 0;
+		for (ZLTextLineInfo info : lineInfos) {
+			if (!newAnnotationHighlight.isEmpty() && labels[index] != labels[index + 1]) {
+				final ZLTextElementArea fromArea = myCurrentPage.TextElementMap.get(labels[index]);
+				final ZLTextElementArea toArea = myCurrentPage.TextElementMap.get(labels[index + 1] - 1);
+				final ZLTextElementArea selectionStartArea = newAnnotationHighlight.getStartArea(myCurrentPage);
+				final ZLTextElementArea selectionEndArea = newAnnotationHighlight.getEndArea(myCurrentPage);
+				if (selectionStartArea != null
+					&& selectionEndArea != null
+					&& selectionStartArea.compareTo(toArea) <= 0
+					&& selectionEndArea.compareTo(fromArea) >= 0) {
+					final int top = y + 1;
+					int left, right, bottom = y + info.Height + info.Descent;
+					if (selectionStartArea.compareTo(fromArea) < 0) {
+						left = getLeftMargin();
+					} else {
+						left = selectionStartArea.XStart;
+					}
+					if (selectionEndArea.compareTo(toArea) > 0) {
+						right = getRightLine();
+						bottom += info.VSpaceAfter;
+					} else {
+						right = selectionEndArea.XEnd;
+					}
+					
+					int[] position = {left, top, right, bottom};
+					((ZLTextAnnotationHighlighting)newAnnotationHighlight).addPositionArray(position);
+				}
+			}
+			y += info.Height + info.Descent + info.VSpaceAfter;
+			++index;
+		}
+	}
+
+	/**
+	 * Overides the onFingerSingleTap in FBView.java
+	 * it checks, if one or more annotations are selected by the finger tap and starts a dialog
+	 */
+	public boolean onFingerSingleTap(int x, int y) {
+		ArrayList<ZLTextAnnotationHighlighting> annotationHighlights = getAnnotationHighlights();
+		ArrayList<Annotation> annotationsOnPosition = new ArrayList<Annotation>(); 
+		
+		for(ZLTextAnnotationHighlighting highlight : annotationHighlights) {
+			boolean onCurrentPage = testForCorrectPage(highlight);
+			if (onCurrentPage) {
+				highlight.clearPositionsArray();
+				computeAnnotationHighlightPosition(highlight);
+				ArrayList<int[]> positions = highlight.getPositions();
+				
+				for ( int[] position : positions) {
+					int left = position[0];
+					int top = position[1];
+					int right = position[2];
+					int bottom = position[3];
+					
+					if (left <= x && x <= right && top <= y && y <= bottom) {
+						Log.v("ZLTextView", "x und y liegt drin");
+						annotationsOnPosition.add(highlight.getAnnotation());
+						
+					}
+				}
+			}
+		}
+		
+		if (annotationsOnPosition.size() == 1) {
+			myApplication.doAction(ActionCode.SELECTION_SHOW_ANNOTATION_PANEL, x, y, annotationsOnPosition.get(0));
+		}
+		if (annotationsOnPosition.size() > 1) {
+			myApplication.doAction(ActionCode.SELECTION_SHOW_ANNOTATION_LIST, x, y, annotationsOnPosition);
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * tests if the highlight is on the current page
+	 * 
+	 * @param highlight
+	 * @return
+	 */
+	private boolean testForCorrectPage(ZLTextAnnotationHighlighting highlight) {
+		int pageStartParagraph = myCurrentPage.StartCursor.getParagraphIndex();
+		int pageEndParagraph = myCurrentPage.EndCursor.getParagraphIndex();
+		int highlightStartParagraph = highlight.getStartPosition().getParagraphIndex();
+		int highlightEndParagraph = highlight.getEndPosition().getParagraphIndex();
+		if (highlightEndParagraph > pageEndParagraph) {
+			highlightEndParagraph = pageEndParagraph;
+		}
+		if (highlightStartParagraph < pageStartParagraph) {
+			highlightStartParagraph = pageStartParagraph;
+		}
+		
+		if (pageStartParagraph <= highlightStartParagraph && highlightEndParagraph <= pageEndParagraph) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
 	private static final char[] SPACE = new char[] { ' ' };
+	/**
+	 * Draw one text line with the highlights if existing
+	 * 
+	 * @param page
+	 * @param info
+	 * @param from
+	 * @param to
+	 * @param y
+	 */
 	private void drawTextLine(ZLTextPage page, ZLTextLineInfo info, int from, int to, int y) {
 		drawBackgroung(mySelection, getSelectedBackgroundColor(), page, info, from, to, y);
 		drawBackgroung(myHighlighting, getHighlightingColor(), page, info, from, to, y);
+		for (int i = 0; i < myAnnotationHighlightings.size(); i++) {
+			drawAnnotationBackground(myAnnotationHighlightings.get(i), myAnnotationHighlightingColors.get(i), page, info, from, to, y);
+		}
 
 		final ZLPaintContext context = myContext;
 		final ZLTextParagraphCursor paragraph = info.ParagraphCursor;
@@ -1492,6 +1743,23 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		}
 	}
 
+	public int getSelectionStartX() {
+		if (mySelection.isEmpty()) {
+			return 0;
+		}
+		final ZLTextElementArea selectionStartArea = mySelection.getStartArea(myCurrentPage);
+		if (selectionStartArea != null) {
+			return selectionStartArea.XStart;
+		}
+		if (mySelection.hasAPartBeforePage(myCurrentPage)) {
+			final ZLTextElementArea firstArea = myCurrentPage.TextElementMap.getFirstArea();
+			return firstArea != null ? firstArea.XStart : 0;
+		} else {
+			final ZLTextElementArea lastArea = myCurrentPage.TextElementMap.getLastArea();
+			return lastArea != null ? lastArea.XEnd : 0;
+		}
+	}
+	
 	public int getSelectionStartY() {
 		if (mySelection.isEmpty()) {
 			return 0;
@@ -1506,6 +1774,23 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		} else {
 			final ZLTextElementArea lastArea = myCurrentPage.TextElementMap.getLastArea();
 			return lastArea != null ? lastArea.YEnd : 0;
+		}
+	}
+	
+	public int getSelectionEndX() {
+		if (mySelection.isEmpty()) {
+			return 0;
+		}
+		final ZLTextElementArea selectionEndArea = mySelection.getEndArea(myCurrentPage);
+		if (selectionEndArea != null) {
+			return selectionEndArea.XEnd;
+		}
+		if (mySelection.hasAPartAfterPage(myCurrentPage)) {
+			final ZLTextElementArea lastArea = myCurrentPage.TextElementMap.getLastArea();
+			return lastArea != null ? lastArea.XEnd : 0;
+		} else {
+			final ZLTextElementArea firstArea = myCurrentPage.TextElementMap.getFirstArea();
+			return firstArea != null ? firstArea.XStart : 0;
 		}
 	}
 

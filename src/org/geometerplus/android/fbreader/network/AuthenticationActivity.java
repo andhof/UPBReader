@@ -41,7 +41,7 @@ import org.geometerplus.fbreader.network.INetworkLink;
 import org.geometerplus.fbreader.network.NetworkLibrary;
 import org.geometerplus.fbreader.network.authentication.NetworkAuthenticationManager;
 
-import org.geometerplus.zlibrary.ui.android.R;
+import de.upb.android.reader.R;
 
 import org.geometerplus.android.util.UIUtil;
 
@@ -283,6 +283,7 @@ public class AuthenticationActivity extends Activity {
 		if (myOkButtonUpdater == null) {
 			myOkButtonUpdater = new Timer();
 			myOkButtonUpdater.schedule(new TimerTask() {
+				@Override
 				public void run() {
 					runOnUiThread(new Runnable() {
 						public void run() {

@@ -24,9 +24,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.graphics.Bitmap;
 
-import org.geometerplus.zlibrary.ui.android.R;
+import de.upb.android.reader.R;
 
 import org.geometerplus.zlibrary.core.image.ZLImage;
+import org.geometerplus.zlibrary.core.image.ZLImageManager;
 import org.geometerplus.zlibrary.core.image.ZLLoadableImage;
 
 import org.geometerplus.zlibrary.ui.android.image.ZLAndroidImageManager;
@@ -98,7 +99,7 @@ class NetworkLibraryAdapter extends TreeAdapter {
 		final ZLImage cover = tree.getCover();
 		if (cover != null) {
 			ZLAndroidImageData data = null;
-			final ZLAndroidImageManager mgr = (ZLAndroidImageManager)ZLAndroidImageManager.Instance();
+			final ZLAndroidImageManager mgr = (ZLAndroidImageManager)ZLImageManager.Instance();
 			if (cover instanceof ZLLoadableImage) {
 				final ZLLoadableImage img = (ZLLoadableImage)cover;
 				if (img.isSynchronized()) {

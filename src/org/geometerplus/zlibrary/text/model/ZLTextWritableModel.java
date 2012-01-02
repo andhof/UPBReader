@@ -21,6 +21,7 @@ package org.geometerplus.zlibrary.text.model;
 
 public interface ZLTextWritableModel extends ZLTextModel {
 	void createParagraph(byte kind);
+	void createParagraph(byte kind, byte tag);
 
 	void addControl(byte textKind, boolean isStart);
 	void addText(char[] text);

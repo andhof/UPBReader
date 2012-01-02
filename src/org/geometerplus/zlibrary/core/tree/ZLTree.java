@@ -83,7 +83,7 @@ public abstract class ZLTree<T extends ZLTree<T>> implements Iterable<T> {
 					if (subtree.mySize <= index) {
 						index -= subtree.mySize;
 					} else {
-						return (T)subtree.getTreeByParagraphNumber(index);
+						return subtree.getTreeByParagraphNumber(index);
 					}
 				}
 			}
@@ -160,7 +160,7 @@ public abstract class ZLTree<T extends ZLTree<T>> implements Iterable<T> {
 		public T next() {
 			final T element = myCurrentElement;
 			if (element.hasChildren() && element.Level < myMaxLevel) {
-				myCurrentElement = (T)element.mySubTrees.get(0);
+				myCurrentElement = element.mySubTrees.get(0);
 				myIndexStack.add(0);
 			} else {
 				ZLTree<T> parent = element;

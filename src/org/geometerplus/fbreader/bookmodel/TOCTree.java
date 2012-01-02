@@ -25,7 +25,9 @@ import org.geometerplus.zlibrary.text.model.ZLTextModel;
 
 public class TOCTree extends ZLTree<TOCTree> {
 	private String myText;
+	private String myPath;
 	private Reference myReference;
+	private int myTagCount;
 
 	protected TOCTree() {
 		super();
@@ -43,11 +45,25 @@ public class TOCTree extends ZLTree<TOCTree> {
 		myText = text;
 	}
 	
+	public final String getPath() {
+		return myPath;
+	}
+	
+	public final void setPath(String path) {
+		myPath = path;
+	}
+	
+	public final int getTagCount() {
+		return myTagCount;
+	}
+	
 	public Reference getReference() {
 		return myReference;
 	}
 	
 	public void setReference(ZLTextModel model, int reference) {
+		myTagCount = model.getParagraphTagNumbers(reference+1);
+		
 		myReference = new Reference(reference, model);
 	}
 

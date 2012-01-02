@@ -39,6 +39,7 @@ public class BookReader {
 	private char[] myTextBuffer = new char[4096];
 	private int myTextBufferLength;
 	private StringBuilder myContentsBuffer = new StringBuilder();
+	private StringBuilder myPathBuffer = new StringBuilder();
 
 	private byte[] myKindStack = new byte[20];
 	private int myKindStackSize;
@@ -111,12 +112,33 @@ public class BookReader {
 	public final void beginParagraph() {
 		beginParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH);
 	}
-
+	
 	public final void beginParagraph(byte kind) {
 		endParagraph();
 		final ZLTextWritableModel textModel = myCurrentTextModel;
 		if (textModel != null) {
 			textModel.createParagraph(kind);
+			final byte[] stack = myKindStack;
+			final int size = myKindStackSize;
+			for (int i = 0; i < size; ++i) {
+				textModel.addControl(stack[i], true);
+			}
+			if (myHyperlinkReference.length() != 0) {
+				textModel.addHyperlinkControl(myHyperlinkKind, hyperlinkType(myHyperlinkKind), myHyperlinkReference);
+			}
+			myTextParagraphExists = true;
+		}		
+	}
+	
+	public final void beginNewParagraph(byte tag) {
+		beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
+	}
+
+	public final void beginNewParagraph(byte kind, byte tag) {
+		endParagraph();
+		final ZLTextWritableModel textModel = myCurrentTextModel;
+		if (textModel != null) {
+			textModel.createParagraph(kind, tag);
 			final byte[] stack = myKindStack;
 			final int size = myKindStackSize;
 			for (int i = 0; i < size; ++i) {
@@ -312,9 +334,23 @@ public class BookReader {
 			myContentsBuffer.append(data, offset, length);
 		}
 	}
-
+	
+	public final void addPathData(char[] data) {
+		addPathData(data, 0, data.length);
+	}
+	
+	public final void addPathData(char[] data, int offset, int length) {
+		if ((length != 0) && (myCurrentContentsTree!= null)) {
+			myPathBuffer.append(data, offset, length);
+		}
+	}
+	
 	public final boolean hasContentsData() {
 		return myContentsBuffer.length() > 0;
+	}
+	
+	public final boolean hasPathData() {
+		return myPathBuffer.length() > 0;
 	}
 	
 	public final void beginContentsParagraph(int referenceNumber) {
@@ -329,14 +365,17 @@ public class BookReader {
 			}
 			TOCTree parentTree = myCurrentContentsTree;
 			if (parentTree.Level > 0) {
-				if (myContentsBuffer.length() > 0) {
+				if (myContentsBuffer.length() > 0 && myPathBuffer.length() > 0) {
 					parentTree.setText(myContentsBuffer.toString());
+					parentTree.setPath(myPathBuffer.toString());
 					myContentsBuffer.delete(0, myContentsBuffer.length());
+					myPathBuffer.delete(0, myPathBuffer.length());
 				} else if (parentTree.getText() == null) {
 					parentTree.setText("...");
 				}
 			} else {
 				myContentsBuffer.delete(0, myContentsBuffer.length());
+				myPathBuffer.delete(0, myPathBuffer.length());
 			}
 			TOCTree tree = new TOCTree(parentTree);
 			tree.setReference(myCurrentTextModel, referenceNumber);
@@ -348,11 +387,14 @@ public class BookReader {
 		final TOCTree tree = myCurrentContentsTree;
 		if (tree.Level == 0) {
 			myContentsBuffer.delete(0, myContentsBuffer.length());
+			myPathBuffer.delete(0, myPathBuffer.length());
 			return;
 		}
-		if (myContentsBuffer.length() > 0) {
+		if (myContentsBuffer.length() > 0 && myPathBuffer.length() > 0) {
 			tree.setText(myContentsBuffer.toString());
+			tree.setPath(myPathBuffer.toString());
 			myContentsBuffer.delete(0, myContentsBuffer.length());
+			myPathBuffer.delete(0, myPathBuffer.length());
 		} else if (tree.getText() == null) {
 			tree.setText("...");
 		}

@@ -26,7 +26,7 @@ import org.geometerplus.zlibrary.core.view.ZLPaintContext;
 public final class ZLTextRegion {
 	public static abstract class Soul implements Comparable<Soul> {
 		final int ParagraphIndex;
-		final int StartElementIndex;
+		public final int StartElementIndex;
 		final int EndElementIndex;
 
 		protected Soul(int paragraphIndex, int startElementIndex, int endElementIndex) {
@@ -141,7 +141,8 @@ public final class ZLTextRegion {
 		}
 		return myAreas;
 	}
-	private ZLTextHorizontalConvexHull convexHull() {
+	
+	public ZLTextHorizontalConvexHull convexHull() {
 		if (myHull == null) {
 			myHull = new ZLTextHorizontalConvexHull(textAreas());
 		}

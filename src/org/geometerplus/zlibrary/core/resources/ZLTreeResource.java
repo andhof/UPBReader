@@ -85,15 +85,18 @@ final class ZLTreeResource extends ZLResource {
 		myValue = value;
 	}
 	
+	@Override
 	public boolean hasValue() {
 		return myHasValue;
 	}
 	
+	@Override
 	public String getValue() {
 		updateLanguage();
 		return myHasValue ? myValue : ZLMissingResource.Value;
 	}
 
+	@Override
 	public ZLResource getResource(String key) {
 		final HashMap<String,ZLTreeResource> children = myChildren;
 		if (children != null) {

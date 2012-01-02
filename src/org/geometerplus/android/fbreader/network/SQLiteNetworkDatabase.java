@@ -69,6 +69,7 @@ class SQLiteNetworkDatabase extends NetworkDatabase {
 		myDatabase.setVersion(currentCodeVersion);
 	}
 
+	@Override
 	protected void executeAsATransaction(Runnable actions) {
 		myDatabase.beginTransaction();
 		try {

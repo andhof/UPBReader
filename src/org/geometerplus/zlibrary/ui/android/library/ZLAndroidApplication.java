@@ -22,6 +22,8 @@ package org.geometerplus.zlibrary.ui.android.library;
 import android.app.Application;
 import android.os.Build;
 
+import org.geometerplus.fbreader.fbreader.FBReaderApp;
+import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.options.ZLBooleanOption;
 import org.geometerplus.zlibrary.core.options.ZLIntegerRangeOption;
 import org.geometerplus.zlibrary.core.sqliteconfig.ZLSQLiteConfig;
@@ -42,6 +44,11 @@ public class ZLAndroidApplication extends Application {
 
 	public static ZLAndroidApplication Instance() {
 		return ourApplication;
+	}
+	
+	public final FBReaderApp getFBReaderApp() {
+		final FBReaderApp fbReader = (FBReaderApp)ZLApplication.Instance();
+		return fbReader;
 	}
 
 	public ZLAndroidApplication() {

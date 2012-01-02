@@ -19,14 +19,21 @@
 
 package org.geometerplus.zlibrary.text.model;
 
+import org.geometerplus.fbreader.fbreader.FBReaderApp;
+import org.geometerplus.fbreader.formats.html.HtmlTag;
 import org.geometerplus.zlibrary.core.util.*;
 
+import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.image.ZLImageMap;
+
+import android.util.Log;
 
 public final class ZLTextWritablePlainModel extends ZLTextPlainModel implements ZLTextWritableModel {
 	private char[] myCurrentDataBlock;
 	private int myBlockOffset;
-
+	
+	private int[] tagcount = new int[35];
+	
 	public ZLTextWritablePlainModel(String id, String language, int arraySize, int dataBlockSize, String directoryName, String extension, ZLImageMap imageMap) {
 		super(id, language, arraySize, dataBlockSize, directoryName, extension, imageMap);
 	}
@@ -38,8 +45,10 @@ public final class ZLTextWritablePlainModel extends ZLTextPlainModel implements 
 		myParagraphLengths = ZLArrayUtils.createCopy(myParagraphLengths, size, size << 1);
 		myTextSizes = ZLArrayUtils.createCopy(myTextSizes, size, size << 1);
 		myParagraphKinds = ZLArrayUtils.createCopy(myParagraphKinds, size, size << 1);
+		myParagraphHtmlTags = ZLArrayUtils.createCopy(myParagraphHtmlTags, size, size << 1);
+		myParagraphTagNumbers = ZLArrayUtils.createCopy(myParagraphTagNumbers, size, size << 1);
 	}
-
+	
 	public void createParagraph(byte kind) {
 		final int index = myParagraphsNumber++;
 		int[] startEntryIndices = myStartEntryIndices;
@@ -55,6 +64,74 @@ public final class ZLTextWritablePlainModel extends ZLTextPlainModel implements 
 		myStartEntryOffsets[index] = myBlockOffset;
 		myParagraphLengths[index] = 0;
 		myParagraphKinds[index] = kind;
+		
+	}
+
+	public void createParagraph(byte kind, byte tag) {
+		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+		final int index = myParagraphsNumber++;
+		String myChapterPath = null;
+		int[] startEntryIndices = myStartEntryIndices;
+		if (index == startEntryIndices.length) {
+			extend();
+			startEntryIndices = myStartEntryIndices;
+		}
+		if (index > 0) {
+			myTextSizes[index] = myTextSizes[index - 1];
+		}
+		final int dataSize = myStorage.size();
+		startEntryIndices[index] = (dataSize == 0) ? 0 : (dataSize - 1);
+		myStartEntryOffsets[index] = myBlockOffset;
+		myParagraphLengths[index] = 0;
+		myParagraphHtmlTags[index] = tag;
+		myParagraphKinds[index] = kind;
+		switch (tag) {
+			case HtmlTag.A:
+			case HtmlTag.B:
+			case HtmlTag.BODY:
+			case HtmlTag.BR:
+			case HtmlTag.CITE:
+			case HtmlTag.CODE:
+			case HtmlTag.DFN:
+			case HtmlTag.DIV:
+			case HtmlTag.EM:
+			case HtmlTag.H1:
+			case HtmlTag.H2:
+			case HtmlTag.H3:
+			case HtmlTag.H4:
+			case HtmlTag.H5:
+			case HtmlTag.H6:
+			case HtmlTag.HEAD:
+			case HtmlTag.HR:
+			case HtmlTag.HTML:
+			case HtmlTag.I:
+			case HtmlTag.IMG:
+			case HtmlTag.LI:
+			case HtmlTag.OL:
+			case HtmlTag.P:
+			case HtmlTag.PRE:
+			case HtmlTag.S:
+			case HtmlTag.SCRIPT:
+			case HtmlTag.SELECT:
+			case HtmlTag.STRONG:
+			case HtmlTag.STYLE:
+			case HtmlTag.SUB:
+			case HtmlTag.SUP:
+			case HtmlTag.TITLE:
+			case HtmlTag.TR:
+			case HtmlTag.UL:
+			case HtmlTag.UNKNOWN:
+				tagcount[tag]++;
+//				if (myChapterPath != null && myChapterPath != fbreader.getPathToChapterFile(index)) {
+//					tagcount[tag] = 1;
+//				} 
+//				myChapterPath = fbreader.getPathToChapterFile(index);
+				myParagraphTagNumbers[index] = tagcount[tag];
+				break;
+			default:
+				break;
+		}
+		System.out.println();
 	}
 
 	private char[] getDataBlock(int minimumLength) {
