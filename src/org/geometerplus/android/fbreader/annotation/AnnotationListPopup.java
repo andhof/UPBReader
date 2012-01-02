@@ -18,7 +18,6 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
@@ -80,7 +79,7 @@ public class AnnotationListPopup extends PopupWindow {
 	 * @param id Layout resource id
 	 */
 	void setRootViewId(int id) {
-		rootView	= (ViewGroup) inflater.inflate(id, null);
+		rootView	= inflater.inflate(id, null);
 		annotations 		= (ViewGroup) rootView.findViewById(R.id.annotations);
 
 		scroller	= (ScrollView) rootView.findViewById(R.id.listscroller);

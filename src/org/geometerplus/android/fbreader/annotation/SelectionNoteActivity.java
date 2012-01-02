@@ -2,13 +2,9 @@ package org.geometerplus.android.fbreader.annotation;
 
 import java.io.File;
 import java.io.Reader;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
 import org.geometerplus.android.fbreader.FBReader;
 import org.geometerplus.android.fbreader.annotation.model.*;
 import org.geometerplus.fbreader.Paths;
@@ -29,11 +25,7 @@ import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.Paint.Join;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;

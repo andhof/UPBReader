@@ -25,8 +25,6 @@ import org.vimgadgets.linebreak.LineBreaker;
 import org.geometerplus.zlibrary.core.image.*;
 import org.geometerplus.zlibrary.text.model.*;
 
-import android.util.Log;
-
 public final class ZLTextParagraphCursor {
 	private static final class Processor {
 		private final ZLTextParagraph myParagraph;

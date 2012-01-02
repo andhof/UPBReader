@@ -19,7 +19,6 @@
 
 package org.geometerplus.android.fbreader;
 
-import android.app.Application;
 import android.content.ClipboardManager;
 import android.content.ClipData;
 import android.content.Context;

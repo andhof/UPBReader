@@ -8,14 +8,11 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
-import org.geometerplus.fbreader.fbreader.ActionCode;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
-import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
@@ -28,9 +25,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Toast;
 
 public class SemAppsListActivity extends ListActivity {
 	
@@ -75,6 +70,7 @@ public class SemAppsListActivity extends ListActivity {
 	    }
 	}
 	
+	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		String item = (String) getListAdapter().getItem(position);
 //		Toast.makeText(this, item + " selected", Toast.LENGTH_LONG).show();
@@ -96,6 +92,7 @@ public class SemAppsListActivity extends ListActivity {
 		private HttpEntity resEntityGet;
 		private String resEntityGetResult;
 		
+		@Override
 		protected void onPreExecute() {
             progressDialog.show();
         }
@@ -119,6 +116,7 @@ public class SemAppsListActivity extends ListActivity {
 			return resEntityGetResult;
 		}
 		
+		@Override
 		protected void onPostExecute(String result) {
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();

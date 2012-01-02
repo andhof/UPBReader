@@ -1,15 +1,11 @@
 package org.geometerplus.android.fbreader.annotation.model;
  
-import java.security.Timestamp;
-import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Order;
-import org.simpleframework.xml.Root;
 import org.simpleframework.xml.Default;
 
 import android.os.Parcel;

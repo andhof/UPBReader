@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
-import org.geometerplus.zlibrary.core.application.ZLApplication.ZLAction;
 
 class ShowAnnotationListAction extends FBAndroidAction {
 	ShowAnnotationListAction(FBReader baseActivity, FBReaderApp fbreader) {

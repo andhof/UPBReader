@@ -2,7 +2,6 @@ package org.geometerplus.android.fbreader.semapps.model;
 
 import java.util.ArrayList;
 
-import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;

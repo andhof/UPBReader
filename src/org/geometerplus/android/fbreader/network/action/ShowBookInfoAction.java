@@ -26,7 +26,6 @@ import org.geometerplus.zlibrary.core.network.ZLNetworkException;
 
 import org.geometerplus.fbreader.network.NetworkTree;
 
-import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
 import org.geometerplus.android.fbreader.network.NetworkBookInfoActivity;
 import org.geometerplus.android.fbreader.tree.TreeActivity;
 

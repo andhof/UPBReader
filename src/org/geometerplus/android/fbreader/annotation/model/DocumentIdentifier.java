@@ -2,12 +2,9 @@ package org.geometerplus.android.fbreader.annotation.model;
 
 import java.util.ArrayList;
 
-import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Order;
-import org.simpleframework.xml.Text;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 

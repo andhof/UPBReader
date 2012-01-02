@@ -2,40 +2,23 @@ package org.geometerplus.android.fbreader.annotation;
 
 import java.io.File;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-
-import org.geometerplus.android.fbreader.FBReader;
 import org.geometerplus.android.fbreader.annotation.model.*;
 import org.geometerplus.fbreader.Paths;
-import org.geometerplus.fbreader.bookmodel.BookReader;
 import org.geometerplus.fbreader.bookmodel.TOCTree;
 import org.geometerplus.fbreader.bookmodel.TOCTree.Reference;
 import org.geometerplus.fbreader.fbreader.ActionCode;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.formats.html.HtmlTag;
-import org.geometerplus.fbreader.formats.oeb.OEBPlugin;
 import org.geometerplus.fbreader.library.Book;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
-import org.geometerplus.zlibrary.core.filesystem.ZLFile;
-import org.geometerplus.zlibrary.core.options.ZLColorOption;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.core.util.ZLColor;
-import org.geometerplus.zlibrary.text.model.CharStorage;
-import org.geometerplus.zlibrary.text.model.ZLTextMark;
 import org.geometerplus.zlibrary.text.model.ZLTextModel;
-import org.geometerplus.zlibrary.text.model.ZLTextParagraph;
-import org.geometerplus.zlibrary.text.model.ZLTextPlainModel;
-import org.geometerplus.zlibrary.text.model.ZLTextParagraph.EntryIterator;
-import org.geometerplus.zlibrary.text.view.ZLTextElement;
 import org.geometerplus.zlibrary.text.view.ZLTextFixedPosition;
 import org.geometerplus.zlibrary.text.view.ZLTextParagraphCursor;
 import org.geometerplus.zlibrary.text.view.ZLTextPosition;
 import org.geometerplus.zlibrary.text.view.ZLTextView;
-import org.geometerplus.zlibrary.text.view.ZLTextWord;
 import org.geometerplus.zlibrary.text.view.ZLTextWordCursor;
 import de.upb.android.reader.R;
 import org.simpleframework.xml.Serializer;
@@ -44,14 +27,12 @@ import org.simpleframework.xml.core.Persister;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.TextView;
 
 public class SelectionHighlightActivity extends Activity {
@@ -98,7 +79,7 @@ public class SelectionHighlightActivity extends Activity {
 		
 		final View buttonsView = findViewById(R.id.authentication_buttons);
 		
-		myColorView = (View)findViewById(R.id.highlight_color); 
+		myColorView = findViewById(R.id.highlight_color); 
 		
 		OnClickListener buttonOnClickListener = new View.OnClickListener() {
 			@Override
@@ -107,19 +88,19 @@ public class SelectionHighlightActivity extends Activity {
 			}
 		};
 		
-		myColorButton = (View)findViewById(R.id.highlight_color_button1);
+		myColorButton = findViewById(R.id.highlight_color_button1);
 		myColorButton.setOnClickListener(buttonOnClickListener);
 		
-		myColorButton = (View)findViewById(R.id.highlight_color_button2);
+		myColorButton = findViewById(R.id.highlight_color_button2);
 		myColorButton.setOnClickListener(buttonOnClickListener);
 		
-		myColorButton = (View)findViewById(R.id.highlight_color_button3);
+		myColorButton = findViewById(R.id.highlight_color_button3);
 		myColorButton.setOnClickListener(buttonOnClickListener);
 		
-		myColorButton = (View)findViewById(R.id.highlight_color_button4);
+		myColorButton = findViewById(R.id.highlight_color_button4);
 		myColorButton.setOnClickListener(buttonOnClickListener);
 		
-		myColorButton = (View)findViewById(R.id.highlight_color_button5);
+		myColorButton = findViewById(R.id.highlight_color_button5);
 		myColorButton.setOnClickListener(buttonOnClickListener);
 		
 		myOkButton = (Button)buttonsView.findViewById(R.id.ok_button);
@@ -247,7 +228,7 @@ public class SelectionHighlightActivity extends Activity {
 		
 		String selectedtext = fbreader.BookTextView.getSelectedText();
 		ZLTextWordCursor textcursor = fbreader.BookTextView.getStartCursor();
-		ZLTextView textview = (ZLTextView) fbreader.BookTextView;
+		ZLTextView textview = fbreader.BookTextView;
 	//		int test = textview.getSelectedRegion().getSoul().StartElementIndex;
 		textview.gotoPosition(2, 4, 0);
 		ZLColor color = textview.getHighlightingColor();

@@ -1,9 +1,5 @@
 package org.geometerplus.android.fbreader.semapps;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-
 import android.app.*;
 import android.os.*;
 import android.util.Log;
@@ -13,28 +9,15 @@ import android.content.*;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.geometerplus.zlibrary.core.util.ZLMiscUtil;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
-import org.geometerplus.zlibrary.core.options.ZLStringOption;
-
 import de.upb.android.reader.R;
-import org.geometerplus.zlibrary.ui.android.application.ZLAndroidApplicationWindow;
-import org.geometerplus.zlibrary.ui.android.library.ZLAndroidActivity;
-import org.geometerplus.zlibrary.ui.android.library.ZLAndroidApplication;
-
-import org.geometerplus.fbreader.fbreader.ActionCode;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
-import org.geometerplus.fbreader.library.*;
-
-import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
-import org.geometerplus.android.util.UIUtil;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
@@ -112,6 +95,7 @@ public class UPBLibraryLoginActivity extends Activity {
 		private HttpEntity resEntityGet;
 		private String resEntityGetResult;
 		
+		@Override
 		protected void onPreExecute() {
             progressDialog.show();
         }
@@ -140,6 +124,7 @@ public class UPBLibraryLoginActivity extends Activity {
 			return resEntityGetResult;
 		}
 		
+		@Override
 		protected void onPostExecute(String result) {
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();

@@ -369,8 +369,8 @@ public class PreferenceActivity extends ZLPreferenceActivity {
 					keyBindings.bindKey(KeyEvent.KEYCODE_VOLUME_DOWN, false, ActionCode.VOLUME_KEY_SCROLL_FORWARD);
 					keyBindings.bindKey(KeyEvent.KEYCODE_VOLUME_UP, false, ActionCode.VOLUME_KEY_SCROLL_BACK);
 				} else {
-					keyBindings.bindKey(KeyEvent.KEYCODE_VOLUME_DOWN, false, FBReaderApp.NoAction);
-					keyBindings.bindKey(KeyEvent.KEYCODE_VOLUME_UP, false, FBReaderApp.NoAction);
+					keyBindings.bindKey(KeyEvent.KEYCODE_VOLUME_DOWN, false, ZLApplication.NoAction);
+					keyBindings.bindKey(KeyEvent.KEYCODE_VOLUME_UP, false, ZLApplication.NoAction);
 				}
 				volumeKeysPreferences.setEnabled(isChecked());
 			}

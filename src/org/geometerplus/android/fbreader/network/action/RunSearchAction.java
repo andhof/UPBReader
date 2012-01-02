@@ -29,7 +29,6 @@ import org.geometerplus.fbreader.network.tree.SearchCatalogTree;
 
 import de.upb.android.reader.R;
 
-import org.geometerplus.android.fbreader.network.NetworkLibraryActivity;
 import org.geometerplus.android.fbreader.tree.TreeActivity;
 
 public class RunSearchAction extends Action {

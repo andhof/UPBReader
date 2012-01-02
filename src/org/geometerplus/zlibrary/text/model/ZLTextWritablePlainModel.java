@@ -26,8 +26,6 @@ import org.geometerplus.zlibrary.core.util.*;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.image.ZLImageMap;
 
-import android.util.Log;
-
 public final class ZLTextWritablePlainModel extends ZLTextPlainModel implements ZLTextWritableModel {
 	private char[] myCurrentDataBlock;
 	private int myBlockOffset;

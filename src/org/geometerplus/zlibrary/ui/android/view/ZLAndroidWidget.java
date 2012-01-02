@@ -393,6 +393,7 @@ public class ZLAndroidWidget extends View implements ZLViewWidget, View.OnLongCl
 	private int myKeyUnderTracking = -1;
 	private long myTrackingStartTime;
 
+	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
 		final ZLApplication application = ZLApplication.Instance();
 
@@ -432,6 +433,7 @@ public class ZLAndroidWidget extends View implements ZLViewWidget, View.OnLongCl
 		}
 	}
 
+	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		if (myKeyUnderTracking != -1) {
 			if (myKeyUnderTracking == keyCode) {
@@ -449,6 +451,7 @@ public class ZLAndroidWidget extends View implements ZLViewWidget, View.OnLongCl
 		}
 	}
 
+	@Override
 	protected int computeVerticalScrollExtent() {
 		final ZLView view = ZLApplication.Instance().getCurrentView();
 		if (!view.isScrollbarShown()) {
@@ -465,6 +468,7 @@ public class ZLAndroidWidget extends View implements ZLViewWidget, View.OnLongCl
 		}
 	}
 
+	@Override
 	protected int computeVerticalScrollOffset() {
 		final ZLView view = ZLApplication.Instance().getCurrentView();
 		if (!view.isScrollbarShown()) {
@@ -481,6 +485,7 @@ public class ZLAndroidWidget extends View implements ZLViewWidget, View.OnLongCl
 		}
 	}
 
+	@Override
 	protected int computeVerticalScrollRange() {
 		final ZLView view = ZLApplication.Instance().getCurrentView();
 		if (!view.isScrollbarShown()) {

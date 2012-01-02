@@ -9,42 +9,27 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.geometerplus.android.fbreader.FBReader;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
-import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
-import org.geometerplus.android.fbreader.semapps.model.SemApps;
-import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.fbreader.Paths;
-import org.geometerplus.fbreader.fbreader.ActionCode;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.library.Book;
-import org.geometerplus.fbreader.network.NetworkDatabase;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 import android.R;
-import android.app.Activity;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 public class EPubListActivity extends ListActivity {
 	
@@ -76,6 +61,7 @@ public class EPubListActivity extends ListActivity {
 		setListAdapter(adapter);
 	}
 	
+	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		String item = (String) getListAdapter().getItem(position);
 //		Toast.makeText(this, item + " selected", Toast.LENGTH_LONG).show();
@@ -102,6 +88,7 @@ public class EPubListActivity extends ListActivity {
 	
 	private class HttpHelper extends AsyncTask<String, Void, String> {
 
+		@Override
 		protected void onPreExecute() {
             progressDialog.show();
         }
@@ -161,6 +148,7 @@ public class EPubListActivity extends ListActivity {
 //			mProgressText.setText(Long.toString()+"%"); 
 		}
 		
+		@Override
 		protected void onPostExecute(String path) {
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();

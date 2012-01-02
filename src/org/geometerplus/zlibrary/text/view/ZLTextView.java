@@ -21,14 +21,11 @@ package org.geometerplus.zlibrary.text.view;
 
 import java.util.*;
 
-import org.geometerplus.android.fbreader.FBReader;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
-import org.geometerplus.android.fbreader.library.LibraryActivity;
 import org.geometerplus.fbreader.fbreader.ActionCode;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.view.ZLPaintContext;
-import org.geometerplus.zlibrary.core.view.ZLView.PageIndex;
 import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.filesystem.ZLResourceFile;
 import org.geometerplus.zlibrary.core.util.ZLColor;
@@ -37,7 +34,6 @@ import org.geometerplus.zlibrary.text.model.*;
 import org.geometerplus.zlibrary.text.hyphenation.*;
 import org.geometerplus.zlibrary.text.view.style.ZLTextStyleCollection;
 
-import android.content.Intent;
 import android.util.Log;
 
 public abstract class ZLTextView extends ZLTextViewBase {
@@ -914,7 +910,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
 					}
 					
 					int[] position = {left, top, right, bottom};
-					((ZLTextAnnotationHighlighting)newAnnotationHighlight).addPositionArray(position);
+					(newAnnotationHighlight).addPositionArray(position);
 				}
 			}
 			y += info.Height + info.Descent + info.VSpaceAfter;
@@ -926,6 +922,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	 * Overides the onFingerSingleTap in FBView.java
 	 * it checks, if one or more annotations are selected by the finger tap and starts a dialog
 	 */
+	@Override
 	public boolean onFingerSingleTap(int x, int y) {
 		ArrayList<ZLTextAnnotationHighlighting> annotationHighlights = getAnnotationHighlights();
 		ArrayList<Annotation> annotationsOnPosition = new ArrayList<Annotation>(); 

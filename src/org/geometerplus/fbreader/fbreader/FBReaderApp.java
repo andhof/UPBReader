@@ -33,7 +33,6 @@ import org.geometerplus.zlibrary.core.util.ZLColor;
 
 import org.geometerplus.zlibrary.text.hyphenation.ZLTextHyphenator;
 import org.geometerplus.zlibrary.text.model.ZLTextModel;
-import org.geometerplus.zlibrary.text.model.ZLTextParagraph;
 import org.geometerplus.zlibrary.text.view.ZLTextElement;
 import org.geometerplus.zlibrary.text.view.ZLTextFixedPosition;
 import org.geometerplus.zlibrary.text.view.ZLTextParagraphCursor;
@@ -46,7 +45,6 @@ import org.geometerplus.android.fbreader.annotation.model.Annotations;
 import org.geometerplus.fbreader.Paths;
 import org.geometerplus.fbreader.bookmodel.BookModel;
 import org.geometerplus.fbreader.bookmodel.TOCTree;
-import org.geometerplus.fbreader.formats.oeb.OEBBookReader;
 import org.geometerplus.fbreader.library.*;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
