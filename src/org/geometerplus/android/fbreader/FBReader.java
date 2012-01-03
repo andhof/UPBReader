@@ -82,6 +82,8 @@ import org.geometerplus.android.util.UIUtil;
 import de.upb.android.reader.R;
 
 public final class FBReader extends ZLAndroidActivity {
+	static final int ACTION_BAR_COLOR = Color.BLACK;
+	
 	public static final String BOOK_PATH_KEY = "BookPath";
 
 	final static int REPAINT_CODE = 1;
@@ -169,7 +171,7 @@ public final class FBReader extends ZLAndroidActivity {
 			}
 		});
 		bar.setCustomView(titleView);
-		bar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
+		bar.setBackgroundDrawable(new ColorDrawable(ACTION_BAR_COLOR));
 
 		getWindow().setFlags(
 			WindowManager.LayoutParams.FLAG_FULLSCREEN,
@@ -229,6 +231,26 @@ public final class FBReader extends ZLAndroidActivity {
 			fbReader.addAction(ActionCode.SET_SCREEN_ORIENTATION_REVERSE_LANDSCAPE, new SetScreenOrientationAction(this, fbReader, ZLibrary.SCREEN_ORIENTATION_REVERSE_LANDSCAPE));
 		}
 	}
+
+//	@Override
+//	public boolean onPrepareOptionsMenu(Menu menu) {
+//		final ZLAndroidApplication application = (ZLAndroidApplication)getApplication();
+//		if (!application.ShowStatusBarOption.getValue() &&
+//			application.ShowStatusBarWhenMenuIsActiveOption.getValue()) {
+//			getWindow().addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+//		}
+//		return super.onPrepareOptionsMenu(menu);
+//	}
+//
+//	@Override
+//	public void onOptionsMenuClosed(Menu menu) {
+//		super.onOptionsMenuClosed(menu);
+//		final ZLAndroidApplication application = (ZLAndroidApplication)getApplication();
+//		if (!application.ShowStatusBarOption.getValue() &&
+//			application.ShowStatusBarWhenMenuIsActiveOption.getValue()) {
+//			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+//		}
+//	}
 
 	@Override
 	protected void onNewIntent(Intent intent) {
