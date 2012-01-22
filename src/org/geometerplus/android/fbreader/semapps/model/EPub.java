@@ -20,18 +20,35 @@ public class EPub implements Parcelable {
 	@Element(required=false)
 	protected File file;
 	@Element(required=false)
-	protected Annotations annotations;
+	protected SemAppsAnnotations annotations;
 	
 	/**
 	 * Standard empty constructor
 	 */
 	public EPub() {
+		id = "";
+		name = "";
+		updated_at = "";
+		file = new File();
+		annotations = new SemAppsAnnotations();
     }
 	
 	public EPub(Parcel in) {
 		readFromParcel(in);
 	}
-
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public void setUpdated_at(String updated_at) {
+		this.updated_at = updated_at;
+	}
+	
 	public String getId() {
 		return id;
 	}
@@ -48,7 +65,7 @@ public class EPub implements Parcelable {
 		return file;
 	}
 	
-	public Annotations getAnnotations() {
+	public SemAppsAnnotations getAnnotations() {
 		return annotations;
 	}
 
@@ -63,7 +80,7 @@ public class EPub implements Parcelable {
 		name = in.readString();
 		updated_at = in.readString();
 		file = in.readParcelable(File.class.getClassLoader());
-		annotations = in.readParcelable(Annotations.class.getClassLoader());
+		annotations = in.readParcelable(SemAppsAnnotations.class.getClassLoader());
 	}
 	
 	@Override

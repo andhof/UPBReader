@@ -129,7 +129,7 @@ public final class ZLKeyBindings {
 		}
 
 		@Override
-		public boolean startElementHandler(String tag, ZLStringMap attributes) {
+		public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 			if ("binding".equals(tag)) {
 				final String stringKey = attributes.getValue("key");
 				final String actionId = attributes.getValue("action");

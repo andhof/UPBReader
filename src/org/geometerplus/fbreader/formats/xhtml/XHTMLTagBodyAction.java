@@ -23,7 +23,7 @@ import org.geometerplus.zlibrary.core.xml.ZLStringMap;
 
 class XHTMLTagBodyAction extends XHTMLTagAction {
 	@Override
-	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag) {
+	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag, String[] tagStack) {
 		reader.myInsideBody = true;
 	}
 

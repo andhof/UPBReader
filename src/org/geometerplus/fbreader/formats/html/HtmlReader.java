@@ -244,7 +244,7 @@ public class HtmlReader extends BookReader implements ZLHtmlReader {
 			case HtmlTag.BODY:
 				setMainTextModel();
 				pushKind(FBTextKind.REGULAR);
-				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
+				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag, null);
 				break;
 
 			case HtmlTag.P:
@@ -253,7 +253,7 @@ public class HtmlReader extends BookReader implements ZLHtmlReader {
 				} else if (myInsideTitle) {
 					addContentsData(SPACE);
 				}
-				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
+				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag, null);
 				break;
 
 			case HtmlTag.A:{
@@ -312,7 +312,7 @@ public class HtmlReader extends BookReader implements ZLHtmlReader {
 			case HtmlTag.H5:
 			case HtmlTag.H6:
 				endParagraph();
-				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
+				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag, null);
 				openControl(myStyleTable[tag]);
 				break;
 				
@@ -326,7 +326,7 @@ public class HtmlReader extends BookReader implements ZLHtmlReader {
 				
 			case HtmlTag.LI:
 				endParagraph();
-				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
+				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag, null);
 				if (myOrderedListIsStarted) {
 					char[] number = (new Integer(++myOLCounter)).toString().toCharArray();
 					addData(number);
@@ -345,7 +345,7 @@ public class HtmlReader extends BookReader implements ZLHtmlReader {
 			case HtmlTag.TR: 
 			case HtmlTag.BR:
 				endParagraph();
-				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
+				beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag, null);
 				break;
 			default:
 				break;

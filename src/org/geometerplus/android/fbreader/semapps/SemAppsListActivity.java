@@ -8,6 +8,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
+import org.geometerplus.android.fbreader.annotation.database.DBEPub.DBEPubs;
+import org.geometerplus.android.fbreader.annotation.database.DBSemApp.DBSemApps;
+import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
@@ -16,10 +20,14 @@ import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
-import android.R;
+import de.upb.android.reader.R;
+
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +36,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class SemAppsListActivity extends ListActivity {
+	private AnnotationsDbAdapter dbHelper;
+	private Cursor cursor;
 	
 	private HttpHelper asyncTask;
 	ArrayList<String> semAppNamesList = new ArrayList<String>();
@@ -38,6 +48,8 @@ public class SemAppsListActivity extends ListActivity {
 	public void onCreate(Bundle bundle) {
 		super.onCreate(bundle);
 		
+		dbHelper = new AnnotationsDbAdapter(this);
+		
 		Intent intent = getIntent();
 		SemApps semApps = intent.getParcelableExtra("semapps");
 
@@ -47,8 +59,8 @@ public class SemAppsListActivity extends ListActivity {
 			semAppIDsList.add(semApp.getId());
 		}
 		
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-				R.layout.simple_list_item_1, semAppNamesList);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, 
+				android.R.layout.simple_list_item_1, semAppNamesList);
 		setListAdapter(adapter);
 	}
 	
@@ -77,7 +89,7 @@ public class SemAppsListActivity extends ListActivity {
 		
 		if (asyncTask != null) asyncTask.cancel(true);
 		progressDialog = new ProgressDialog(SemAppsListActivity.this);
-		progressDialog.setMessage("Downloading Book...");
+		progressDialog.setMessage(this.getText(R.string.loadingepublist));
 	    asyncTask = new HttpHelper();
 	    asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+semAppIDsList.get(position));
 	    
@@ -100,19 +112,16 @@ public class SemAppsListActivity extends ListActivity {
 		@Override
 		protected String doInBackground(String... params) {
 			try {
-				client = new DefaultHttpClient();  
-		        getURL = params[0];
-		        get = new HttpGet(getURL);
-		        responseGet = client.execute(get);  
-		        resEntityGet = responseGet.getEntity();  
+				getURL = params[0];
+				
+				ConnectionManager conn = ConnectionManager.getInstance();
+				resEntityGet = conn.postStuff(getURL);
 		        resEntityGetResult = EntityUtils.toString(resEntityGet);
+		        
 			} catch (Exception e) {
 			    e.printStackTrace();
 			    Log.e("UPBLibraryLoginActivity", e.toString());
-			} finally {
-                if (get != null) 
-                	get.abort();
-            }
+			} 
 			return resEntityGetResult;
 		}
 		
@@ -127,6 +136,8 @@ public class SemAppsListActivity extends ListActivity {
 			Log.v("UPBLibraryLoginActivity.HttpHelper", result);
 			SemApp semApp = loadSemAppFromXMLString(result);
 			
+			writeSemAppToDatabase(semApp);
+			
 			SemAppsListActivity.this.startActivityForResult(
 				new Intent(SemAppsListActivity.this.getApplicationContext(), EPubListActivity.class)
 					.putExtra("semapp", semApp), 
@@ -135,7 +146,45 @@ public class SemAppsListActivity extends ListActivity {
 		}
 		
 		/**
-		 * load an XML String of annotations into the annotations object structure
+		 * Insert a SemApp into the database 
+		 * @param semApp
+		 */
+		private void writeSemAppToDatabase(SemApp semApp) {
+			final String id = semApp.getId();
+			final String name = semApp.getName();
+			final String updated_at = semApp.getUpdated_at();
+			
+			// working on database in a different thread
+			new Thread(new Runnable() {
+				
+				@Override
+				public void run() {
+					String[] projection = DBSemApps.Projection;
+					Uri uri = DBSemApps.CONTENT_URI;
+					cursor = getContentResolver().query(uri, projection, null, null, null);
+					
+//					dbHelper.open();
+//					cursor = dbHelper.fetchSemApp(id);
+					ContentValues values = new ContentValues();
+					values.put(DBSemApps.SEMAPP_ID, id);
+					values.put(DBSemApps.NAME, name);
+					values.put(DBSemApps.UPDATED_AT, updated_at);
+					if (cursor.getCount() == 0) {
+						getContentResolver().insert(uri, values);
+//						dbHelper.createSemApp(id, name, updated_at);
+					} else {
+						getContentResolver().update(uri, values, null, null);
+//						dbHelper.updateSemApp(id, name, updated_at);
+					}
+					cursor.close();
+//					dbHelper.close();
+				}
+			}).start();
+			
+		}
+		
+		/**
+		 * load an XML String of semapps into the semapps object structure
 		 * @param xml
 		 */
 		public SemApp loadSemAppFromXMLString(String xml) {

@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.geometerplus.android.fbreader.annotation.AnnotationListItem;
 import org.geometerplus.android.fbreader.annotation.AnnotationListPopup;
+import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.api.PluginApi;
 import org.geometerplus.android.fbreader.library.KillerCallback;
@@ -49,6 +50,7 @@ import org.geometerplus.zlibrary.ui.android.library.ZLAndroidApplication;
 import android.app.ActionBar;
 import android.app.SearchManager;
 import android.content.*;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -90,6 +92,9 @@ public final class FBReader extends ZLAndroidActivity {
 	final static int CANCEL_CODE = 2;
 	final static int ANNOTATION_CODE = 3;
 	final static int CLOSE_CODE = 4;
+
+	private AnnotationsDbAdapter dbHelper;
+	private Cursor cursor;
 	
 	private QuickActionBar quickSelectionActionBar;
 	private QuickActionBar quickAnnotationActionBar;
@@ -310,14 +315,13 @@ public final class FBReader extends ZLAndroidActivity {
 //        ((PopupPanel)fbReader.getPopupById(SelectionPopup.ID)).createControlPanel(this, root, PopupWindow.Type.Floating);
 		
 		
-		myResource = ZLResource.resource("dialog").getResource("QuickActionBar");
-		copy = new QuickActionItem(ActionCode.SELECTION_COPY_TO_CLIPBOARD, true, myResource.getResource("copy").getValue());
-		send = new QuickActionItem(ActionCode.SELECTION_SHARE, true, myResource.getResource("share").getValue());
-		dict	= new QuickActionItem(ActionCode.SELECTION_TRANSLATE, true, myResource.getResource("translate").getValue());
-		bookmark = new QuickActionItem(ActionCode.SELECTION_BOOKMARK, true, myResource.getResource("bookmark").getValue());
+		copy = new QuickActionItem(ActionCode.SELECTION_COPY_TO_CLIPBOARD, true, this.getString(R.string.quickaction_copy));
+		send = new QuickActionItem(ActionCode.SELECTION_SHARE, true, this.getString(R.string.quickaction_share));
+		dict	= new QuickActionItem(ActionCode.SELECTION_TRANSLATE, true, this.getString(R.string.quickaction_translate));
+		bookmark = new QuickActionItem(ActionCode.SELECTION_BOOKMARK, true, this.getString(R.string.quickaction_bookmark));
 //		highlight = new QuickActionItem(ActionCode.SELECTION_HIGHLIGHT, true, myResource.getResource("highlight").getValue());
-		note = new QuickActionItem(ActionCode.SELECTION_NOTE, true, myResource.getResource("note").getValue());
-		cancel = new QuickActionItem(ActionCode.SELECTION_CLEAR, true, myResource.getResource("clear").getValue());
+		note = new QuickActionItem(ActionCode.SELECTION_NOTE, true, this.getString(R.string.quickaction_note));
+		cancel = new QuickActionItem(ActionCode.SELECTION_CLEAR, true, this.getString(R.string.quickaction_clear));
 		
         quickSelectionActionBar = new QuickActionBar(this, fbReader);
         
@@ -393,7 +397,18 @@ public final class FBReader extends ZLAndroidActivity {
 		if (BooksDatabase.Instance() == null) {
 			new SQLiteBooksDatabase(this, "READER");
 		}
-		return new FBReaderApp(file != null ? file.getPath() : null);
+		
+//		dbHelper = new AnnotationsDbAdapter(this);
+//		dbHelper.open();
+//		if (file != null) {
+//			cursor = dbHelper.fetchAllEPubs();
+//			startManagingCursor(cursor);
+//			cursor.
+//			
+//		}
+		
+		
+		return new FBReaderApp(file != null ? file.getPath() : null, this);
 	}
 
 	@Override
@@ -444,17 +459,15 @@ public final class FBReader extends ZLAndroidActivity {
 		
 		quickAnnotationActionBar = new QuickActionBar(this, fbReader);
 		
-		myResource = ZLResource.resource("dialog").getResource("QuickActionBar");
+		show = new QuickActionItem(ActionCode.SELECTION_SHOW_ANNOTATION, true, this.getString(R.string.quickaction_show));
+		edit	= new QuickActionItem(ActionCode.SELECTION_NOTE, true, this.getString(R.string.quickaction_edit));
 		
-		show = new QuickActionItem(ActionCode.SELECTION_SHOW_ANNOTATION, true, myResource.getResource("edit").getValue());
-		edit	= new QuickActionItem(ActionCode.SELECTION_NOTE, true, myResource.getResource("edit").getValue());
-		
-		comment = new QuickActionItem(ActionCode.SELECTION_COMMENT_ANNOTATION, true, myResource.getResource("comment").getValue());
-		remove = new QuickActionItem(ActionCode.SELECTION_REMOVE_ANNOTATION, true, myResource.getResource("remove").getValue());
+//		comment = new QuickActionItem(ActionCode.SELECTION_COMMENT_ANNOTATION, true, this.getString(R.string.quickaction_comment));
+		remove = new QuickActionItem(ActionCode.SELECTION_REMOVE_ANNOTATION, true, this.getString(R.string.quickaction_remove));
 		
 		quickAnnotationActionBar.addQuickActionItemWithAnnotation(show, annotation);
 		quickAnnotationActionBar.addQuickActionItemWithAnnotation(edit, annotation);
-		quickAnnotationActionBar.addQuickActionItemWithAnnotation(comment, annotation);
+//		quickAnnotationActionBar.addQuickActionItemWithAnnotation(comment, annotation);
 		quickAnnotationActionBar.addQuickActionItemWithAnnotation(remove, annotation);
 		quickAnnotationActionBar.addQuickActionItem(cancel);
 		

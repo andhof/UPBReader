@@ -23,9 +23,51 @@ public class EPubs implements Parcelable{
 	public EPubs(Parcel in) {
 		readFromParcel(in);
 	}
+	
+	public EPub addEPub(
+			String id,
+			String name,
+			String updated_at,
+			String file_name, 
+			String file_path) {
+
+		EPub epub = new EPub();
+		
+		epub.setId(id);
+		epub.setName(name);
+		epub.setUpdated_at(updated_at);
+		epub.getFile().setName(file_name);
+		epub.getFile().setPath(file_path);
+		
+		epubs.add(epub);
+		
+		return epub;
+	}
 
 	public ArrayList<EPub> getEPubs() {
 		return epubs;
+	}
+	
+	public EPub getEPubById(String id) {
+		for (EPub epub : epubs) {
+			if (epub.getId().equals(id)) {
+				return epub;
+			}
+		}
+		return null;
+	}
+	
+	public EPub getEPubByPath(String path) {
+		for (EPub epub : epubs) {
+			if (epub.getFile().getPath().equals(path)) {
+				return epub;
+			}
+		}
+		return null;
+	}
+	
+	public void removeAllEPubs() {
+		epubs.clear();
 	}
 
 	@Override
@@ -33,7 +75,7 @@ public class EPubs implements Parcelable{
 		// TODO Auto-generated method stub
 		return 0;
 	}
-	
+
 	public void readFromParcel(Parcel in) {
 		if (epubs == null) {
 			epubs = new ArrayList();

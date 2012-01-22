@@ -105,7 +105,7 @@ public class TapZoneMap {
 
 	private class Reader extends ZLXMLReaderAdapter {
 		@Override
-		public boolean startElementHandler(String tag, ZLStringMap attributes) {
+		public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 			try {
 				if ("zone".equals(tag)) {
 					final int x = Integer.parseInt(attributes.getValue("x"));

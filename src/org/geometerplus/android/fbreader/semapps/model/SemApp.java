@@ -24,6 +24,10 @@ public class SemApp implements Parcelable{
 	 * Standard empty constructor
 	 */
 	public SemApp(){
+		id = "";
+		name = "";
+		updated_at = "";
+		epubs = new EPubs();
     }
 	
 	public SemApp(Parcel in) {

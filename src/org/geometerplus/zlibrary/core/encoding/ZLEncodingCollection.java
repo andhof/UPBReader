@@ -70,7 +70,7 @@ public final class ZLEncodingCollection {
 		private static final String NUMBER = "number";
 
 		@Override
-		public boolean startElementHandler(String tag, ZLStringMap attributes) {
+		public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 			if (ENCODING == tag) {
 				myCurrentEncodingName = attributes.getValue(NAME);
 			} else if (myCurrentEncodingName != null) {

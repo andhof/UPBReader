@@ -7,6 +7,7 @@ import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Order;
 import org.simpleframework.xml.Default;
+import org.simpleframework.xml.Root;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -25,19 +26,19 @@ import android.os.Parcelable;
 /**
  * Annotation Object
  */
-@Default
+@Root
 @Order(elements={"id", "created", "modified", "category", "tags", "author", "annotationTarget", "renderingInfo", "annotationContent"})
 public class Annotation implements Parcelable {
  
 	@Element(required=false)
-	protected int id;
+	protected String id;
 	@Element(required=false)
     protected long created;
 	@Element(required=false)
     protected long modified;
 	@Element(required=false)
     protected String category;
-	@ElementList(required=false)
+	@ElementList(required=false, name="tags", entry="tag")
     protected ArrayList<String> tags;
     @Element(required=false)
     protected Author author;
@@ -48,21 +49,14 @@ public class Annotation implements Parcelable {
     @Element(required=false)
     protected AnnotationContent annotationContent;
     
+    protected String upb_id;
+    protected String updated_at;
+    
     /**
      * Full constructor with all Information
-     * 
-     * @param id
-     * @param created
-     * @param modified
-     * @param category
-     * @param tags
-     * @param author
-     * @param target
-     * @param renderingInfo
-     * @param content
      */
     public Annotation(
-    		int id,
+    		String id,
     		long created, 
     		long modified, 
     		String category, 
@@ -70,7 +64,9 @@ public class Annotation implements Parcelable {
     		Author author, 
     		AnnotationTarget target, 
     		RenderingInfo renderingInfo, 
-    		AnnotationContent annotationContent) {
+    		AnnotationContent annotationContent,
+    		String upb_id,
+    		String updated_at) {
     	this.id = id;
         this.created = created;
         this.modified = modified;
@@ -80,6 +76,8 @@ public class Annotation implements Parcelable {
         this.annotationTarget = target;
         this.renderingInfo = renderingInfo;
         this.annotationContent = annotationContent;
+        this.upb_id = upb_id;
+        this.updated_at = updated_at;
         
 //        author = new Author();
 //        annotationtarget = new AnnotationTarget();
@@ -88,7 +86,7 @@ public class Annotation implements Parcelable {
     }
     
     public Annotation(){
-    	id = 0;
+    	id = "";
     	created = 0;
     	modified = 0;
     	category = "";
@@ -97,6 +95,8 @@ public class Annotation implements Parcelable {
     	annotationTarget = new AnnotationTarget();
         renderingInfo = new RenderingInfo();
         annotationContent = new AnnotationContent();
+        upb_id = "";
+        updated_at = "";
     }
     
     /**
@@ -108,16 +108,20 @@ public class Annotation implements Parcelable {
     	readFromParcel(in);
     }
     
-    public void setCreated(long newCreated) {
-    	created = newCreated;
+    public void setId(String id) {
+    	this.id = id;
+    }
+    
+    public void setCreated(long created) {
+    	this.created = created;
     }
 
-    public void setModified(long newModified) {
-    	modified = newModified;
+    public void setModified(long modified) {
+    	this.modified = modified;
     }
 
-    public void setCategory(String newCategory) {
-    	category = newCategory;
+    public void setCategory(String category) {
+    	this.category = category;
     }
     
     public void setTags(ArrayList<String> tags) {
@@ -140,7 +144,15 @@ public class Annotation implements Parcelable {
     	this.renderingInfo = renderingInfo;
     }
     
-    public int getId() {
+    public void setUPBId(String upb_id) {
+    	this.upb_id = upb_id;
+    }
+    
+    public void setUpdatedAt(String updated_at) {
+    	this.updated_at = updated_at;
+    }
+    
+    public String getId() {
     	return id;
     }
     
@@ -178,6 +190,14 @@ public class Annotation implements Parcelable {
     public RenderingInfo getRenderingInfo() {
     	return renderingInfo;
     }
+    
+    public String getUPBId() {
+    	return upb_id;
+    }
+    
+    public String getUpdatedAt() {
+    	return updated_at;
+    }
 
 	@Override
 	public int describeContents() {
@@ -186,7 +206,7 @@ public class Annotation implements Parcelable {
 	}
 	
 	public void readFromParcel(Parcel in) {
-		id = in.readInt();
+		id = in.readString();
 		created = in.readLong();
 		modified = in.readLong();
 		category = in.readString();
@@ -198,11 +218,13 @@ public class Annotation implements Parcelable {
 		annotationTarget = in.readParcelable(AnnotationTarget.class.getClassLoader());
 		renderingInfo = in.readParcelable(RenderingInfo.class.getClassLoader());
 		annotationContent = in.readParcelable(AnnotationContent.class.getClassLoader());
+		upb_id = in.readString();
+		updated_at = in.readString();
 	}
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeInt(id);
+		dest.writeString(id);
 		dest.writeLong(created);
 		dest.writeLong(modified);
 		dest.writeString(category);
@@ -211,6 +233,8 @@ public class Annotation implements Parcelable {
 		dest.writeParcelable(annotationTarget, flags);
 		dest.writeParcelable(renderingInfo, flags);
 		dest.writeParcelable(annotationContent, flags);
+		dest.writeString(upb_id);
+		dest.writeString(updated_at);
 	}
 	
 	public static final Parcelable.Creator<Annotation> CREATOR = new Parcelable.Creator<Annotation>() {

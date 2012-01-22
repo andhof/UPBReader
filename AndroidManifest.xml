@@ -174,8 +174,8 @@
 		<activity android:name="org.geometerplus.android.fbreader.semapps.UPBLibraryLoginActivity" android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
 		<activity android:name="org.geometerplus.android.fbreader.semapps.SemAppsListActivity" android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
 		<activity android:name="org.geometerplus.android.fbreader.semapps.EPubListActivity" android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
-		<activity android:name="org.geometerplus.android.fbreader.annotation.SelectionHighlightActivity"  android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
-		<activity android:name="org.geometerplus.android.fbreader.annotation.SelectionNoteActivity"  android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
+		<activity android:name="org.geometerplus.android.fbreader.annotation.SelectionShowNoteActivity"  android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:windowSoftInputMode="adjustPan|stateHidden" />
+		<activity android:name="org.geometerplus.android.fbreader.annotation.SelectionNoteActivity"  android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:windowSoftInputMode="adjustPan|stateHidden" android:theme="@android:style/Theme.Dialog"/>
 		<activity android:name="org.geometerplus.android.fbreader.network.NetworkLibrarySecondaryActivity" android:process=":networkLibrary" android:configChanges="orientation|keyboardHidden" />
 		<activity android:name="org.geometerplus.android.fbreader.network.AuthenticationActivity" android:process=":networkLibrary" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
 		<activity android:name="org.geometerplus.android.fbreader.network.BuyBooksActivity" android:process=":networkLibrary" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
@@ -216,5 +216,21 @@
 			</intent-filter>
 		</receiver>
 		<activity android:name="org.geometerplus.android.fbreader.tips.TipsActivity" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
+		<provider
+	      android:name="org.geometerplus.android.fbreader.provider.AnnotationsContentProvider"
+	      android:authorities="org.geometerplus.android.fbreader.provider.AnnotationsContentProvider" >
+        </provider>
+        <provider
+          android:name="org.geometerplus.android.fbreader.provider.EPubsContentProvider"
+          android:authorities="org.geometerplus.android.fbreader.provider.EPubsContentProvider" >
+        </provider>
+        <provider
+          android:name="org.geometerplus.android.fbreader.provider.SemAppsContentProvider"
+          android:authorities="org.geometerplus.android.fbreader.provider.SemAppsContentProvider" >
+        </provider>
+        <provider
+          android:name="org.geometerplus.android.fbreader.provider.AuthorsContentProvider"
+          android:authorities="org.geometerplus.android.fbreader.provider.AuthorsContentProvider" >
+        </provider>
 	</application>
 </manifest>

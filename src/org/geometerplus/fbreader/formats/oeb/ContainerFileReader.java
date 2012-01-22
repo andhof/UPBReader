@@ -29,7 +29,7 @@ class ContainerFileReader extends ZLXMLReaderAdapter {
 	}
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap xmlattributes) {
+	public boolean startElementHandler(String tag, ZLStringMap xmlattributes, String[] tagStack) {
 		if ("rootfile".equalsIgnoreCase(tag)) {
 			myRootPath = xmlattributes.getValue("full-path");
 			if (myRootPath != null) {

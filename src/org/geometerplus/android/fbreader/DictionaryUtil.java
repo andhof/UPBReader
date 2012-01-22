@@ -55,7 +55,7 @@ public abstract class DictionaryUtil {
 		}
 
 		@Override
-		public boolean startElementHandler(String tag, ZLStringMap attributes) {
+		public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 			if ("dictionary".equals(tag)) {
 				final String id = attributes.getValue("id");
 				final String title = attributes.getValue("title");

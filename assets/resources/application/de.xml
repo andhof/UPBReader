@@ -676,6 +676,8 @@
 			<node name="updatingCatalogsList" value="Katalogliste wird aktualisiert. Bitte warten..."/>
 			<node name="updatingAccountInformation" value="Updating account information. Please, wait&#8230;" toBeTranslated="true"/>
 			<node name="scanningLocalNetwork" value="Scanning local network. Please, wait&#8230;" toBeTranslated="true"/>
+			<node name="loadingsemlist" value="Liste der SeminarApparate wird geladen. Bitte warten..." />
+            <node name="loadingepublist" value="Buchliste wird geladen. Bitte warten..." />
 		</node>
 		<node name="networkError">
 			<node name="internalError" value="Interner Server-Fehler."/>

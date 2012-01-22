@@ -86,7 +86,7 @@ public class ZLTextStyleCollection {
 		}
 
 		@Override
-		public boolean startElementHandler(String tag, ZLStringMap attributes) {
+		public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 			final String BASE = "base";
 			final String STYLE = "style";
 

@@ -37,7 +37,7 @@ class XHTMLTagImageAction extends XHTMLTagAction {
 	}
 
 	@Override
-	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag) {
+	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag, String[] tagStack) {
 		String fileName = reader.getAttributeValue(xmlattributes, myNamespace, myNameAttribute);
 		if (fileName != null) {
 			fileName = MiscUtil.decodeHtmlReference(fileName);

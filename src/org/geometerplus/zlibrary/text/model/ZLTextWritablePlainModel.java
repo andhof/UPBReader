@@ -26,6 +26,8 @@ import org.geometerplus.zlibrary.core.util.*;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.core.image.ZLImageMap;
 
+import android.util.Log;
+
 public final class ZLTextWritablePlainModel extends ZLTextPlainModel implements ZLTextWritableModel {
 	private char[] myCurrentDataBlock;
 	private int myBlockOffset;
@@ -45,10 +47,13 @@ public final class ZLTextWritablePlainModel extends ZLTextPlainModel implements 
 		myParagraphKinds = ZLArrayUtils.createCopy(myParagraphKinds, size, size << 1);
 		myParagraphHtmlTags = ZLArrayUtils.createCopy(myParagraphHtmlTags, size, size << 1);
 		myParagraphTagNumbers = ZLArrayUtils.createCopy(myParagraphTagNumbers, size, size << 1);
+		myParagraphTagCounts = ZLArrayUtils.createCopy(myParagraphTagCounts, size, size << 1);
+		myParagraphXPaths = ZLArrayUtils.createCopy(myParagraphXPaths, size, size << 1);
 	}
 	
 	public void createParagraph(byte kind) {
 		final int index = myParagraphsNumber++;
+		Log.v("ZLXMLParser", "Anzahl paragraphs "+myParagraphsNumber);
 		int[] startEntryIndices = myStartEntryIndices;
 		if (index == startEntryIndices.length) {
 			extend();
@@ -65,7 +70,10 @@ public final class ZLTextWritablePlainModel extends ZLTextPlainModel implements 
 		
 	}
 
-	public void createParagraph(byte kind, byte tag) {
+	/**
+	 * Create a new text paragraph 
+	 */
+	public void createParagraph(byte kind, byte tag, String[] tagStack) {
 		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 		final int index = myParagraphsNumber++;
 		String myChapterPath = null;
@@ -81,7 +89,45 @@ public final class ZLTextWritablePlainModel extends ZLTextPlainModel implements 
 		startEntryIndices[index] = (dataSize == 0) ? 0 : (dataSize - 1);
 		myStartEntryOffsets[index] = myBlockOffset;
 		myParagraphLengths[index] = 0;
-		myParagraphHtmlTags[index] = tag;
+		if (myParagraphHtmlTags[index] != HtmlTag.BR)  {
+			myParagraphHtmlTags[index] = tag;
+		}
+		
+		if (tagStack != null) {
+			myParagraphXPaths[index] = getXPathFromTagStack(tagStack);
+			if (tag == HtmlTag.BR) {
+				myParagraphXPaths[index+1] = myParagraphXPaths[index];
+				myParagraphHtmlTags[index+1] = tag;
+			}
+		}
+		
+		if (index == 70) {
+			System.out.println();
+		}
+		// count the number of tags from one type with the same depth and the same xpath string
+		int tagCounter = 1;
+		for (int i = index-1; i >= 0; i--) {
+			if (myParagraphXPaths[index] == null || myParagraphHtmlTags[index] == HtmlTag.BR) {
+				tagCounter = 0;
+				break;
+			}
+			if (myParagraphKinds[i] == ZLTextParagraph.Kind.END_OF_SECTION_PARAGRAPH) {
+				break;
+			}
+			if (myParagraphXPaths[i] == null) {
+				continue;
+			}
+			if (myParagraphXPaths[i].equals(myParagraphXPaths[index]) && 
+					myParagraphHtmlTags[i] == myParagraphHtmlTags[index]) {
+				tagCounter = myParagraphTagCounts[i]+1;
+				break;
+			} 
+			if (countSlashInString(myParagraphXPaths[i]) < countSlashInString(myParagraphXPaths[index])) {
+				break;
+			} 
+		}
+		myParagraphTagCounts[index] = tagCounter;
+		
 		myParagraphKinds[index] = kind;
 		switch (tag) {
 			case HtmlTag.A:
@@ -130,6 +176,38 @@ public final class ZLTextWritablePlainModel extends ZLTextPlainModel implements 
 				break;
 		}
 		System.out.println();
+	}
+	
+	/**
+	 * how many slashes contains the string 
+	 */
+	private int countSlashInString(String s) {
+		int counter = 0;
+		for(int i = 0; i < s.length(); i++){
+		    if (s.charAt(i) == '/') {
+		    	counter++;
+		    }
+		}
+		return counter;
+	}
+	
+	/**
+	 * generate the xpath string for the current paragraph
+	 * @param tagStack
+	 * @return
+	 */
+	private String getXPathFromTagStack(String[] tagStack) {
+		String xPath = "";
+		for (int i = 0; i < tagStack.length; i++) {
+			if (tagStack[i] == null) {
+				break;
+			}
+			if (tagStack[i].contains("html")) {
+				tagStack[i] = "html";
+			}
+			xPath += "/*[[local-name()='" + tagStack[i] + "']";
+		}
+		return xPath;
 	}
 
 	private char[] getDataBlock(int minimumLength) {

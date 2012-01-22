@@ -1,6 +1,8 @@
 package org.geometerplus.android.fbreader.annotation.model;
  
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
@@ -18,6 +20,7 @@ public class Annotations {
 	 * Standard empty constructor
 	 */
 	public Annotations(){
+		annotations = new ArrayList<Annotation>();
     }
 	
 	/**
@@ -32,19 +35,16 @@ public class Annotations {
 	
 	/**
 	 * Add a new Annotation to the List of Annotations with all Information
-	 * 
-	 * @param id
-	 * @param created
-	 * @param modified
-	 * @param category
-	 * @param tags
-	 * @param author
-	 * @param target
-	 * @param renderingInfo
-	 * @param content
+	 */
+	public void addAnnotation(Annotation annotation) {
+		annotations.add(annotation);
+	}
+	
+	/**
+	 * Add a new Annotation to the List of Annotations with all Information
 	 */
 	public void addAnnotation(
-			int id,
+			String id,
 			long created, 
     		long modified, 
     		String category, 
@@ -52,8 +52,71 @@ public class Annotations {
     		Author author, 
     		AnnotationTarget target, 
     		RenderingInfo renderingInfo, 
-    		AnnotationContent content) {
-		this.getAnnotations().add(new Annotation(id, created, modified, category, tags, author, target, renderingInfo, content));
+    		AnnotationContent content,
+    		String upb_id,
+    		String updated_at) {
+		annotations.add(new Annotation(id, created, modified, category, tags, author, target, renderingInfo, content, upb_id, updated_at));
+	}
+	
+	/**
+	 * Add a new Annotation to the List of Annotations with all Information
+	 */
+	public void addAnnotation(
+			String id,
+			long created, 
+    		long modified, 
+    		String category, 
+    		ArrayList<String> tags, 
+    		String author_name, 
+    		String bookid,
+    		String targetannotationid,
+    		String isbn,
+    		String title,
+    		ArrayList<String> authors,
+    		String publicationdate,
+    		String start_part,
+    		String start_xpath,
+    		int start_charoffset,
+    		String end_part,
+    		String end_xpath,
+    		int end_charoffset,
+    		int highlightcolor,
+    		boolean underlined,
+    		boolean crossout,
+    		String content,
+    		String upb_id,
+    		String updated_at) {
+		
+		Annotation annotation = new Annotation();
+		
+		annotation.setId(id);
+		annotation.setCreated(created);
+		annotation.setModified(modified);
+		annotation.setCategory(category);
+		annotation.setTags(tags);
+		annotation.setCategory(category);
+		annotation.setTags(tags);
+		annotation.getAuthor().setName(author_name);
+		annotation.getAnnotationTarget().setBookId(bookid);
+		annotation.getAnnotationTarget().setTargetAnnotationId(targetannotationid);
+		annotation.getAnnotationTarget().getDocumentIdentifier().setISBN(isbn);
+		annotation.getAnnotationTarget().getDocumentIdentifier().setTitle(title);
+		annotation.getAnnotationTarget().getDocumentIdentifier().setAuthors(authors);
+		annotation.getAnnotationTarget().getDocumentIdentifier().setPublicationDate(publicationdate);
+		annotation.getAnnotationTarget().getRange().getStart().setPart(start_part);
+		annotation.getAnnotationTarget().getRange().getStart().getPath().setXPath(start_xpath);
+		annotation.getAnnotationTarget().getRange().getStart().getPath().setCharOffset(start_charoffset);
+		annotation.getAnnotationTarget().getRange().getEnd().setPart(end_part);
+		annotation.getAnnotationTarget().getRange().getEnd().getPath().setXPath(end_xpath);
+		annotation.getAnnotationTarget().getRange().getEnd().getPath().setCharOffset(end_charoffset);
+		annotation.getRenderingInfo().setHighlightColor(highlightcolor);
+		annotation.getRenderingInfo().setUnderlined(underlined);
+		annotation.getRenderingInfo().setCrossOut(crossout);
+		annotation.getAnnotationContent().setAnnotationText(content);
+		annotation.setUPBId(upb_id);
+		annotation.setUpdatedAt(updated_at);
+		
+		annotations.add(annotation);
 	}
 	
 	/**
@@ -68,6 +131,10 @@ public class Annotations {
         return this.annotations;
     }
 	
+//	public Annotation getAnnotationById() {
+//		
+//	}
+	
 	/**
 	 * remove a specific annotation
 	 * 
@@ -78,5 +145,12 @@ public class Annotations {
 		if (annotationList.contains(annotation)) {
 			annotationList.remove(annotation);
 		}
+	}
+	
+	/**
+	 * remove all annotations
+	 */
+	public void removeAllAnnotations() {
+		annotations.clear();
 	}
 }

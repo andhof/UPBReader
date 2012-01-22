@@ -39,7 +39,7 @@ public abstract class ZLXMLReaderAdapter implements ZLXMLReader {
 		return false;
 	}
 
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		return false;
 	}
 	

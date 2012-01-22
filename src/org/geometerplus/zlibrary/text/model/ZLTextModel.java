@@ -19,6 +19,7 @@
 
 package org.geometerplus.zlibrary.text.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface ZLTextModel {
@@ -28,8 +29,15 @@ public interface ZLTextModel {
 	int getParagraphsNumber();
 	ZLTextParagraph getParagraph(int index);
 	byte getParagraphHtmlTag(int index);
+	byte[] getAllParagraphHtmlTags();
 	int getParagraphTagNumbers(int index);
 	CharStorage getCharStorage();
+	String getParagraphXPath(int index);
+	String[] getAllParagraphXPaths();
+	int[] getAllParagraphTagCounts();
+	int getParagraphTagCount(int index);
+	int getParagraphTagCountWithBR(int index);
+	ArrayList<Integer> getIndexByXPathInRange(String xpath, int startIndex, int endIndex);
 	
 	void removeAllMarks();
 	ZLTextMark getFirstMark();

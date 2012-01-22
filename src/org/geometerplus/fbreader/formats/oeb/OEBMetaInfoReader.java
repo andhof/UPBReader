@@ -113,7 +113,7 @@ class OEBMetaInfoReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 	}
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		tag = tag.toLowerCase().intern();
 		if (tag == myMetadataTag || tag == myDCMetadataTag || tag == myOpfMetadataTag) {
 			myMetadataTagRealName = tag;

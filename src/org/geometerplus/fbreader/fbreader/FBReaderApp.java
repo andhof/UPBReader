@@ -20,6 +20,8 @@
 package org.geometerplus.fbreader.fbreader;
 
 import java.io.File;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,8 +42,19 @@ import org.geometerplus.zlibrary.text.view.ZLTextPosition;
 import org.geometerplus.zlibrary.text.view.ZLTextWord;
 import org.geometerplus.zlibrary.text.view.ZLTextWordCursor;
 
+import org.geometerplus.android.fbreader.FBReader;
+import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
+import org.geometerplus.android.fbreader.annotation.database.DBAnnotation.DBAnnotations;
+import org.geometerplus.android.fbreader.annotation.database.DBAuthor.DBAuthors;
+import org.geometerplus.android.fbreader.annotation.database.DBEPub.DBEPubs;
+import org.geometerplus.android.fbreader.annotation.database.DBSemApp.DBSemApps;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.annotation.model.Annotations;
+import org.geometerplus.android.fbreader.annotation.model.TargetAuthor;
+import org.geometerplus.android.fbreader.provider.AnnotationsContentProvider;
+import org.geometerplus.android.fbreader.provider.SemAppsContentProvider;
+import org.geometerplus.android.fbreader.semapps.model.EPub;
+import org.geometerplus.android.fbreader.semapps.model.EPubs;
 import org.geometerplus.fbreader.Paths;
 import org.geometerplus.fbreader.bookmodel.BookModel;
 import org.geometerplus.fbreader.bookmodel.TOCTree;
@@ -49,6 +62,11 @@ import org.geometerplus.fbreader.library.*;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
+import android.app.Activity;
+import android.content.ContentValues;
+import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
 import android.util.Log;
 
 public final class FBReaderApp extends ZLApplication {
@@ -113,20 +131,34 @@ public final class FBReaderApp extends ZLApplication {
 		new ZLBooleanOption("CancelMenu", "positions", true);
 
 	private final ZLKeyBindings myBindings = new ZLKeyBindings("Keys");
+	
+	private Context context;
+	private AnnotationsDbAdapter dbHelper;
+	private Cursor cursor;
 
 	public final FBView BookTextView;
 	public final FBView FootnoteView;
 	public Annotations Annotations;
-
-	public ArrayList<String> HTMLFileNames;
+	public EPubs EPubs;
+	
+	public ArrayList<String> CategoriesEN;
+	public ArrayList<String> CategoriesDE;
 
 	public BookModel Model;
 
 	private final String myArg0;
+	
+	private ArrayList<Integer> paragraphIndexList;
+	private ArrayList<String> paragraphFilePathList;
+	
+	private TreeMap<String, Integer> myTOCLabels;
+	private ArrayList<String> myHtmlFileNames;
+	private ArrayList<Integer> myParagraphIndexList;
 
-	public FBReaderApp(String arg) {
+	public FBReaderApp(String arg, Context context) {
 		myArg0 = arg;
-
+		this.context = context;
+		
 		addAction(ActionCode.INCREASE_FONT, new ChangeFontSizeAction(this, +2));
 		addAction(ActionCode.DECREASE_FONT, new ChangeFontSizeAction(this, -2));
 
@@ -155,6 +187,27 @@ public final class FBReaderApp extends ZLApplication {
 		BookTextView = new FBView(this);
 		FootnoteView = new FBView(this);
 		Annotations = new Annotations();
+		EPubs = new EPubs();
+		
+		CategoriesEN = new ArrayList<String> ();
+		CategoriesEN.add("Note");
+		CategoriesEN.add("Question");
+		CategoriesEN.add("Issue");
+		CategoriesEN.add("Comment");
+		CategoriesDE = new ArrayList<String> ();
+		CategoriesDE.add("Notiz");
+		CategoriesDE.add("Frage");
+		CategoriesDE.add("Problem");
+		CategoriesDE.add("Kommentar");
+		
+		paragraphIndexList = new ArrayList<Integer>();
+		paragraphFilePathList = new ArrayList<String>();
+		
+		myTOCLabels = new TreeMap<String, Integer>();
+		myHtmlFileNames = new ArrayList<String>();
+		myParagraphIndexList = new ArrayList<Integer>();
+		
+		dbHelper = new AnnotationsDbAdapter(context);
 
 		setView(BookTextView);
 	}
@@ -171,6 +224,14 @@ public final class FBReaderApp extends ZLApplication {
 				if ((book == null) || !book.File.exists()) {
 					book = Book.getByFile(Library.getHelpFile());
 				}
+				
+				// load the annotations of the book
+				String path = book.File.getPath();
+				loadEPubsFromDatabase();
+				for (EPub epub : EPubs.getEPubs()) {
+					loadAnnotationsFromDatabase(path);
+				}
+				
 				openBookInternal(book, null);
 			}
 		});
@@ -187,13 +248,480 @@ public final class FBReaderApp extends ZLApplication {
 		}
 		wait("loadingBook", new Runnable() {
 			public void run() {
+				// load the annotations of the book
+				// TODO mal schauen ob das hier überhaupt gebraucht wird
+				String path = book.File.getPath();
+				loadEPubsFromDatabase();
+				for (EPub epub : EPubs.getEPubs()) {
+					loadAnnotationsFromDatabase(path);
+				}
+				
 				openBookInternal(book, bookmark);
 			}
 		});
 	}
 	
-	public void setHTMLFileNames(final ArrayList<String> htmlFileNames) {
-		this.HTMLFileNames = htmlFileNames;
+	public void setParagraphIndexList(ArrayList<Integer> myParagraphIndexList) {
+		this.myParagraphIndexList = myParagraphIndexList;
+	}
+	
+	public void setHtmlFileNames(ArrayList<String> myHtmlFileNames, String myFilePrefix,
+			String myCoverFileName) {
+		ArrayList<String> tmpHtmlFileNames =  new ArrayList<String>();
+		
+		String cutString = ".epub:";
+		String myShortFilePrefix = myFilePrefix.substring(myFilePrefix.indexOf(cutString) + cutString.length());
+		for (String entry : myHtmlFileNames) {
+			if ((myFilePrefix + entry).equals(myCoverFileName)) {
+				continue;
+			}
+			tmpHtmlFileNames.add(myShortFilePrefix + entry);
+			Log.v("FBReaderApp", "Datei: " + myShortFilePrefix + entry);
+        }
+		this.myHtmlFileNames = tmpHtmlFileNames;
+	}
+	
+	/**
+	 * load all epubs information
+	 */
+	private void loadEPubsFromDatabase() {
+		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+		
+		String[] projection = DBEPubs.Projection;
+		Uri uri = DBEPubs.CONTENT_URI;
+		cursor = context.getContentResolver().query(uri, projection, null, null, null);
+		
+//		dbHelper.open();
+//		cursor = dbHelper.fetchAllEPubs();
+		if (cursor.getCount() == 0) {
+			return;
+		}
+		cursor.moveToFirst();
+		do {
+			String id = cursor.getString(cursor.getColumnIndex("_id"));
+			String name = cursor.getString(cursor.getColumnIndex("name"));
+			String updated_at = cursor.getString(cursor.getColumnIndex("updated_at"));
+			String file_name = cursor.getString(cursor.getColumnIndex("file_name"));
+			String file_path = cursor.getString(cursor.getColumnIndex("file_path"));
+			
+			if (fbreader.EPubs.getEPubs() != null) {
+				fbreader.EPubs.removeAllEPubs();						
+			}
+			fbreader.EPubs.addEPub(id, name, updated_at, file_name, file_path);
+		} while (cursor.moveToNext());
+		cursor.close();
+//		dbHelper.close();
+	}
+	
+	/**
+	 * load the annotations of one book
+	 * @param path
+	 */
+	private void loadAnnotationsFromDatabase(final String local_path) {
+		if (Annotations.getAnnotations().size() != 0) {
+			Annotations.removeAllAnnotations();
+		}
+		
+		Uri uri = DBEPubs.CONTENT_URI;
+		String[] projection = DBEPubs.Projection;
+		String selection = DBEPubs.LOCALPATH + "=\"" + local_path + "\"";
+		cursor = context.getContentResolver().query(uri, projection, selection, null, null);
+		
+//		dbHelper.open();
+//		cursor = dbHelper.fetchEPubByPath(local_path);
+		if (cursor.getCount() == 0) {
+			return;
+		}
+		cursor.moveToFirst();
+		String ePubId = cursor.getString(cursor.getColumnIndex(DBEPubs.EPUB_ID));
+		cursor.close();
+		
+		uri = DBAnnotations.CONTENT_URI;
+		projection = DBAnnotations.Projection;
+		selection = DBAnnotations.EPUB_ID + "=\"" + ePubId + "\"";
+		cursor = context.getContentResolver().query(uri, projection, selection, null, null);
+//		cursor = dbHelper.fetchAnnotationsByEPubId(ePubId);
+		if (cursor.getCount() == 0) {
+			return;
+		}
+		
+		cursor.moveToFirst();
+		do {
+			String annotation_id = cursor.getString(cursor.getColumnIndex(DBAnnotations.ANNOTATION_ID));
+			long created = cursor.getLong(cursor.getColumnIndex(DBAnnotations.CREATED));
+			long modified = cursor.getLong(cursor.getColumnIndex(DBAnnotations.MODIFIED));
+			String category = cursor.getString(cursor.getColumnIndex(DBAnnotations.CATEGORY));
+			String[] tagsarray = cursor.getString(cursor.getColumnIndex(DBAnnotations.TAGS)).split(", ");
+			ArrayList<String> tags = new ArrayList(Arrays.asList(tagsarray));
+			String author_name = cursor.getString(cursor.getColumnIndex(DBAnnotations.AUTHOR_NAME));
+			String bookid = cursor.getString(cursor.getColumnIndex(DBAnnotations.BOOKID));
+			String targetannotationid = cursor.getString(cursor.getColumnIndex(DBAnnotations.TARGET_ANNOTATION_ID));
+			String isbn = cursor.getString(cursor.getColumnIndex(DBAnnotations.ISBN));
+			String title = cursor.getString(cursor.getColumnIndex(DBAnnotations.TITLE));
+			String publicationdate = cursor.getString(cursor.getColumnIndex(DBAnnotations.PUBLICATIONDATE));
+			String start_part = cursor.getString(cursor.getColumnIndex(DBAnnotations.START_PART));
+			String start_xpath = cursor.getString(cursor.getColumnIndex(DBAnnotations.START_PATH_XPATH));
+			int start_charoffset = cursor.getInt(cursor.getColumnIndex(DBAnnotations.START_PATH_CHAROFFSET));
+			String end_part = cursor.getString(cursor.getColumnIndex(DBAnnotations.END_PART));
+			String end_xpath = cursor.getString(cursor.getColumnIndex(DBAnnotations.END_PATH_XPATH));
+			int end_charoffset = cursor.getInt(cursor.getColumnIndex(DBAnnotations.END_PATH_CHAROFFSET));
+			int highlightcolor = cursor.getInt(cursor.getColumnIndex(DBAnnotations.HIGHLIGHTCOLOR));
+			boolean underlined = cursor.getString(cursor.getColumnIndex(DBAnnotations.UNDERLINED)).equals("true") ?	 true : false;
+			boolean crossout = cursor.getString(cursor.getColumnIndex(DBAnnotations.CROSSOUT)).equals("true") ? true : false;
+			String content = cursor.getString(cursor.getColumnIndex(DBAnnotations.CONTENT));
+			String upb_id = cursor.getString(cursor.getColumnIndex(DBAnnotations.UPB_ID));
+			String updated_at = cursor.getString(cursor.getColumnIndex(DBAnnotations.UPDATED_AT));
+			String epub_id = cursor.getString(cursor.getColumnIndex(DBAnnotations.EPUB_ID));
+			
+			uri = DBAuthors.CONTENT_URI;
+			projection = DBAuthors.Projection;
+			selection = DBAuthors.ANNOTATION_ID + "=\"" + annotation_id + "\"";
+			Cursor aCursor = context.getContentResolver().query(uri, projection, selection, null, null);
+//			Cursor aCursor = dbHelper.fetchAuthor(id);
+			ArrayList<String> authors = new ArrayList<String>();
+			aCursor.moveToFirst();
+			do {
+				if (aCursor.getCount() != 0) {
+					authors.add(aCursor.getString(aCursor.getColumnIndex(DBAuthors.NAME)));
+				}
+			} while (aCursor.moveToNext());
+			aCursor.close();
+			
+			Annotations.addAnnotation(annotation_id, created, modified, category, tags, 
+					author_name, bookid, targetannotationid, isbn, title, authors, publicationdate, start_part, 
+					start_xpath, start_charoffset, end_part, end_xpath, end_charoffset, 
+					highlightcolor, underlined, crossout, content, upb_id, updated_at);
+	    } while (cursor.moveToNext());
+		cursor.close();
+//		dbHelper.close();
+	}
+	
+	/**
+	 * Insert the ePub and annotation information into the database or update it 
+	 * @param semApp
+	 */
+	public void writeEPubAndAnnotationToDatabase(Context context, EPub ePub, 
+			final String local_path, String sid, Annotation annotation, final String eid) {
+		// epub data
+		final String epub_id = ePub.getId();
+		final String name = ePub.getName();
+		final String updated_at = ePub.getUpdated_at();
+		final String file_name = ePub.getFile().getName();
+		final String file_path = ePub.getFile().getPath();
+		final String semapp_id = sid;
+		
+		// annotation data
+		final String annotation_id = annotation.getId();
+		final long created = annotation.getCreated();
+		final long modified = annotation.getModified();
+		final String category = annotation.getCategory();
+		String tags_tmp = "";
+		for (String tag : annotation.getTags()) {
+			tags_tmp += tag;
+			tags_tmp += ", ";
+		}
+		if (tags_tmp.length() > 0) {
+			tags_tmp = tags_tmp.substring(0, tags_tmp.length()-2);
+		}
+		final String tags = tags_tmp;
+		final String author_name = annotation.getAuthor().getName();
+		final String bookid = annotation.getAnnotationTarget().getBookId();
+		final String targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();
+		final String isbn = annotation.getAnnotationTarget().getDocumentIdentifier().getISBN();
+		final String title = annotation.getAnnotationTarget().getDocumentIdentifier().getTitle();
+		final ArrayList<TargetAuthor> authors = annotation.getAnnotationTarget().getDocumentIdentifier().getAuthors();
+		final String publicationdate = annotation.getAnnotationTarget().getDocumentIdentifier().getPublicationDate();
+		final String start_part = annotation.getAnnotationTarget().getRange().getStart().getPart();
+		final String start_xpath = annotation.getAnnotationTarget().getRange().getStart().getPath().getXPath();
+		final long start_charoffset = annotation.getAnnotationTarget().getRange().getStart().getPath().getCharOffset();
+		final String end_part = annotation.getAnnotationTarget().getRange().getEnd().getPart();
+		final String end_xpath = annotation.getAnnotationTarget().getRange().getEnd().getPath().getXPath();
+		final long end_charoffset = annotation.getAnnotationTarget().getRange().getEnd().getPath().getCharOffset();
+		final long highlightcolor = annotation.getRenderingInfo().getHighlightColor();
+		final String underlined = annotation.getRenderingInfo().isUnderlined() ? "true" : "false";
+		final String crossout = annotation.getRenderingInfo().isCrossedOut() ? "true" : "false";
+		final String content = annotation.getAnnotationContent().getAnnotationText();
+		final String upb_id = annotation.getUPBId();
+		final String updated_at2 = annotation.getUpdatedAt();
+		
+		// working on database in a different thread
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Uri uri = DBEPubs.CONTENT_URI;
+				String[] projection = DBEPubs.Projection;
+				String selection = DBEPubs.EPUB_ID + "=\"" + epub_id + "\"";
+				cursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
+
+				ContentValues values = new ContentValues();
+				values.put(DBEPubs.EPUB_ID, epub_id);
+				values.put(DBEPubs.NAME, name);
+				values.put(DBEPubs.UPDATED_AT, updated_at);
+				values.put(DBEPubs.FILENAME, file_name);
+				values.put(DBEPubs.FILEPATH, file_path);
+				values.put(DBEPubs.SEMAPP_ID, semapp_id);
+				values.put(DBEPubs.LOCALPATH, local_path);
+				if (cursor.getCount() == 0) {
+					FBReaderApp.this.context.getContentResolver().insert(uri, values);
+				} else {
+					FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
+				}
+				cursor.close();
+				
+				uri = DBAnnotations.CONTENT_URI;
+				projection = DBAnnotations.Projection;
+				selection = DBAnnotations.ANNOTATION_ID + "=\"" + annotation_id + "\"";
+				cursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
+				values.clear();
+				values.put(DBAnnotations.ANNOTATION_ID, annotation_id);
+				values.put(DBAnnotations.CREATED, created);
+				values.put(DBAnnotations.MODIFIED, modified);
+				values.put(DBAnnotations.CATEGORY, category);
+				values.put(DBAnnotations.TAGS, tags);
+				values.put(DBAnnotations.AUTHOR_NAME, author_name);
+				values.put(DBAnnotations.BOOKID, bookid);
+				values.put(DBAnnotations.TARGET_ANNOTATION_ID, targetannotationid);
+				values.put(DBAnnotations.ISBN, isbn);
+				values.put(DBAnnotations.TITLE, title);
+				values.put(DBAnnotations.PUBLICATIONDATE, publicationdate);
+				values.put(DBAnnotations.START_PART, start_part);
+				values.put(DBAnnotations.START_PATH_XPATH, start_xpath);
+				values.put(DBAnnotations.START_PATH_CHAROFFSET, start_charoffset);
+				values.put(DBAnnotations.END_PART, end_part);
+				values.put(DBAnnotations.END_PATH_XPATH, end_xpath);
+				values.put(DBAnnotations.END_PATH_CHAROFFSET, end_charoffset);
+				values.put(DBAnnotations.HIGHLIGHTCOLOR, highlightcolor);
+				values.put(DBAnnotations.UNDERLINED, underlined);
+				values.put(DBAnnotations.CROSSOUT, crossout);
+				values.put(DBAnnotations.CONTENT, content);
+				values.put(DBAnnotations.UPB_ID, upb_id);
+				values.put(DBAnnotations.UPDATED_AT, updated_at2);
+				values.put(DBAnnotations.EPUB_ID, epub_id);
+				if (cursor.getCount() == 0) {
+					FBReaderApp.this.context.getContentResolver().insert(uri, values);
+					uri = DBAuthors.CONTENT_URI;
+					projection = DBAuthors.Projection;
+					for (TargetAuthor author : authors) {
+						values.clear();
+						values.put(DBAuthors.NAME, author.getName());
+						values.put(DBAuthors.ANNOTATION_ID, annotation_id);
+						FBReaderApp.this.context.getContentResolver().insert(uri, values);
+					}
+				} else if (cursor.getCount() > 0) {
+					FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
+					uri = DBAuthors.CONTENT_URI;
+					projection = DBAuthors.Projection;
+					selection = DBAuthors.ANNOTATION_ID + "=\"" + annotation_id + "\"";
+					for (TargetAuthor author : authors) {
+						values.clear();
+						values.put(DBAuthors.NAME, author.getName());
+						values.put(DBAuthors.ANNOTATION_ID, annotation_id);
+						FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
+					}
+				}
+				
+				cursor.close();
+			}
+		}).start();
+	}
+	
+	/**
+	 * Insert the ePub information into the database or update it 
+	 * @param semApp
+	 */
+	public void writeEPubToDatabase(Context context, EPub ePub, final String local_path, String sid) {
+		final String epub_id = ePub.getId();
+		final String name = ePub.getName();
+		final String updated_at = ePub.getUpdated_at();
+		final String file_name = ePub.getFile().getName();
+		final String file_path = ePub.getFile().getPath();
+		final String semapp_id = sid;
+		
+		// working on database in a different thread
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				Uri uri = DBEPubs.CONTENT_URI;
+				String[] projection = DBEPubs.Projection;
+				String selection = DBEPubs.EPUB_ID + "=\"" + epub_id + "\"";
+				cursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
+
+				ContentValues values = new ContentValues();
+				values.put(DBEPubs.EPUB_ID, epub_id);
+				values.put(DBEPubs.NAME, name);
+				values.put(DBEPubs.UPDATED_AT, updated_at);
+				values.put(DBEPubs.FILENAME, file_name);
+				values.put(DBEPubs.FILEPATH, file_path);
+				values.put(DBEPubs.SEMAPP_ID, semapp_id);
+				values.put(DBEPubs.LOCALPATH, local_path);
+//				dbHelper.open();
+//				cursor = dbHelper.fetchEPub(id);
+				if (cursor.getCount() == 0) {
+					FBReaderApp.this.context.getContentResolver().insert(uri, values);
+				} else {
+					FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
+				}
+//				if (cursor.getCount() == 0) {
+//					dbHelper.createEPub(id, name, updated_at, file_name, file_path, semapp_id, local_path);
+//				} else {
+//					dbHelper.updateEPub(id, name, updated_at, file_name, file_path, semapp_id, local_path);
+//				}
+				cursor.close();
+//				dbHelper.close();
+			}
+		}).start();
+	}
+	
+	/**
+	 * Insert one Annotation of the book into the database or update it 
+	 */
+	public void writeAnnotationToDatabase(Context context, Annotation annotation, final String eid) {
+		final String annotation_id = annotation.getId();
+		final long created = annotation.getCreated();
+		final long modified = annotation.getModified();
+		final String category = annotation.getCategory();
+		String tags_tmp = "";
+		for (String tag : annotation.getTags()) {
+			tags_tmp += tag;
+			tags_tmp += ", ";
+		}
+		if (tags_tmp.length() > 0) {
+			tags_tmp = tags_tmp.substring(0, tags_tmp.length()-2);
+		}
+		final String tags = tags_tmp;
+		final String author_name = annotation.getAuthor().getName();
+		final String bookid = annotation.getAnnotationTarget().getBookId();
+		final String targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();
+		final String isbn = annotation.getAnnotationTarget().getDocumentIdentifier().getISBN();
+		final String title = annotation.getAnnotationTarget().getDocumentIdentifier().getTitle();
+		final ArrayList<TargetAuthor> authors = annotation.getAnnotationTarget().getDocumentIdentifier().getAuthors();
+		final String publicationdate = annotation.getAnnotationTarget().getDocumentIdentifier().getPublicationDate();
+		final String start_part = annotation.getAnnotationTarget().getRange().getStart().getPart();
+		final String start_xpath = annotation.getAnnotationTarget().getRange().getStart().getPath().getXPath();
+		final long start_charoffset = annotation.getAnnotationTarget().getRange().getStart().getPath().getCharOffset();
+		final String end_part = annotation.getAnnotationTarget().getRange().getEnd().getPart();
+		final String end_xpath = annotation.getAnnotationTarget().getRange().getEnd().getPath().getXPath();
+		final long end_charoffset = annotation.getAnnotationTarget().getRange().getEnd().getPath().getCharOffset();
+		final long highlightcolor = annotation.getRenderingInfo().getHighlightColor();
+		final String underlined = annotation.getRenderingInfo().isUnderlined() ? "true" : "false";
+		final String crossout = annotation.getRenderingInfo().isCrossedOut() ? "true" : "false";
+		final String content = annotation.getAnnotationContent().getAnnotationText();
+		final String upb_id = annotation.getUPBId();
+		final String updated_at2 = annotation.getUpdatedAt();
+		
+		// working on database in a different thread
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				String epub_id;
+				
+				Uri uri = DBEPubs.CONTENT_URI;
+				String[] projection = DBEPubs.Projection;
+				String selection = DBEPubs.EPUB_ID + "=\"" + eid + "\"";
+				cursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
+				cursor.moveToFirst();
+				if (cursor.getCount() == 0) {
+					epub_id = eid;
+				} else {
+					epub_id = cursor.getString(cursor.getColumnIndex(DBEPubs.EPUB_ID));
+				}
+				
+				uri = DBAnnotations.CONTENT_URI;
+				projection = DBAnnotations.Projection;
+				selection = DBAnnotations.ANNOTATION_ID + "=\"" + annotation_id + "\"";
+				cursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
+				ContentValues values = new ContentValues();
+				values.put(DBAnnotations.ANNOTATION_ID, annotation_id);
+				values.put(DBAnnotations.CREATED, created);
+				values.put(DBAnnotations.MODIFIED, modified);
+				values.put(DBAnnotations.CATEGORY, category);
+				values.put(DBAnnotations.TAGS, tags);
+				values.put(DBAnnotations.AUTHOR_NAME, author_name);
+				values.put(DBAnnotations.BOOKID, bookid);
+				values.put(DBAnnotations.TARGET_ANNOTATION_ID, targetannotationid);
+				values.put(DBAnnotations.ISBN, isbn);
+				values.put(DBAnnotations.TITLE, title);
+				values.put(DBAnnotations.PUBLICATIONDATE, publicationdate);
+				values.put(DBAnnotations.START_PART, start_part);
+				values.put(DBAnnotations.START_PATH_XPATH, start_xpath);
+				values.put(DBAnnotations.START_PATH_CHAROFFSET, start_charoffset);
+				values.put(DBAnnotations.END_PART, end_part);
+				values.put(DBAnnotations.END_PATH_XPATH, end_xpath);
+				values.put(DBAnnotations.END_PATH_CHAROFFSET, end_charoffset);
+				values.put(DBAnnotations.HIGHLIGHTCOLOR, highlightcolor);
+				values.put(DBAnnotations.UNDERLINED, underlined);
+				values.put(DBAnnotations.CROSSOUT, crossout);
+				values.put(DBAnnotations.CONTENT, content);
+				values.put(DBAnnotations.UPB_ID, upb_id);
+				values.put(DBAnnotations.UPDATED_AT, updated_at2);
+				values.put(DBAnnotations.EPUB_ID, epub_id);
+				
+				if (cursor.getCount() == 0) {
+					FBReaderApp.this.context.getContentResolver().insert(uri, values);
+					uri = DBAuthors.CONTENT_URI;
+					projection = DBAuthors.Projection;
+					for (TargetAuthor author : authors) {
+						values.clear();
+						values.put(DBAuthors.NAME, author.getName());
+						values.put(DBAuthors.ANNOTATION_ID, annotation_id);
+						FBReaderApp.this.context.getContentResolver().insert(uri, values);
+					}
+				}  if (cursor.getCount() > 0) {
+					FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
+					uri = DBAuthors.CONTENT_URI;
+					projection = DBAuthors.Projection;
+					selection = DBAuthors.ANNOTATION_ID + "=\"" + annotation_id + "\"";
+					for (TargetAuthor author : authors) {
+						values.clear();
+						values.put(DBAuthors.NAME, author.getName());
+						values.put(DBAuthors.ANNOTATION_ID, annotation_id);
+						FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
+					}
+				}
+				cursor.close();
+			}
+		}).start();
+	}
+	
+	public String md5(String s) {
+	    try {
+	        // Create MD5 Hash
+	        MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+	        digest.update(s.getBytes());
+	        byte messageDigest[] = digest.digest();
+
+	        // Create Hex String
+	        StringBuffer hexString = new StringBuffer();
+	        for (int i=0; i<messageDigest.length; i++)
+	            hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
+	        return hexString.toString();
+
+	    } catch (NoSuchAlgorithmException e) {
+	        e.printStackTrace();
+	    }
+	    return "";
+	}
+	
+	/**
+	 * Return all annotations by the given category
+	 */
+	public ArrayList<Annotation> getAnnotationsByCategory(String category) {
+		ArrayList<Annotation> annotationList = new ArrayList<Annotation>();
+		
+		String de = CategoriesDE.indexOf(category) != -1 ? 
+				CategoriesDE.get(CategoriesDE.indexOf(category)) : null;
+		String en = CategoriesEN.indexOf(category) != -1 ? 
+				CategoriesEN.get(CategoriesEN.indexOf(category)) : null;
+		
+		for (Annotation annotation : Annotations.getAnnotations()) {
+			if (annotation.getCategory().equals(de) || annotation.getCategory().equals(en)) {
+				annotationList.add(annotation);
+			}
+		}
+		
+		return annotationList;
 	}
 	
 	/**
@@ -203,32 +731,22 @@ public final class FBReaderApp extends ZLApplication {
 	 * @return
 	 */
 	public String getPathToChapterFile(int paragraphIndex) {
-		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
-		if (fbreader.Model.TOCTree == null) {
-			return "";
-		}
-		
-		ZLTextModel textModel = fbreader.BookTextView.getModel();
-		
-		String name = "";
-		String path = "";
-		List<TOCTree> trees = fbreader.Model.TOCTree.subTrees();
+		ZLTextModel textModel = BookTextView.getModel();
 		
 		int thisParagraphIndex;
 		int nextParagraphIndex;
-				
-		for (int i = 0; i < trees.size(); i++) {
-			TOCTree tree = trees.get(i);
-			thisParagraphIndex = tree.getReference().ParagraphIndex;
-			nextParagraphIndex = (i+1 < trees.size()) ? trees.get(i+1).getReference().ParagraphIndex : textModel.getParagraphsNumber();
+		
+		for (int i = 0; i < myHtmlFileNames.size(); i++) {
+			thisParagraphIndex = myParagraphIndexList.get(i);
+			nextParagraphIndex = (i+1 < myHtmlFileNames.size() ? 
+					myParagraphIndexList.get(i+1) : textModel.getParagraphsNumber());
 			
 			if (thisParagraphIndex <= paragraphIndex && paragraphIndex < nextParagraphIndex) {
-				name = tree.getText();
-				path = tree.getPath();
+				return myHtmlFileNames.get(i);
 			}
 		}
 		
-		return path;
+		return null;
 	}
 	
 	/**
@@ -239,9 +757,15 @@ public final class FBReaderApp extends ZLApplication {
 	 * @param isSelectionStartElement
 	 * @return
 	 */
-	public int computeCharOffset(ZLTextParagraphCursor cursor, int elementIndex, boolean isSelectionStartElement) {
-		final ZLTextElement startelement = cursor.getElement(1);
-		final ZLTextElement element = cursor.getElement(elementIndex);
+	public int computeCharOffset(ZLTextParagraphCursor startCursor, ZLTextParagraphCursor elementCursor, int elementIndex, boolean isSelectionStartElement) {
+		ZLTextElement element = elementCursor.getElement(elementIndex);
+		ZLTextElement startelement = null;
+		for (int i = 0; i < startCursor.getParagraphLength(); i++) {
+			if (startCursor.getElement(i) instanceof ZLTextWord) {
+				startelement = startCursor.getElement(i);
+				break;
+			}
+		}
 		int charOffset = 0;
 		
 		if (startelement instanceof ZLTextWord && element instanceof ZLTextWord) {
@@ -372,7 +896,6 @@ public final class FBReaderApp extends ZLApplication {
 				}
 				setTitle(title.toString());
 				
-				loadFromXMLFile();
 				loadAnnotationHighlighting();
 			}
 		}
@@ -408,41 +931,19 @@ public final class FBReaderApp extends ZLApplication {
     	}
 	}
 	
-//	/**
-//	 * load an XML String of annotations into the annotations object structure
-//	 * @param xml
-//	 */
-//	public void loadSemAppFromXMLString(String xml) {
-//		try {
-//    		Serializer serializer = new Persister();
-//    		SemApp = serializer.read(Annotations.class, xml);
-//    	} catch (Exception e) {
-//    		Log.e("loadFromXMLString", e.toString());
-//    	}
-//	}
-	
 	/**
 	 * reads the xpath and the charoffset of each annotation and convert it to fbreader positions
 	 */
 	public void loadAnnotationHighlighting() {
-		final FBReaderApp fbReader = (FBReaderApp)ZLApplication.Instance();
-		ArrayList<Annotation> annotations = fbReader.Annotations.getAnnotations();
+		ZLTextModel textModel = BookTextView.getModel();
+		ArrayList<Annotation> annotations = Annotations.getAnnotations();
+		
 		String startPart;
 		String startXPath;
 		String endPart;
 		String endXPath;
 		int startCharOffset;
 		int endCharOffset;
-		int startParagraphIndexOfChapter;
-		int endParagraphIndexOfChapter;
-		List<TOCTree> trees;
-		int charCount;
-		boolean startPartReady;
-		boolean endPartReady;
-		int startParagraphIndex;
-		int startElementIndex;
-		int endParagraphIndex;
-		int endElementIndex;
 		
 		for (Annotation a : annotations) {
 			startPart = a.getAnnotationTarget().getRange().getStart().getPart();
@@ -453,91 +954,58 @@ public final class FBReaderApp extends ZLApplication {
 			endXPath = a.getAnnotationTarget().getRange().getEnd().getPath().getXPath();
 			endCharOffset = a.getAnnotationTarget().getRange().getEnd().getPath().getCharOffset();
 			
-			trees = fbReader.Model.TOCTree.subTrees();
-			
-			startParagraphIndex = 0;
-			startElementIndex = 0;
-			endParagraphIndex = 0;
-			endElementIndex = 0;
-			startPartReady = false;
-			endPartReady = false;
-			
-			Matcher matcher = Pattern.compile( "\\d+" ).matcher(startXPath);
-			startParagraphIndexOfChapter = 0;
-			while ( matcher.find() ) {
-				startParagraphIndexOfChapter = new Integer(matcher.group());
-			}
-			matcher = Pattern.compile( "\\d+" ).matcher(endXPath);
-			endParagraphIndexOfChapter = 0;
-			while ( matcher.find() ) {
-				endParagraphIndexOfChapter = new Integer(matcher.group());
+			if (!myHtmlFileNames.contains(startPart)) {
+				continue;
 			}
 			
+			int[] startData = computeParagraphData(startPart, startXPath, startCharOffset);
+			int[] endData = computeParagraphData(endPart, endXPath, endCharOffset);
 			
-			
-			int absoluteParagraphIndex = 0;
-			for (TOCTree tree : trees) {
-				String path = tree.getPath();
-				
-//				int maxParagraphNumber = fbReader.Model.BookTextModel.getParagraphsNumber();
-				absoluteParagraphIndex = tree.getReference().ParagraphIndex;
-				
-				ZLTextParagraphCursor cursor = ZLTextParagraphCursor.cursor(fbReader.Model.BookTextModel, absoluteParagraphIndex);
-				
-				charCount = 0;
-				// calculate paragraphIndex and elementIndex of the first element
-				if (path.equals(startPart)) {
-					startParagraphIndex = absoluteParagraphIndex + startParagraphIndexOfChapter;
-					cursor = ZLTextParagraphCursor.cursor(fbReader.Model.BookTextModel, startParagraphIndex);
-					int startParagraphCharIndex = 0;
-					if (cursor.getElement(1) instanceof ZLTextWord) {
-						startParagraphCharIndex = ((ZLTextWord)cursor.getElement(1)).Offset;
-					}
-					for (int i = 0; i < cursor.getParagraphLength(); i++) {
-						ZLTextElement element = cursor.getElement(i);
-						if (element instanceof ZLTextWord) {
-							charCount = ((ZLTextWord) element).Offset - startParagraphCharIndex;
-							if (charCount == startCharOffset) {
-								startElementIndex = i;
-								startPartReady = true;
-								break;
-							}
-						}
-					}
-				}
-				
-				charCount = 0;
-				// calculate paragraphIndex and elementIndex of the last element
-				if (path.equals(endPart)) {
-					endParagraphIndex = absoluteParagraphIndex + endParagraphIndexOfChapter;
-					cursor = ZLTextParagraphCursor.cursor(fbReader.Model.BookTextModel, endParagraphIndex);
-					int endParagraphCharIndex = 0;
-					if (cursor.getElement(1) instanceof ZLTextWord) {
-						endParagraphCharIndex = ((ZLTextWord)cursor.getElement(1)).Offset;
-					}
-					for (int i = 0; i < cursor.getParagraphLength(); i++) {
-						ZLTextElement element = cursor.getElement(i);
-						if (element instanceof ZLTextWord) {
-							charCount = ((ZLTextWord) element).Offset - endParagraphCharIndex + ((ZLTextWord) element).Length;
-							if (charCount == endCharOffset) {
-								endElementIndex = i;
-								endPartReady = true;
-								break;
-							}
-						}
-					}
-				}
-				// add the highlight of this annotation
-				if (startPartReady && endPartReady) {
-					ZLTextPosition start = new ZLTextFixedPosition(startParagraphIndex, startElementIndex, 0);
-					ZLTextPosition end = new ZLTextFixedPosition(endParagraphIndex, endElementIndex, 0);
-					ZLColor color = new ZLColor(a.getRenderingInfo().getHighlightColor());
-					fbReader.BookTextView.addAnnotationHighlight(start, end, color, true, a);
-					break;
-				}
+			ZLTextPosition start = new ZLTextFixedPosition(startData[0], startData[1], 0);
+			ZLTextPosition end = new ZLTextFixedPosition(endData[0], endData[1]+1, 0);
+			ZLColor color = new ZLColor(a.getRenderingInfo().getHighlightColor());
+			BookTextView.addAnnotationHighlight(start, end, color, true, a);
+		}
+		BookTextView.repaintAll();
+	}
+	
+	/**
+	 * computes the paragraph index and the element index of the given text 
+	 */
+	private int[] computeParagraphData(String part, String xPath, int charOffset) {
+		ZLTextModel textModel = BookTextView.getModel();
+		
+		Matcher matcher = Pattern.compile( "\\d+" ).matcher(xPath);
+		int tagIndex = 0;
+		while ( matcher.find() ) {
+			tagIndex = new Integer(matcher.group());
+		}
+		String xPathShort = xPath.substring(0, xPath.indexOf("[" + tagIndex + "]"));
+		
+		int startIndex = myHtmlFileNames.indexOf(part);
+		int thisFileParagraphStartIndex = myParagraphIndexList.get(startIndex);
+		int thisFileParagraphEndIndex = myParagraphIndexList.size() > startIndex + 1 ? 
+			myParagraphIndexList.get(startIndex + 1) - 1 :
+			Model.BookTextModel.getParagraphsNumber();
+		
+		ArrayList<Integer> possibleIndexList = textModel.getIndexByXPathInRange(xPathShort, thisFileParagraphStartIndex, thisFileParagraphEndIndex);
+		ZLTextParagraphCursor tmpCursor = null;
+		for (int i =0; i < possibleIndexList.size(); i++) {
+			if (textModel.getParagraphTagCount(possibleIndexList.get(i)) == tagIndex) {
+				tmpCursor = ZLTextParagraphCursor.cursor(textModel, possibleIndexList.get(i));
+				break;
 			}
 		}
-		fbReader.BookTextView.repaintAll();
+		ZLTextElement startElement = null;
+		for (int i = 0; i < tmpCursor.getParagraphLength(); i++) {
+			if (tmpCursor.getElement(i) instanceof ZLTextWord) {
+				startElement = tmpCursor.getElement(i);
+				break;
+			}
+		}
+		int absoluteElementCharOffset = charOffset + ((ZLTextWord)startElement).Offset;
+		
+		return tmpCursor.getIndexesByCharOffset(absoluteElementCharOffset);
 	}
 
 

@@ -5,11 +5,6 @@ import org.simpleframework.xml.Element;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-//@XmlAccessorType(XmlAccessType.FIELD)
-//@XmlType(name = "author", propOrder = {
-//	    "name",
-//	    "identity"
-//	})
 @Element
 public class Author implements Parcelable {
 	

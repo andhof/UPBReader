@@ -21,6 +21,8 @@ public class SemApps implements Parcelable {
 	 * Standard empty constructor
 	 */
 	public SemApps() {
+		type = "";
+		semApps = new ArrayList<SemAppDummy>();
     }
 	
 	public SemApps(Parcel in) {

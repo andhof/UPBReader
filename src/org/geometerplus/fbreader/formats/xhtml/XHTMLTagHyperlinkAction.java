@@ -38,7 +38,7 @@ class XHTMLTagHyperlinkAction extends XHTMLTagAction {
 	}
 
 	@Override
-	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag) {
+	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag, String[] tagStack) {
 		final BookReader modelReader = reader.getModelReader();
 		final String href = xmlattributes.getValue("href");
 		if (myHyperlinkStackSize == myHyperlinkStack.length) {

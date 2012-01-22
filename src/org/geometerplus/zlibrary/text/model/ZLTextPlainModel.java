@@ -35,6 +35,8 @@ public class ZLTextPlainModel implements ZLTextModel {
 	protected byte[] myParagraphKinds;
 	protected byte[] myParagraphHtmlTags;
 	protected int[] myParagraphTagNumbers;
+	protected int[] myParagraphTagCounts;
+	protected String[] myParagraphXPaths;
 
 	protected int myParagraphsNumber;
 
@@ -207,6 +209,8 @@ public class ZLTextPlainModel implements ZLTextModel {
 		myStorage = new CachedCharStorage(dataBlockSize, directoryName, extension);
 		myImageMap = imageMap;
 		myParagraphTagNumbers = new int[arraySize];
+		myParagraphTagCounts = new int[arraySize];
+		myParagraphXPaths = new String[arraySize];
 	}
 	
 	public final CharStorage getCharStorage() {
@@ -306,7 +310,6 @@ public class ZLTextPlainModel implements ZLTextModel {
 	
 	/**
 	 * Get the HTML tag type of the paragraph
-	 * 
 	 * @param index
 	 * @return byte
 	 */
@@ -314,14 +317,76 @@ public class ZLTextPlainModel implements ZLTextModel {
 		return myParagraphHtmlTags[index];
 	}
 	
+	public final byte[] getAllParagraphHtmlTags() {
+		return myParagraphHtmlTags;
+	}
+	
 	/**
 	 * Get the position from this type of tag. first p or second p for example
-	 * 
 	 * @param index
 	 * @return int
 	 */
 	public final int getParagraphTagNumbers(int index) {
 		return myParagraphTagNumbers[index];
+	}
+	
+	/**
+	 * Get the xpath string of the paragraph with one index 
+	 * @param index
+	 * @return
+	 */
+	public final String getParagraphXPath(int index) {
+		return myParagraphXPaths[index];
+	}
+	
+	/**
+	 * Get all xpath strings of every paragraph 
+	 * @return
+	 */
+	public final String[] getAllParagraphXPaths() {
+		return myParagraphXPaths;
+	}
+	
+	/**
+	 * Get the tag count of one paragraph 
+	 * @return
+	 */
+	public final int getParagraphTagCount(int index) {
+		return myParagraphTagCounts[index];
+	}
+	
+	/**
+	 * Get the tag count of one paragraph 
+	 * @return
+	 */
+	public final int getParagraphTagCountWithBR(int index) {
+		if (myParagraphTagCounts[index] == 0 && myParagraphHtmlTags[index] != 0) {
+			int i = index;
+			while (i >= 0 && myParagraphTagCounts[i] <= 0) {
+				i--;
+			}
+			return myParagraphTagCounts[i];
+		} else {
+			return myParagraphTagCounts[index];
+		}
+	}
+	
+	/**
+	 * Get all tag counts of every paragraph 
+	 * @return
+	 */
+	public final int[] getAllParagraphTagCounts() {
+		return myParagraphTagCounts;
+	}
+	
+	public final ArrayList<Integer> getIndexByXPathInRange(String xpath, int startIndex, int endIndex) {
+		ArrayList<Integer> indexList = new ArrayList<Integer>();
+		for (int i = startIndex; i <= endIndex; i++) {
+			if (myParagraphXPaths[i] != null && myParagraphXPaths[i].equals(xpath)) {
+				indexList.add(new Integer(i));
+			}
+		}
+		return indexList;
 	}
 
 	public final ZLTextParagraph getParagraph(int index) {

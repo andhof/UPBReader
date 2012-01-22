@@ -214,7 +214,7 @@ public final class FB2Reader extends ZLXMLReaderAdapter {
 	}
 
 	@Override
-	public boolean startElementHandler(String tagName, ZLStringMap attributes) {
+	public boolean startElementHandler(String tagName, ZLStringMap attributes, String[] stringTagStack) {
 		String id = attributes.getValue("id");
 		if (id != null) {
 			if (!myReadMainText) {

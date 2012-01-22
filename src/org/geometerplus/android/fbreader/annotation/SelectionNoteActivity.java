@@ -6,7 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import org.geometerplus.android.fbreader.FBReader;
+import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
+import org.geometerplus.android.fbreader.annotation.database.DBEPub.DBEPubs;
 import org.geometerplus.android.fbreader.annotation.model.*;
+import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.fbreader.Paths;
 import org.geometerplus.fbreader.bookmodel.TOCTree;
 import org.geometerplus.fbreader.fbreader.ActionCode;
@@ -14,19 +17,25 @@ import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.formats.html.HtmlTag;
 import org.geometerplus.fbreader.library.Book;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
+import org.geometerplus.zlibrary.core.filesystem.ZLFile;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.core.util.ZLColor;
 import org.geometerplus.zlibrary.text.model.ZLTextModel;
 import org.geometerplus.zlibrary.text.view.ZLTextFixedPosition;
 import org.geometerplus.zlibrary.text.view.ZLTextParagraphCursor;
 import org.geometerplus.zlibrary.text.view.ZLTextPosition;
+import org.geometerplus.zlibrary.text.view.ZLTextWord;
+
 import de.upb.android.reader.R;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings.Secure;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -37,10 +46,13 @@ import android.widget.TextView;
 
 public class SelectionNoteActivity extends Activity {
 
+	private AnnotationsDbAdapter dbHelper;
+	private Cursor cursor;
+	
 	private boolean newAnnotation;
-	private ZLResource myResource;
 	private Button myOkButton;
 	private Button cancelButton;
+	private String epub_id;
 	
 	@Override
 	protected void onCreate(Bundle icicle) {
@@ -61,27 +73,17 @@ public class SelectionNoteActivity extends Activity {
 		
 		setContentView(R.layout.annotation_note_dialog);
 		
+		setTitle(R.string.selectionnote_title);
 		
+		findTextView(R.id.note_author).setText(R.string.selectionnote_author);
 		
-		myResource = ZLResource.resource("dialog").getResource("SelectionNoteDialog");
+		findTextView(R.id.note_input_label).setText(R.string.selectionnote_input);
 		
-		setTitle(myResource.getResource("title").getValue());
+		final EditText contentEditText = (EditText) findViewById(R.id.note_text_input);
+		contentEditText.setText(annotation.getAnnotationContent().getAnnotationText());
 		
-		findTextView(R.id.note_author).setText(
-				myResource.getResource("author").getValue()
-		);
-		
-		findTextView(R.id.note_input_label).setText(
-				myResource.getResource("input").getValue()
-		);
-		
-		((EditText) findViewById(R.id.note_text_input)).setText(
-				annotation.getAnnotationContent().getAnnotationText()
-		);
-		
-		findTextView(R.id.note_tags_label).setText(
-				myResource.getResource("tags").getValue()
-		);
+		final EditText tagEditText = (EditText)findViewById(R.id.note_tags_input);
+		tagEditText.setText(R.string.selectionnote_tags);
 		
 		String tagsString = "";
 		StringBuffer result = new StringBuffer();
@@ -95,19 +97,17 @@ public class SelectionNoteActivity extends Activity {
 	    tagsString = result.toString();
 		((EditText) findViewById(R.id.note_tags_input)).setText(tagsString);
 		
-		findTextView(R.id.note_categories_label).setText(
-				myResource.getResource("categories").getValue()
-		);
+		findTextView(R.id.note_categories_label).setText(R.string.selectionnote_categories);
 		
 		final String[] Categories = new String[] { 
-				myResource.getResource("category1").getValue(), 
-				myResource.getResource("category2").getValue(),
-				myResource.getResource("category3").getValue()
+				getString(R.string.selectionnote_category1), 
+				getString(R.string.selectionnote_category2),
+				getString(R.string.selectionnote_category3)
 			};
 		
 		final Spinner spinner = (Spinner) findViewById(R.id.spinner);
 		
-		spinner.setPrompt(myResource.getResource("categories").getValue());
+		spinner.setPrompt(getString(R.string.selectionnote_categories));
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(
 	            this, android.R.layout.simple_spinner_item, Categories);
 	    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -131,10 +131,11 @@ public class SelectionNoteActivity extends Activity {
 				ZLTextModel textModel = fbreader.BookTextView.getModel();
 				
 				TOCTree tree;
-				ZLTextParagraphCursor cursor;
+				ZLTextParagraphCursor startCursor;
+				ZLTextParagraphCursor elementCursor;
 				
-				String content = ((EditText) findViewById(R.id.note_text_input)).getText().toString();
-				String tagString = ((EditText)findViewById(R.id.note_tags_input)).getText().toString();
+				String content = contentEditText.getText().toString();
+				String tagString = tagEditText.getText().toString();
 				String[] tags = tagString.split(", ");
 				
 				
@@ -149,34 +150,35 @@ public class SelectionNoteActivity extends Activity {
 					String startPart = fbreader.getPathToChapterFile(selectionStartPos.getParagraphIndex());
 					String endPart = fbreader.getPathToChapterFile(selectionEndPos.getParagraphIndex());
 					// define the xpath String to the paragraph in the document and the charOffset
-					byte tag = textModel.getParagraphHtmlTag(selectionStartParagraphIndex);
-					int absoluteStartTagCount = textModel.getParagraphTagNumbers(selectionStartParagraphIndex);
-					int absoluteEndTagCount = textModel.getParagraphTagNumbers(selectionEndParagraphIndex);
-					tree = fbreader.getTreeByParagraphIndex(selectionStartParagraphIndex);
+					String startParagraphXPath = textModel.getParagraphXPath(selectionStartParagraphIndex);
+					String endParagraphXPath = textModel.getParagraphXPath(selectionEndParagraphIndex);
+					int startParagraphTagCount = textModel.getParagraphTagCountWithBR(selectionStartParagraphIndex);
+					int endParagraphTagCount = textModel.getParagraphTagCountWithBR(selectionEndParagraphIndex);
 					
-					// compute the number of the selected p tag for one chapter
-					int chapterStartTagCount = absoluteStartTagCount - tree.getTagCount() + 1;
-					tree = fbreader.getTreeByParagraphIndex(selectionEndParagraphIndex);
-					// compute the number of the selected p tag for one chapter
-					int chapterEndTagCount = absoluteEndTagCount - tree.getTagCount() + 1;
-					String startXPath = "//"+ HtmlTag.getNameByTag(tag) + "[" + chapterStartTagCount + "]";
-					String endXPath = "//"+ HtmlTag.getNameByTag(tag) + "[" + chapterEndTagCount + "]";
+					String startXPath = startParagraphXPath + "[" + startParagraphTagCount + "]";
+					String endXPath = endParagraphXPath + "[" + endParagraphTagCount + "]";
 					
-					cursor = ZLTextParagraphCursor.cursor(textModel, selectionStartPos.getParagraphIndex());
-					int startCharOffset = fbreader.computeCharOffset(cursor, selectionStartPos.getElementIndex(), true);
-					cursor = ZLTextParagraphCursor.cursor(textModel, selectionEndPos.getParagraphIndex());
-					int endCharOffset = fbreader.computeCharOffset(cursor, selectionEndPos.getElementIndex(), false);
+					startCursor = getStartCursor(selectionStartParagraphIndex);
+					elementCursor = ZLTextParagraphCursor.cursor(textModel, selectionStartParagraphIndex);
+					int startCharOffset = fbreader.computeCharOffset(startCursor, elementCursor, selectionStartPos.getElementIndex(), true);
+					
+					startCursor = getStartCursor(selectionEndParagraphIndex);
+					elementCursor = ZLTextParagraphCursor.cursor(textModel, selectionEndParagraphIndex);
+					int endCharOffset = fbreader.computeCharOffset(startCursor, elementCursor, selectionEndPos.getElementIndex(), false);
 					
 					ZLColor highlightColor = new ZLColor(150, 150, 255);
 					
-					annotation.getAuthor().setName("localuser");
+					// using the deviceid for user identification, should be the imt account name
+					String deviceId = Secure.getString(SelectionNoteActivity.this.getContentResolver(), Secure.ANDROID_ID);
+					annotation.getAuthor().setName(deviceId);
+					
 					annotation.setCategory(spinner.getSelectedItem().toString());
 					annotation.setCreated(new Date().getTime());
 					annotation.setModified(new Date().getTime());
 					annotation.setTags(new ArrayList(Arrays.asList(tags)));
 					DocumentIdentifier documentIdentifier = annotation.getAnnotationTarget().getDocumentIdentifier();
 					documentIdentifier.setTitle(book.getTitle());
-					documentIdentifier.setAuthor(book.authorNames());
+					documentIdentifier.setAuthors(book.authorNames());
 					Range range = annotation.getAnnotationTarget().getRange();
 					range.getStart().setPart(startPart);
 					range.getStart().getPath().setXPath(startXPath);
@@ -189,12 +191,17 @@ public class SelectionNoteActivity extends Activity {
 					
 					annotation.getAnnotationContent().setAnnotationText(content);
 					
+			    	annotation.setId(fbreader.md5(book.getContentHashCode() + annotation.toString()));
 					
 					ZLTextFixedPosition newEndPos = new ZLTextFixedPosition(selectionEndPos.getParagraphIndex(), selectionEndPos.getElementIndex()+1, selectionEndPos.getCharIndex());
 					fbreader.BookTextView.addAnnotationHighlight(selectionStartPos, newEndPos, highlightColor, true, annotation);
 					
 					saveToXML(fbreader.Annotations);
 				} else {
+					annotation.getAnnotationContent().setAnnotationText(content);
+					annotation.setTags(new ArrayList(Arrays.asList(tags)));
+					annotation.setCategory(spinner.getSelectedItem().toString());
+					annotation.setModified(new Date().getTime());
 					Bundle bundle = new Bundle();
 					bundle.putString("content", content);
 					bundle.putStringArrayList("tags", new ArrayList(Arrays.asList(tags)));
@@ -206,6 +213,33 @@ public class SelectionNoteActivity extends Activity {
 					
 					saveToXML(fbreader.Annotations);
 				}
+				
+				String bookPath = book.File.getPath();
+				EPub epub = fbreader.EPubs.getEPubByPath(bookPath);
+				if (epub == null) {
+					epub_id = fbreader.md5(book.getContentHashCode());
+					String name = book.getTitle();
+					String updated_at = new Date().toString();
+					String file_name = book.File.getShortName();
+					String file_path = bookPath;
+					epub = fbreader.EPubs.addEPub(epub_id, name, updated_at, file_name, file_path);
+				} 
+				
+				String semapp_id;
+				
+				Uri uri = DBEPubs.CONTENT_URI;
+				String[] projection = DBEPubs.Projection;
+				String selection = DBEPubs.EPUB_ID + "=\"" + epub_id + "\"";
+				cursor = getContentResolver().query(uri, projection, selection, null, null);
+				
+				if (cursor.getCount() == 0) {
+					semapp_id = null;
+				} else {
+					semapp_id = cursor.getString(cursor.getColumnIndex(DBEPubs.SEMAPP_ID));
+				}
+				cursor.close();
+				
+				fbreader.writeEPubAndAnnotationToDatabase(SelectionNoteActivity.this, epub, bookPath, semapp_id, annotation, epub.getId());
 				
 				runOnUiThread(new Runnable() {
 					public void run() {
@@ -230,6 +264,56 @@ public class SelectionNoteActivity extends Activity {
 			}
 		});
 	    
+	}
+	
+	/**
+	 * Get the number of tags for one paragraph 
+	 */
+	private int getTagCountByParagraphIndex(int index) {
+		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+		ZLTextModel textModel = fbreader.BookTextView.getModel();
+		
+		TOCTree tree = fbreader.getTreeByParagraphIndex(index);
+		int thisParagraphStartIndex = tree.getReference().ParagraphIndex;
+		
+		byte tag = textModel.getParagraphHtmlTag(index);
+		byte[] paragraphHtmlTags = textModel.getAllParagraphHtmlTags();
+		String startParagraphXPath = textModel.getParagraphXPath(index);
+		String[] paragraphXPaths = textModel.getAllParagraphXPaths();
+		
+		int countTagsByType = 0;
+		for (int i = thisParagraphStartIndex; i <= index; i++) {
+			if (paragraphXPaths[i] != null && paragraphHtmlTags[i] == tag && paragraphXPaths[i].equals(startParagraphXPath)) {
+				countTagsByType++;
+			}
+		}
+		return countTagsByType;
+	}
+	
+	/**
+	 * Get the cursor for the xpath start paragraph. Not the app intern paragraph
+	 */
+	private ZLTextParagraphCursor getStartCursor(int index) {
+		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+		ZLTextModel textModel = fbreader.BookTextView.getModel();
+		
+		int backJumpCount = 0;
+		for (int i = index; i >= 0; i-=2) {
+			ZLTextParagraphCursor tmpEndCursor = ZLTextParagraphCursor.cursor(textModel, i);
+			if (!tmpEndCursor.hasZLTextWordElement()) {
+				backJumpCount += 2;
+			} else {
+				backJumpCount = 0;
+			}
+			if (textModel.getParagraphHtmlTag(i) != HtmlTag.BR) {
+				if (tmpEndCursor.hasZLTextWordElement()) {
+					return ZLTextParagraphCursor.cursor(textModel, i);
+				} else {
+					return ZLTextParagraphCursor.cursor(textModel, i+backJumpCount);
+				}
+			} 
+		}
+		return null;
 	}
 	
 	private TextView findTextView(int resourceId) {

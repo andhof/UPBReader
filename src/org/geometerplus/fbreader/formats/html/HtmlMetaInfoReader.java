@@ -45,7 +45,7 @@ public class HtmlMetaInfoReader extends ZLXMLReaderAdapter {
 	}
 
 	@Override
-	public boolean startElementHandler(String tagName, ZLStringMap attributes) {
+	public boolean startElementHandler(String tagName, ZLStringMap attributes, String[] tagStack) {
 		switch (HtmlTag.getTagByName(tagName)) {
 			case HtmlTag.TITLE:
 				myReadTitle = true;

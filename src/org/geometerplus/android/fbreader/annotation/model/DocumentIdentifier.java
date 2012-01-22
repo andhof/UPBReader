@@ -16,12 +16,12 @@ public class DocumentIdentifier implements Parcelable {
 	protected String isbn;
 	@Element(required=false)
 	protected String title;
-	@ElementList(required=false)
-	protected ArrayList<String> authors;
+	@ElementList(required=false, name="authors", entry="author")
+	protected ArrayList<TargetAuthor> authors;
 	@Element(required=false)
 	protected String publicationDate;
 	
-	public DocumentIdentifier(String isbn, String title, ArrayList<String> authors, String publicationdate) {
+	public DocumentIdentifier(String isbn, String title, ArrayList<TargetAuthor> authors, String publicationdate) {
 		this.isbn = isbn;
 		this.title = title;
 		this.authors = authors;
@@ -31,7 +31,7 @@ public class DocumentIdentifier implements Parcelable {
 	public DocumentIdentifier() {
 		this.isbn = "";
 		this.title = "";
-		this.authors = new ArrayList<String>();
+		this.authors = new ArrayList<TargetAuthor>();
 		this.publicationDate = "";
 	}
 	
@@ -47,8 +47,11 @@ public class DocumentIdentifier implements Parcelable {
 		title = newTitle;
 	}
 	
-	public void setAuthor(ArrayList<String> newAuthors) {
-		authors = newAuthors;
+	public void setAuthors(ArrayList<String> newAuthors) {
+		authors.clear();
+		for (String author : newAuthors) {
+			authors.add(new TargetAuthor(author));
+		}
 	}
 	
 	public void setPublicationDate(String newPublicationDate) {
@@ -63,7 +66,7 @@ public class DocumentIdentifier implements Parcelable {
 		return title;
 	}
 	
-	public ArrayList<String> getAuthor() {
+	public ArrayList<TargetAuthor> getAuthors() {
 		return authors;
 	}
 	
@@ -83,7 +86,7 @@ public class DocumentIdentifier implements Parcelable {
 		if (authors == null) {
 			authors = new ArrayList();
 		}
-		in.readStringList(authors);
+		in.readTypedList(authors, TargetAuthor.CREATOR);
 		publicationDate = in.readString();
 	}
 
@@ -91,7 +94,7 @@ public class DocumentIdentifier implements Parcelable {
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(isbn);
 		dest.writeString(title);
-		dest.writeStringList(authors);
+		dest.writeTypedList(authors);
 		dest.writeString(publicationDate);
 	}
 	

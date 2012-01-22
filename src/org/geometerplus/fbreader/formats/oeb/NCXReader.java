@@ -84,7 +84,7 @@ class NCXReader extends ZLXMLReaderAdapter {
 	}
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		tag = tag.toLowerCase().intern();
 		switch (myReadState) {
 			case READ_NONE:

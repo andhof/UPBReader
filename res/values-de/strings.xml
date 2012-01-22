@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="empty_string"></string>
+    
+    <string name="upblogin_title">Uni Bibliothek Authentifizierung</string>
+    <string name="upblogin_unencryptedWarning">Ihr Passwort wird unverschlüsselt übertragen.</string>
+    <string name="upblogin_login">Benutzername</string>
+    <string name="upblogin_password">Passwort</string>
+    <string name="upblogin_loginIsEmpty">Es sollte ein Benutzername angegeben werden.</string>
+    <string name="upblogin_register">Anmelden</string>
+    
+    <string name="loadingsemlist">Liste der SeminarApparate wird geladen. Bitte warten...</string>
+    <string name="loadingepublist">Buchliste wird geladen. Bitte warten...</string>
+    <string name="downloadingFile">Buch wird geladen: %s</string>
+    
+    <string name="selectionnote_title">Notiz</string>
+    <string name="selectionnote_author">Autor: Localuser</string>
+    <string name="selectionnote_input">Notiz eingeben:</string>
+    <string name="selectionnote_tags">Tags: (Z.B.: Android, eBook, ...)</string>
+    <string name="selectionnote_categories">Kategorie wählen:</string>
+    <string name="selectionnote_category1">Notiz</string>
+    <string name="selectionnote_category2">Frage</string>
+    <string name="selectionnote_category3">Problem</string>
+    <string name="selectionnote_category4">Kommentar</string>
+    
+    <string name="shownote_title">Annotation</string>
+    <string name="shownote_selection">Ausgewählter Text:</string>
+    <string name="shownote_author">Autor:</string>
+    <string name="shownote_category">Kategorie:</string>
+    <string name="shownote_tags">Tags:</string>
+    <string name="shownote_modified">Geändert:</string>
+    <string name="shownote_content">Notiz:</string>
+    
+    <string name="quickaction_copy">Kopieren</string>
+    <string name="quickaction_share">Teilen</string>
+    <string name="quickaction_translate">Wörterbuch</string>
+    <string name="quickaction_bookmark">Lesezeichen</string>
+    <string name="quickaction_highlight">Markierung</string>
+    <string name="quickaction_note">Notiz</string>
+    <string name="quickaction_clear">Abbruch</string>
+    <string name="quickaction_show">Anzeigen</string>
+    <string name="quickaction_edit">Bearbeiten</string>
+    <string name="quickaction_comment">Kommentieren</string>
+    <string name="quickaction_remove">Entfernen</string>
+</resources>

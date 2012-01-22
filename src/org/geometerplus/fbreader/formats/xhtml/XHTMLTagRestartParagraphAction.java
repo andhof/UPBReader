@@ -23,8 +23,8 @@ import org.geometerplus.zlibrary.core.xml.ZLStringMap;
 
 class XHTMLTagRestartParagraphAction extends XHTMLTagAction {
 	@Override
-	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag) {
-		reader.getModelReader().beginParagraph();
+	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag, String[] tagStack) {
+		reader.getModelReader().beginNewParagraph(tag, tagStack);
 		reader.getModelReader().endParagraph();
 	}
 

@@ -260,6 +260,45 @@ public final class ZLTextParagraphCursor {
 	ZLTextParagraph getParagraph() {
 		return Model.getParagraph(Index);
 	}
+	
+	/**
+	 * look if there are ZLTextWord elements in this paragraph 
+	 */
+	public boolean hasZLTextWordElement() {
+		for (ZLTextElement element : myElements) {
+			if (element instanceof ZLTextWord) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * get the index of the element with the given charoffset 
+	 */
+	public int[] getIndexesByCharOffset(int charOffset) {
+		int thisElementOffset = -1;
+		int thisElementLength = -1;
+		int[] data = {-1, -1};
+		
+		for (int i = 0; i < myElements.size(); i++) {
+			if (myElements.get(i) instanceof ZLTextWord) {
+				thisElementOffset = ((ZLTextWord)myElements.get(i)).Offset;
+				thisElementLength = ((ZLTextWord)myElements.get(i)).Length;
+			}
+			if (thisElementOffset == charOffset || thisElementOffset == charOffset - thisElementLength) {
+				data[0] = Index;
+				data[1] = i;
+				return data;
+			}
+			if (thisElementOffset > charOffset) {
+				data[0] = Index;
+				data[1] = -1;
+				return data;
+			}
+		}
+		return next().getIndexesByCharOffset(charOffset);
+	}
 
 	@Override
 	public String toString() {

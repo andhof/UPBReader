@@ -28,6 +28,8 @@ import org.geometerplus.zlibrary.core.util.ZLArrayUtils;
 import org.geometerplus.zlibrary.core.xml.ZLStringMap;
 import org.geometerplus.zlibrary.core.xml.ZLXMLReader;
 
+import android.util.Log;
+
 final class ZLXMLParser {
 	private static final byte START_DOCUMENT = 0;
 	private static final byte START_TAG = 1;
@@ -70,7 +72,7 @@ final class ZLXMLParser {
 	private final InputStreamReader myStreamReader;
 	private final ZLXMLReader myXMLReader;
 	private final boolean myProcessNamespaces;
-
+	
 	private static HashMap<Integer,Queue<char[]>> ourBufferPool = new HashMap<Integer,Queue<char[]>>();
 	private static Queue<ZLMutableString> ourStringPool = new LinkedList<ZLMutableString>();
 
@@ -400,7 +402,7 @@ mainSwitchLabel:
 												}
 												namespaceMapStack.add(currentNamespaceMap);
 											}
-											if (processStartTag(xmlReader, stringTagName, attributes, currentNamespaceMap)) {
+											if (processStartTag(xmlReader, stringTagName, attributes, currentNamespaceMap, tagStack)) {
 												streamReader.close();
 												return;
 											}
@@ -411,7 +413,7 @@ mainSwitchLabel:
 									case '/':
 										state = SLASH;
 										tagName.append(buffer, startPosition, i - startPosition);
-										if (processFullTag(xmlReader, convertToString(strings, tagName), attributes)) {
+										if (processFullTag(xmlReader, convertToString(strings, tagName), attributes, tagStack)) {
 											streamReader.close();
 											return;
 										}
@@ -440,7 +442,7 @@ mainSwitchLabel:
 											}
 											namespaceMapStack.add(currentNamespaceMap);
 										}
-										if (processStartTag(xmlReader, stringTagName, attributes, currentNamespaceMap)) {
+										if (processStartTag(xmlReader, stringTagName, attributes, currentNamespaceMap, tagStack)) {
 											streamReader.close();
 											return;
 										}
@@ -451,7 +453,7 @@ mainSwitchLabel:
 									break;
 								case '/':
 									state = SLASH;
-									if (processFullTag(xmlReader, convertToString(strings, tagName), attributes)) {
+									if (processFullTag(xmlReader, convertToString(strings, tagName), attributes, tagStack)) {
 										streamReader.close();
 										return;
 									}
@@ -647,7 +649,9 @@ mainSwitchLabel:
 													}
 												}
 											}
-											if (processEndTag(xmlReader, tagStack[--tagStackSize], currentNamespaceMap)) {
+											String tag = tagStack[--tagStackSize];
+											tagStack[tagStackSize] = null;
+											if (processEndTag(xmlReader, tag, currentNamespaceMap)) {
 												streamReader.close();
 												return;
 											}
@@ -742,8 +746,34 @@ mainSwitchLabel:
 		}
 	}
 
-	private static boolean processFullTag(ZLXMLReader xmlReader, String tagName, ZLStringMap attributes) {
-		if (xmlReader.startElementHandler(tagName, attributes)) {
+	private static boolean processFullTag(ZLXMLReader xmlReader, String tagName, ZLStringMap attributes, String[] tagStack) {
+		// TODO debug entfernen
+		if (tagName.equals("br")) {
+			ArrayList<String> paragraphTags = new ArrayList<String>(); 
+			paragraphTags.add("html");
+			paragraphTags.add("body");
+			paragraphTags.add("p");
+			paragraphTags.add("h1");
+			paragraphTags.add("h2");
+			paragraphTags.add("h3");
+			paragraphTags.add("h4");
+			paragraphTags.add("h5");
+			paragraphTags.add("h6");
+			paragraphTags.add("div");
+			paragraphTags.add("dt");
+			paragraphTags.add("td");
+			paragraphTags.add("th");
+			
+			String[] tmpTagStack = new String[tagStack.length];
+			for (int i = tagStack.length-1; i >= 0; i--) {
+				if (paragraphTags.contains(tagStack[i])) {
+					tmpTagStack[i] = tagStack[i];
+				}
+			}
+			tagStack = tmpTagStack;
+		}
+		
+		if (xmlReader.startElementHandler(tagName, attributes, tagStack)) {
 			return true;
 		}
 		if (xmlReader.endElementHandler(tagName)) {
@@ -753,11 +783,11 @@ mainSwitchLabel:
 		return false;
 	}
 
-	private static boolean processStartTag(ZLXMLReader xmlReader, String tagName, ZLStringMap attributes, HashMap<String,String> currentNamespaceMap) {
+	private static boolean processStartTag(ZLXMLReader xmlReader, String tagName, ZLStringMap attributes, HashMap<String,String> currentNamespaceMap, String[] tagStack) {
 		if (currentNamespaceMap != null) {
 			xmlReader.namespaceMapChangedHandler(currentNamespaceMap);
 		}
-		if (xmlReader.startElementHandler(tagName, attributes)) {
+		if (xmlReader.startElementHandler(tagName, attributes, tagStack)) {
 			return true;
 		}
 		attributes.clear();
@@ -766,6 +796,7 @@ mainSwitchLabel:
 
 	private static boolean processEndTag(ZLXMLReader xmlReader, String tagName, HashMap<String,String> currentNamespaceMap) {
 		final boolean result = xmlReader.endElementHandler(tagName);
+
 		if (currentNamespaceMap != null) {
 			xmlReader.namespaceMapChangedHandler(currentNamespaceMap);
 		}

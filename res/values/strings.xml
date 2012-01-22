@@ -1,4 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="empty_string"></string>
+	
+	<string name="upblogin_title">Authentication</string>
+    <string name="upblogin_unencryptedWarning">Your password will be sent unencrypted</string>
+    <string name="upblogin_login">Username</string>
+    <string name="upblogin_password">Password</string>
+    <string name="upblogin_loginIsEmpty">Username should be non-empty</string>
+    <string name="upblogin_register">Sign up</string>
+    
+	<string name="loadingsemlist">Loading SeminarApparate List. Please, wait&#8230;</string>
+    <string name="loadingepublist">Loading Book List. Please, wait&#8230;</string>
+    <string name="downloadingFile">Downloading book %s</string>
+    
+    <string name="selectionnote_title">Note</string>
+    <string name="selectionnote_author">Author: Localuser</string>
+    <string name="selectionnote_input">Note input:</string>
+    <string name="selectionnote_tags">Tags: (E.g.: Android, eBook, ...)</string>
+    <string name="selectionnote_categories">Choose a category:</string>
+    <string name="selectionnote_category1">Note</string>
+    <string name="selectionnote_category2">Question</string>
+    <string name="selectionnote_category3">Issue</string>
+    <string name="selectionnote_category4">Comment</string>
+    
+    <string name="shownote_title">Annotation</string>
+    <string name="shownote_selection">Selected text:</string>
+    <string name="shownote_author">Author:</string>
+    <string name="shownote_category">Category:</string>
+    <string name="shownote_tags">Tags:</string>
+    <string name="shownote_modified">Modified:</string>
+    <string name="shownote_content">Note:</string>
+    
+    <string name="quickaction_copy">Copy</string>
+    <string name="quickaction_share">Share</string>
+    <string name="quickaction_translate">Dictionary</string>
+    <string name="quickaction_bookmark">Bookmark</string>
+    <string name="quickaction_highlight">Highlight</string>
+    <string name="quickaction_note">Note</string>
+    <string name="quickaction_clear">Cancel</string>
+    <string name="quickaction_show">Show</string>
+    <string name="quickaction_edit">Edit</string>
+    <string name="quickaction_comment">Comment</string>
+    <string name="quickaction_remove">Remove</string>
 </resources>

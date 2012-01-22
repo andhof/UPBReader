@@ -130,15 +130,15 @@ public class BookReader {
 		}		
 	}
 	
-	public final void beginNewParagraph(byte tag) {
-		beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag);
+	public final void beginNewParagraph(byte tag, String[] tagStack) {
+		beginNewParagraph(ZLTextParagraph.Kind.TEXT_PARAGRAPH, tag, tagStack);
 	}
 
-	public final void beginNewParagraph(byte kind, byte tag) {
+	public final void beginNewParagraph(byte kind, byte tag, String[] tagStack) {
 		endParagraph();
 		final ZLTextWritableModel textModel = myCurrentTextModel;
 		if (textModel != null) {
-			textModel.createParagraph(kind, tag);
+			textModel.createParagraph(kind, tag, tagStack);
 			final byte[] stack = myKindStack;
 			final int size = myKindStackSize;
 			for (int i = 0; i < size; ++i) {

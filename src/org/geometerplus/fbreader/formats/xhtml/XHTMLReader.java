@@ -161,7 +161,7 @@ public class XHTMLReader extends ZLXMLReaderAdapter {
 	}
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		String id = attributes.getValue("id");
 		if (id != null) {
 			myModelReader.addHyperlinkLabel(myReferencePrefix + id);
@@ -169,7 +169,7 @@ public class XHTMLReader extends ZLXMLReaderAdapter {
 
 		XHTMLTagAction action = ourTagActions.get(tag.toLowerCase());
 		if (action != null) {
-			action.doAtStart(this, attributes, HtmlTag.getTagByName(tag.toLowerCase()));
+			action.doAtStart(this, attributes, HtmlTag.getTagByName(tag.toLowerCase()), tagStack);
 		}
 		return false;
 	}
@@ -216,7 +216,7 @@ cycle:
 		}
 		if (len > 0) {
 			if (myInsideBody && !myModelReader.paragraphIsOpen()) {
-				myModelReader.beginNewParagraph((byte) 0);
+				myModelReader.beginNewParagraph((byte) 0, null);
 			}
 			myModelReader.addData(data, start, len, false);
 		}

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/comments_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:orientation="vertical"
+    android:background="@drawable/popup"
+>
+    <TextView
+        android:id="@+id/comment_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20px"
+        android:gravity="center_horizontal"
+        android:paddingTop="10dp" />
+
+    <ListView
+        android:id="@+id/ListView01"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp" />
+
+    <TextView
+        android:id="@+id/new_comment_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="16px"
+        android:paddingTop="10dp" 
+        android:paddingLeft="10dp" />
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:paddingTop="5dp"
+	    android:orientation="horizontal"
+	>
+	    <TextView
+	        android:layout_width="0dip"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="0.1" />
+	    <EditText 
+	        android:id="@+id/comment_input" 
+	        android:layout_width="0dip" 
+	        android:layout_height="150dp"
+	        android:layout_weight="0.8"
+	        android:padding="5dp"
+	        android:paddingRight="20dp" />
+	    <TextView
+	        android:layout_width="0dip"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="0.1" />
+    </LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="5dp"
+        android:orientation="horizontal"
+    >
+        <TextView
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1" />
+        <Button
+	        android:id="@+id/add_comment_button"
+	        android:layout_width="wrap_content"
+	        android:minWidth="75dp"
+	        android:layout_height="wrap_content"
+	        android:layout_weight="0.8"
+	        android:singleLine="true"
+	        android:layout_marginLeft="10dp"
+	        android:layout_marginRight="10dp" />
+        <TextView
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.1" />
+    </LinearLayout>
+    
+</LinearLayout>

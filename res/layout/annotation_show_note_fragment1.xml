@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:orientation="vertical"
+    android:background="@drawable/popup"
+>
+    <TextView 
+        android:id="@+id/show_note_title"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20px"
+        android:gravity="center_horizontal"
+        android:paddingTop="10dp" />
+    <TableLayout
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content">
+		<TableRow
+			  android:layout_width="fill_parent"
+			  android:layout_height="wrap_content"
+			  android:layout_margin="1dp">
+	          <TextView
+	               android:id="@+id/show_note_selection_label"
+	               android:layout_width="wrap_content"
+	               android:layout_height="wrap_content"
+	               android:padding="5dp"
+	               android:textSize="16px"
+	               android:text="TextView1" />
+	          <TextView
+                android:id="@+id/show_note_selection_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:textSize="16px"
+                android:text="TextView2" />
+          </TableRow>
+	      <TableRow
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="1dp">
+	          <TextView
+		           android:id="@+id/show_note_author_label"
+		           android:layout_width="wrap_content"
+		           android:layout_height="wrap_content"
+		           android:padding="5dp"
+                   android:textSize="16px"
+		           android:text="TextView" />
+	          <TextView
+	               android:id="@+id/show_note_author_text"
+	               android:layout_width="wrap_content"
+	               android:layout_height="wrap_content"
+	               android:padding="5dp"
+                   android:textSize="16px"
+	               android:text="TextView" />
+	       </TableRow>
+	       <TableRow
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="1dp">
+	          <TextView
+                android:id="@+id/show_note_category_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:textSize="16px"
+                android:text="TextView" />
+	          <TextView
+                android:id="@+id/show_note_category_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:textSize="16px"
+                android:text="TextView" />
+	       </TableRow>
+	       <TableRow
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="1dp">
+	          <TextView
+                android:id="@+id/show_note_tags_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:textSize="16px"
+                android:text="TextView" />
+	          <TextView
+                android:id="@+id/show_note_tags_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:textSize="16px"
+                android:text="TextView" />
+	       </TableRow>
+	       <TableRow
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="1dp">
+	          <TextView
+                android:id="@+id/show_note_modified_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:textSize="16px"
+                android:text="TextView" />
+	          <TextView
+                android:id="@+id/show_note_modified_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:textSize="16px"
+                android:text="TextView" />
+	       </TableRow>
+	       <TableRow
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="1dp">
+	          <TextView
+                android:id="@+id/show_note_content_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:textSize="16px"
+                android:text="TextView" />
+	          <ScrollView android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" 
+                    android:layout_weight="1">
+			          <TextView
+		                android:id="@+id/show_note_content_text"
+		                android:layout_width="wrap_content"
+		                android:layout_height="wrap_content"
+		                android:padding="5dp"
+		                android:textSize="16px"
+		                android:text="TextView" />
+	          </ScrollView>
+	       </TableRow>
+	</TableLayout>
+</LinearLayout>

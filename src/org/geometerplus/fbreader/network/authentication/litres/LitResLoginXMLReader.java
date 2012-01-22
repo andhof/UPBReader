@@ -37,7 +37,7 @@ class LitResLoginXMLReader extends LitResAuthenticationXMLReader {
 	}
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		tag = tag.toLowerCase().intern();
 		if (TAG_AUTHORIZATION_FAILED == tag) {
 			setException(new ZLNetworkException(ZLNetworkException.ERROR_AUTHENTICATION_FAILED));

@@ -95,6 +95,7 @@ public final class HtmlTag {
 		ourTagByName.put("ul", UL);
 		ourTagByName.put("li", LI);
 		ourTagByName.put("select", SELECT);
+		ourTagByName.put("div", DIV);
 		ourTagByName.put("tr", TR);
 		ourTagByName.put("style", STYLE);
 		ourTagByName.put("s", S);
@@ -108,6 +109,7 @@ public final class HtmlTag {
 		ourTagByName.put("hr", HR);
 		ourTagByName.put("guide", GUIDE);
 		ourTagByName.put("reference", REFERENCE);
+		ourTagByName.put("tag_number", TAG_NUMBER);
 		
 		ourNameByTag.put(UNKNOWN, "unknown");
 		ourNameByTag.put(HTML, "html");
@@ -115,6 +117,7 @@ public final class HtmlTag {
 		ourNameByTag.put(BODY, "body");
 		ourNameByTag.put(TITLE, "title");
 		ourNameByTag.put(P, "p");
+		ourNameByTag.put(DIV, "div");
 	}
 
 	public static byte getTagByName(String name) {

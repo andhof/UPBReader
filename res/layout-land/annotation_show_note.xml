@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:orientation="horizontal"
+>
+    <fragment
+		android:name="org.geometerplus.android.fbreader.fragments.AnnotationShowNoteFragment1"
+		android:id="@+id/show_note_fragment1"
+		android:layout_weight="1"
+		android:layout_width="0px"
+		android:layout_height="match_parent"  />
+    <fragment
+        android:name="org.geometerplus.android.fbreader.fragments.AnnotationShowNoteFragment2"
+        android:id="@+id/show_note_fragment2"
+        android:layout_weight="1"
+        android:layout_width="0px"
+        android:layout_height="match_parent"  />
+</LinearLayout>

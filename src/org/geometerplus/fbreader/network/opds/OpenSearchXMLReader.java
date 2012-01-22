@@ -84,7 +84,7 @@ class OpenSearchXMLReader extends ZLXMLReaderAdapter {
 	private int myState = START;
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		final int index = tag.indexOf(':');
 		final String tagPrefix;
 		if (index != -1) {

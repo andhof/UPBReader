@@ -201,7 +201,7 @@ final class ZLTreeResource extends ZLResource {
 		}
 
 		@Override
-		public boolean startElementHandler(String tag, ZLStringMap attributes) {
+		public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 			final ArrayList<ZLTreeResource> stack = myStack;
 			if (!stack.isEmpty() && (NODE.equals(tag))) {
 				final String name = attributes.getValue("name");

@@ -7,9 +7,9 @@ import org.simpleframework.xml.Order;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-@Default
+@Element
 @Order(elements={"id", "updated_at", "data"})
-public class Annotation implements Parcelable{
+public class SemAppsAnnotation implements Parcelable{
 	
 	@Element(required=false)
 	protected String id;
@@ -21,10 +21,13 @@ public class Annotation implements Parcelable{
 	/**
 	 * Standard empty constructor
 	 */
-	public Annotation() {
+	public SemAppsAnnotation() {
+		id = "";
+		updated_at = "";
+		data = "";
     }
 	
-	public Annotation(Parcel in) {
+	public SemAppsAnnotation(Parcel in) {
 		readFromParcel(in);
 	}
 
@@ -59,13 +62,13 @@ public class Annotation implements Parcelable{
 		dest.writeString(data);
 	}
 	
-	public static final Parcelable.Creator<Annotation> CREATOR = new Parcelable.Creator<Annotation>() {
-		public Annotation createFromParcel(Parcel in) {
-			return new Annotation(in);
+	public static final Parcelable.Creator<SemAppsAnnotation> CREATOR = new Parcelable.Creator<SemAppsAnnotation>() {
+		public SemAppsAnnotation createFromParcel(Parcel in) {
+			return new SemAppsAnnotation(in);
 		}
 
-		public Annotation[] newArray(int size) {
-			return new Annotation[size];
+		public SemAppsAnnotation[] newArray(int size) {
+			return new SemAppsAnnotation[size];
 		}
 	};
 }

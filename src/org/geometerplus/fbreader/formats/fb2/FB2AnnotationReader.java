@@ -53,7 +53,7 @@ public class FB2AnnotationReader extends ZLXMLReaderAdapter {
 	}
 
 	@Override
-	public boolean startElementHandler(String tagName, ZLStringMap attributes) {
+	public boolean startElementHandler(String tagName, ZLStringMap attributes, String[] tagStack) {
 		switch (FB2Tag.getTagByName(tagName)) {
 			case FB2Tag.BODY:
 				return true;

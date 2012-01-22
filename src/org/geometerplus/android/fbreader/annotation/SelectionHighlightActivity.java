@@ -135,9 +135,9 @@ public class SelectionHighlightActivity extends Activity {
 				String endXPath = "//"+ HtmlTag.getNameByTag(tag) + "[" + chapterEndTagCount + "]";
 						
 				cursor = ZLTextParagraphCursor.cursor(textModel, selectionStartPos.getParagraphIndex());
-				int startCharOffset = fbreader.computeCharOffset(cursor, selectionStartPos.getElementIndex(), true);
+//				int startCharOffset = fbreader.computeCharOffset(cursor, selectionStartPos.getElementIndex(), true);
 				cursor = ZLTextParagraphCursor.cursor(textModel, selectionEndPos.getParagraphIndex());
-				int endCharOffset = fbreader.computeCharOffset(cursor, selectionEndPos.getElementIndex(), false);
+//				int endCharOffset = fbreader.computeCharOffset(cursor, selectionEndPos.getElementIndex(), false);
 				
 				int highlightColor = ((ColorDrawable) myColorView.getBackground()).getColor();
 				boolean underlined = ((CheckBox) findViewById(R.id.highlight_underline_checkbox)).isChecked();
@@ -149,14 +149,14 @@ public class SelectionHighlightActivity extends Activity {
 					annotation.setModified(new Date().getTime());
 					DocumentIdentifier documentIdentifier = annotation.getAnnotationTarget().getDocumentIdentifier();
 					documentIdentifier.setTitle(book.getTitle());
-					documentIdentifier.setAuthor(book.authorNames());
+//					documentIdentifier.setAuthor(book.authorNames());
 					Range range = annotation.getAnnotationTarget().getRange();
 					range.getStart().setPart(startPart);
 					range.getStart().getPath().setXPath(startXPath);
-					range.getStart().getPath().setCharOffset(startCharOffset);
+//					range.getStart().getPath().setCharOffset(startCharOffset);
 					range.getEnd().setPart(endPart);
 					range.getEnd().getPath().setXPath(endXPath);
-					range.getEnd().getPath().setCharOffset(endCharOffset);
+//					range.getEnd().getPath().setCharOffset(endCharOffset);
 					
 					RenderingInfo renderingInfo = annotation.getRenderingInfo();
 					renderingInfo.setHighlightColor(highlightColor);

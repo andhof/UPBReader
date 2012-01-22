@@ -1012,8 +1012,11 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		int charIndex = info.RealStartCharIndex;
 		for (int wordIndex = info.RealStartElementIndex; wordIndex != endElementIndex && index < to; ++wordIndex, charIndex = 0) {
 			final ZLTextElement element = paragraph.getElement(wordIndex);
-			final ZLTextElementArea area = page.TextElementMap.get(index);
-			if (element == area.Element) {
+			ZLTextElementArea area = null;
+			if (index < page.TextElementMap.size()) {
+				area = page.TextElementMap.get(index);
+			} 
+			if (area != null && element == area.Element) {
 				++index;
 				if (area.ChangeStyle) {
 					setTextStyle(area.Style);
@@ -1052,20 +1055,26 @@ public abstract class ZLTextView extends ZLTextViewBase {
 			}
 		}
 		if (index != to) {
-			ZLTextElementArea area = page.TextElementMap.get(index++);
+			ZLTextElementArea area = null;
+			if (index+1 < page.TextElementMap.size()) {
+				area = page.TextElementMap.get(index++);
+			} 
+			
 			if (area.ChangeStyle) {
 				setTextStyle(area.Style);
 			}
 			final int start = info.StartElementIndex == info.EndElementIndex
 				? info.StartCharIndex : 0;
 			final int len = info.EndCharIndex - start;
-			final ZLTextWord word = (ZLTextWord)paragraph.getElement(info.EndElementIndex);
-			drawWord(
-				area.XStart, area.YEnd - context.getDescent() - getTextStyle().getVerticalShift(),
-				word, start, len, area.AddHyphenationSign,
-				mySelection.isAreaSelected(area)
-					? getSelectedForegroundColor() : getTextColor(getTextStyle().Hyperlink)
-			);
+			if (paragraph.getElement(info.EndElementIndex) instanceof ZLTextWord) {
+				final ZLTextWord word = (ZLTextWord)paragraph.getElement(info.EndElementIndex);
+				drawWord(
+						area.XStart, area.YEnd - context.getDescent() - getTextStyle().getVerticalShift(),
+						word, start, len, area.AddHyphenationSign,
+						mySelection.isAreaSelected(area)
+							? getSelectedForegroundColor() : getTextColor(getTextStyle().Hyperlink)
+					);
+			}
 		}
 	}
 

@@ -33,7 +33,7 @@ class LitResPasswordRecoveryXMLReader extends LitResAuthenticationXMLReader {
 	}
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		tag = tag.toLowerCase().intern();
 		if (TAG_PASSWORD_RECOVERY_FAILED == tag) {
 			final String error = attributes.getValue("error");

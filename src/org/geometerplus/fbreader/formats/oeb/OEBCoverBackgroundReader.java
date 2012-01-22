@@ -46,7 +46,7 @@ class OEBCoverBackgroundReader extends ZLXMLReaderAdapter implements XMLNamespac
 	private static final String COVER_IMAGE = "other.ms-coverimage-standard";
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		tag = tag.toLowerCase().intern();
 		if (GUIDE == tag) {
 			myReadGuide = true;

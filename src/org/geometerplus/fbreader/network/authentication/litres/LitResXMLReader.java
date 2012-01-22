@@ -96,7 +96,7 @@ class LitResXMLReader extends LitResAuthenticationXMLReader {
 	private FormattedBuffer myAnnotationBuffer = new FormattedBuffer(FormattedBuffer.Type.XHtml);
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		tag = tag.intern();
 
 		switch (myState) {

@@ -53,7 +53,7 @@ abstract class FB2TagManager {
 		}
 
 		@Override
-		public boolean startElementHandler(String tag, ZLStringMap attributes) {
+		public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 			if ((tag == "subgenre") || (tag == "genre-alt")) {
 				final String id = attributes.getValue("value");
 				if (id != null) {

@@ -21,6 +21,9 @@ public class SemAppDummy implements Parcelable {
 	 * Standard empty constructor
 	 */
 	public SemAppDummy() {
+		id = "";
+		name = "";
+		updated_at = "";
     }
 	
 	public SemAppDummy(Parcel in) {

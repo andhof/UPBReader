@@ -48,7 +48,8 @@ public class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 
 	private final BookReader myModelReader;
 	private final HashMap<String,String> myIdToHref = new HashMap<String,String>();
-	private  final ArrayList<String> myHtmlFileNames = new ArrayList<String>();
+	private final ArrayList<String> myHtmlFileNames = new ArrayList<String>();
+	private final ArrayList<Integer> myParagraphIndexList = new ArrayList<Integer>();
 	private final ArrayList<Reference> myTourTOC = new ArrayList<Reference>();
 	private final ArrayList<Reference> myGuideTOC = new ArrayList<Reference>();
 
@@ -77,6 +78,7 @@ public class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 
 		myIdToHref.clear();
 		myHtmlFileNames.clear();
+		myParagraphIndexList.clear();
 		myNCXTOCFileName = null;
 		myTourTOC.clear();
 		myGuideTOC.clear();
@@ -103,11 +105,16 @@ public class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 			final String referenceName = reader.getFileAlias(MiscUtil.archiveEntryName(xhtmlFile.getPath()));
 
 			myModelReader.addHyperlinkLabel(referenceName);
+			myParagraphIndexList.add(myModelReader.Model.BookTextModel.getParagraphsNumber());
 			myTOCLabels.put(referenceName, myModelReader.Model.BookTextModel.getParagraphsNumber());
 			reader.readFile(xhtmlFile, referenceName + '#');
 			myModelReader.insertEndOfSectionParagraph();
 		}
 
+		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+//		fbreader.setTOCLabels(myTOCLabels);
+		fbreader.setParagraphIndexList(myParagraphIndexList);
+		fbreader.setHtmlFileNames(myHtmlFileNames, myFilePrefix, myCoverFileName);
 		generateTOC();
 
 		return true;
@@ -197,7 +204,7 @@ public class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 	private int myState;
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap xmlattributes) {
+	public boolean startElementHandler(String tag, ZLStringMap xmlattributes, String[] tagStack) {
 		tag = tag.toLowerCase();
 		if (myOPFSchemePrefix != null && tag.startsWith(myOPFSchemePrefix)) {
 			tag = tag.substring(myOPFSchemePrefix.length());
@@ -225,8 +232,6 @@ public class OEBBookReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 				final String fileName = myIdToHref.get(id);
 				if (fileName != null) {
 					myHtmlFileNames.add(fileName);
-					final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
-					fbreader.setHTMLFileNames(myHtmlFileNames);
 				}
 			}
 		} else if (myState == READ_GUIDE && REFERENCE == tag) {

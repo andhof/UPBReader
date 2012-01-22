@@ -139,7 +139,7 @@ public class ATOMXMLReader<MetadataType extends ATOMFeedMetadata,EntryType exten
 	}
 
 	@Override
-	public final boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public final boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		final int index = tag.indexOf(':');
 		final String tagPrefix;
 		if (index != -1) {

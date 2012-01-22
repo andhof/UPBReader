@@ -66,7 +66,7 @@ class FB2CoverImage extends ZLImageProxy {
 		}
 
 		@Override
-		public boolean startElementHandler(String tagName, ZLStringMap attributes) {
+		public boolean startElementHandler(String tagName, ZLStringMap attributes, String[] tagStack) {
 			switch (FB2Tag.getTagByName(tagName)) {
 			case FB2Tag.COVERPAGE:
 				myReadCoverPage = true;

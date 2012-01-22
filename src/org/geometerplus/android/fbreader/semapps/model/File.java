@@ -20,10 +20,20 @@ public class File implements Parcelable{
 	 * Standard empty constructor
 	 */
 	public File() {
+		name = "";
+		path = "";
     }
 	
 	public File(Parcel in) {
 		readFromParcel(in);
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public void setPath(String path) {
+		this.path = path;
 	}
 
 	public String getName() {

@@ -9,21 +9,28 @@ import android.content.*;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import de.upb.android.reader.R;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
+import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
+import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
+import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 
 public class UPBLibraryLoginActivity extends Activity {
-	
 	private ZLResource myResource;
 	private Button myOkButton;
 	private Button cancelButton;
@@ -43,12 +50,10 @@ public class UPBLibraryLoginActivity extends Activity {
 		
 		setTitle(myResource.getResource("title").getValue());
 		
-		findTextView(R.id.authentication_username_label).setText(
-			myResource.getResource("login").getValue()
-		);
-		findTextView(R.id.authentication_password_label).setText(
-			myResource.getResource("password").getValue()
-		);
+		findTextView(R.id.authentication_username_label).setText(R.string.upblogin_login);
+		final EditText userInput = (EditText) findViewById(R.id.authentication_username);
+		findTextView(R.id.authentication_password_label).setText(R.string.upblogin_password);
+		final EditText passwordInput = (EditText) findViewById(R.id.authentication_password);
 		
 		final ZLResource buttonResource = ZLResource.resource("dialog").getResource("button");
 		
@@ -62,13 +67,20 @@ public class UPBLibraryLoginActivity extends Activity {
 		myOkButton.setOnClickListener(new Button.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				if (asyncTask != null) asyncTask.cancel(true);
-				progressDialog = new ProgressDialog(UPBLibraryLoginActivity.this);
-				progressDialog.setMessage("Loading Seminarapparate List...");
-			    asyncTask = new HttpHelper();
-			    asyncTask.execute("http://epubdummy.provideal.net/api/semapps");
-//			    asyncTask.execute("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001");
-//				finish();
+				int usersize = userInput.getText().length();
+                int passsize = passwordInput.getText().length();
+				if(usersize > 0 && passsize > 0) {
+					if (asyncTask != null) asyncTask.cancel(true);
+					progressDialog = new ProgressDialog(UPBLibraryLoginActivity.this);
+					progressDialog.setMessage(getApplicationContext().getText(R.string.loadingsemlist));
+				    asyncTask = new HttpHelper();
+				    asyncTask.execute("http://epubdummy.provideal.net/api/semapps", 
+				    		userInput.getText().toString(), passwordInput.getText().toString());
+	//			    asyncTask.execute("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001");
+	//				finish();
+				} else {
+					createDialog("Error","Please enter Username and Password");
+				}
 			}
 		});
 		
@@ -82,14 +94,23 @@ public class UPBLibraryLoginActivity extends Activity {
 		});
 	}
 	
+	private void createDialog(String title, String text) {
+        AlertDialog ad = new AlertDialog.Builder(this)
+        .setPositiveButton("Ok", null)
+        .setTitle(title)
+        .setMessage(text)
+        .create();
+        ad.show();
+    }
+	
 	private TextView findTextView(int resourceId) {
 		return (TextView)findViewById(resourceId);
 	}
 	
 	private class HttpHelper extends AsyncTask<String, Void, String> {
 
-		private HttpClient client;
-		private String getURL;
+		private HttpParams httpParams;
+		private DefaultHttpClient httpClient;
 		private HttpGet get;
 		private HttpResponse responseGet;
 		private HttpEntity resEntityGet;
@@ -103,24 +124,23 @@ public class UPBLibraryLoginActivity extends Activity {
 		@Override
 		protected String doInBackground(String... params) {
 			try {
-				client = new DefaultHttpClient();  
-		        getURL = params[0];
-		        get = new HttpGet(getURL);
-		        responseGet = client.execute(get);  
-		        resEntityGet = responseGet.getEntity();  
+				String getURL = params[0];
+				String user = params[1];
+				String password = params[2];
+				
+				ConnectionManager conn = ConnectionManager.getInstance();
+				conn.authenticate(user, password);
+				resEntityGet = conn.postStuff(getURL);
+				if (resEntityGet == null) {
+					return null;
+				} 			
+				
 		        resEntityGetResult = EntityUtils.toString(resEntityGet);
-//		        if (resEntityGet != null) {  
-//			        //do something with the response
-//			        Log.i("GET RESPONSE",EntityUtils.toString(resEntityGet));
-//		        }
+		        
 			} catch (Exception e) {
 			    e.printStackTrace();
 			    Log.e("UPBLibraryLoginActivity", e.toString());
-			} finally {
-                // auf jeden Fall Verbindung beenden
-                if (get != null) get.abort();
-                // if (httpClient != null) httpClient.close();
-            }
+			}
 			return resEntityGetResult;
 		}
 		
@@ -128,6 +148,10 @@ public class UPBLibraryLoginActivity extends Activity {
 		protected void onPostExecute(String result) {
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
+			}
+			if (result == null) {
+				createDialog("Error","Wrong Username or Password");
+				return;
 			}
 			finish();
 			
@@ -147,7 +171,7 @@ public class UPBLibraryLoginActivity extends Activity {
 		 * load an XML String of annotations into the annotations object structure
 		 * @param xml
 		 */
-		public SemApps loadSemAppsListFromXMLString(String xml) {
+		private SemApps loadSemAppsListFromXMLString(String xml) {
 			SemApps semApps = null;
 			try {
 				Serializer serializer = new Persister();

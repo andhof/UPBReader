@@ -67,7 +67,7 @@ class OEBAnnotationReader extends ZLXMLReaderAdapter implements XMLNamespaces {
 	}
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		if (tag.equalsIgnoreCase(myDescriptionTag)) {
 			myReadState = READ_DESCRIPTION;
 		} else if (myReadState == READ_DESCRIPTION) {

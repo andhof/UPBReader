@@ -27,11 +27,11 @@ class XHTMLTagItemAction extends XHTMLTagAction {
 	private final char[] BULLET = { '\u2022', '\240' };
 
 	@Override
-	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag) {
+	protected void doAtStart(XHTMLReader reader, ZLStringMap xmlattributes, Byte tag, String[] tagStack) {
 		final BookReader modelReader = reader.getModelReader();
 		modelReader.endParagraph();
 		// TODO: increase left indent
-		modelReader.beginNewParagraph(tag);
+		modelReader.beginNewParagraph(tag, tagStack);
 		// TODO: replace bullet sign by number inside OL tag
 		modelReader.addData(BULLET);
 	}

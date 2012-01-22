@@ -57,7 +57,7 @@ class XHTMLImageFinder extends ZLXMLReaderAdapter {
 	}
 
 	@Override
-	public boolean startElementHandler(String tag, ZLStringMap attributes) {
+	public boolean startElementHandler(String tag, ZLStringMap attributes, String[] tagStack) {
 		tag = tag.toLowerCase();
 		String href = null;
 		if ("img".equals(tag)) {
