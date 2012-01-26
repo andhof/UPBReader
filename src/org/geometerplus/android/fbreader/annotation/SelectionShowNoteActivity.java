@@ -11,6 +11,7 @@ import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.fragments.AnnotationShowNoteFragment1;
 import org.geometerplus.android.fbreader.fragments.AnnotationShowNoteFragment2;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
+import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
 import org.geometerplus.fbreader.fbreader.ActionCode;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.library.Book;
@@ -52,8 +53,12 @@ public class SelectionShowNoteActivity extends Activity {
 		
 		Thread.setDefaultUncaughtExceptionHandler(new org.geometerplus.zlibrary.ui.android.library.UncaughtExceptionHandler(this));
 		
+		String semapp_id = null;
+		if (annotation != null && fbreader.EPubs.getEPubById(annotation.getEPubId()) != null) {
+			semapp_id = fbreader.EPubs.getEPubById(annotation.getEPubId()).getSemAppId();
+		}
 		if (bundle == null) {
-			if (annotation.getUPBId().isEmpty()){
+			if (semapp_id.isEmpty()) {
 				setContentView(R.layout.annotation_show_note_fragment1);
 			} else {
 				setContentView(R.layout.annotation_show_note);
@@ -89,7 +94,7 @@ public class SelectionShowNoteActivity extends Activity {
 				annotation.getAnnotationContent().getAnnotationText());
 		
 		// Comment fragment
-		if (!annotation.getUPBId().isEmpty()){
+		if (!semapp_id.isEmpty()){
 			findTextView(R.id.comment_title).setText("Kommentare");
 			
 			final List<Annotation> listOfComments = 
@@ -146,7 +151,7 @@ public class SelectionShowNoteActivity extends Activity {
 					reload();
 					
 					String bookPath = book.File.getPath();
-					EPub epub = fbreader.EPubs.getEPubByPath(bookPath);
+					EPub epub = fbreader.EPubs.getEPubByLocalPath(bookPath);
 					String eid = epub.getId();
 					if (epub == null) {
 						eid = fbreader.md5(book.getContentHashCode());

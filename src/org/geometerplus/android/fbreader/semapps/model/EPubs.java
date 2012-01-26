@@ -29,7 +29,9 @@ public class EPubs implements Parcelable{
 			String name,
 			String updated_at,
 			String file_name, 
-			String file_path) {
+			String file_path,
+			String local_path,
+			String semapp_id) {
 
 		EPub epub = new EPub();
 		
@@ -38,6 +40,8 @@ public class EPubs implements Parcelable{
 		epub.setUpdated_at(updated_at);
 		epub.getFile().setName(file_name);
 		epub.getFile().setPath(file_path);
+		epub.setLocalPath(local_path);
+		epub.setSemAppId(semapp_id);
 		
 		epubs.add(epub);
 		
@@ -57,9 +61,9 @@ public class EPubs implements Parcelable{
 		return null;
 	}
 	
-	public EPub getEPubByPath(String path) {
+	public EPub getEPubByLocalPath(String path) {
 		for (EPub epub : epubs) {
-			if (epub.getFile().getPath().equals(path)) {
+			if (epub.getLocalPath().equals(path)) {
 				return epub;
 			}
 		}

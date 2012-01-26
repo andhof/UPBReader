@@ -53,9 +53,10 @@ public class Annotations {
     		AnnotationTarget target, 
     		RenderingInfo renderingInfo, 
     		AnnotationContent content,
+    		String epub_id, 
     		String upb_id,
     		String updated_at) {
-		annotations.add(new Annotation(id, created, modified, category, tags, author, target, renderingInfo, content, upb_id, updated_at));
+		annotations.add(new Annotation(id, created, modified, category, tags, author, target, renderingInfo, content, epub_id, upb_id, updated_at));
 	}
 	
 	/**
@@ -84,6 +85,7 @@ public class Annotations {
     		boolean underlined,
     		boolean crossout,
     		String content,
+    		String epub_id,
     		String upb_id,
     		String updated_at) {
 		
@@ -113,6 +115,7 @@ public class Annotations {
 		annotation.getRenderingInfo().setUnderlined(underlined);
 		annotation.getRenderingInfo().setCrossOut(crossout);
 		annotation.getAnnotationContent().setAnnotationText(content);
+		annotation.setEPubId(epub_id);
 		annotation.setUPBId(upb_id);
 		annotation.setUpdatedAt(updated_at);
 		

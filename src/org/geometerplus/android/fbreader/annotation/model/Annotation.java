@@ -49,6 +49,7 @@ public class Annotation implements Parcelable {
     @Element(required=false)
     protected AnnotationContent annotationContent;
     
+    protected String epub_id;
     protected String upb_id;
     protected String updated_at;
     
@@ -65,6 +66,7 @@ public class Annotation implements Parcelable {
     		AnnotationTarget target, 
     		RenderingInfo renderingInfo, 
     		AnnotationContent annotationContent,
+    		String epub_id,
     		String upb_id,
     		String updated_at) {
     	this.id = id;
@@ -76,6 +78,7 @@ public class Annotation implements Parcelable {
         this.annotationTarget = target;
         this.renderingInfo = renderingInfo;
         this.annotationContent = annotationContent;
+        this.epub_id = epub_id;
         this.upb_id = upb_id;
         this.updated_at = updated_at;
         
@@ -95,6 +98,7 @@ public class Annotation implements Parcelable {
     	annotationTarget = new AnnotationTarget();
         renderingInfo = new RenderingInfo();
         annotationContent = new AnnotationContent();
+        epub_id = "";
         upb_id = "";
         updated_at = "";
     }
@@ -144,6 +148,10 @@ public class Annotation implements Parcelable {
     	this.renderingInfo = renderingInfo;
     }
     
+    public void setEPubId(String epub_id) {
+    	this.epub_id = epub_id;
+    }
+    
     public void setUPBId(String upb_id) {
     	this.upb_id = upb_id;
     }
@@ -191,6 +199,10 @@ public class Annotation implements Parcelable {
     	return renderingInfo;
     }
     
+    public String getEPubId() {
+    	return epub_id;
+    }
+    
     public String getUPBId() {
     	return upb_id;
     }
@@ -218,6 +230,7 @@ public class Annotation implements Parcelable {
 		annotationTarget = in.readParcelable(AnnotationTarget.class.getClassLoader());
 		renderingInfo = in.readParcelable(RenderingInfo.class.getClassLoader());
 		annotationContent = in.readParcelable(AnnotationContent.class.getClassLoader());
+		epub_id = in.readString();
 		upb_id = in.readString();
 		updated_at = in.readString();
 	}
@@ -233,6 +246,7 @@ public class Annotation implements Parcelable {
 		dest.writeParcelable(annotationTarget, flags);
 		dest.writeParcelable(renderingInfo, flags);
 		dest.writeParcelable(annotationContent, flags);
+		dest.writeString(epub_id);
 		dest.writeString(upb_id);
 		dest.writeString(updated_at);
 	}

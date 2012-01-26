@@ -21,13 +21,7 @@ import android.util.Log;
  * @author Andreas Hoffmann
  * 
  */
-public class SemAppsContentProvider extends ContentProvider {
-
-    private static final String TAG = "SemAppsContentProvider";
-
-    private static final String DATABASE_NAME = "annotations.db";
-
-    private static final int DATABASE_VERSION = 1;
+public class SemAppsContentProvider extends BaseProvider {
 
     private static final String SEMAPPS_TABLE_NAME = "SemApps";
 
@@ -38,39 +32,6 @@ public class SemAppsContentProvider extends ContentProvider {
     private static final int SEMAPPS = 1;
 
     private static HashMap<String, String> semAppsProjectionMap;
-
-    private static class DatabaseHelper extends SQLiteOpenHelper {
-
-        DatabaseHelper(Context context) {
-            super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            db.execSQL("CREATE TABLE SemApps(" +
-        			"_id TEXT PRIMARY KEY," +
-        			"name TEXT," +
-        			"updated_at TEXT)");
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.w(TAG, "Upgrading database from version "
-    				+ oldVersion + " to " + newVersion);
-            db.execSQL("DROP TABLE IF EXISTS " + SEMAPPS_TABLE_NAME);
-            onCreate(db);
-        }
-        
-        @Override
-        public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.w(TAG, "Downgrading database from version "
-    				+ oldVersion + " to " + newVersion);
-            db.execSQL("DROP TABLE IF EXISTS " + SEMAPPS_TABLE_NAME);
-            onCreate(db);
-        }
-    }
-
-    private DatabaseHelper dbHelper;
 
     @Override
     public int delete(Uri uri, String where, String[] whereArgs) {

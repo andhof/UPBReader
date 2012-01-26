@@ -29,6 +29,18 @@ public class SemAppDummy implements Parcelable {
 	public SemAppDummy(Parcel in) {
 		readFromParcel(in);
 	}
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public void setUpdatedAt(String updated_at) {
+		this.updated_at = updated_at;
+	}
 
 	public String getId() {
 		return id;

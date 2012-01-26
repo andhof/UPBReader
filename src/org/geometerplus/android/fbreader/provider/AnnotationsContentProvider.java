@@ -21,13 +21,7 @@ import android.util.Log;
  * @author Andreas Hoffmann
  * 
  */
-public class AnnotationsContentProvider extends ContentProvider {
-
-    private static final String TAG = "AnnotationsContentProvider";
-
-    private static final String DATABASE_NAME = "annotations.db";
-
-    private static final int DATABASE_VERSION = 1;
+public class AnnotationsContentProvider extends BaseProvider {
 
     private static final String ANNOTATIONS_TABLE_NAME = "Annotations";
 
@@ -38,61 +32,6 @@ public class AnnotationsContentProvider extends ContentProvider {
     private static final int ANNOTATIONS = 1;
 
     private static HashMap<String, String> annotationsProjectionMap;
-
-    private static class DatabaseHelper extends SQLiteOpenHelper {
-
-        DatabaseHelper(Context context) {
-            super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            db.execSQL("CREATE TABLE Annotations(" +
-			"_id TEXT PRIMARY KEY," +
-			"created TEXT," +
-			"modified TEXT," +
-			"category TEXT," +
-			"tags TEXT," +
-			"author_name TEXT," +
-			"target_bookid INTEGER," +
-			"target_annotationid TEXT," +
-			"target_documentidentifier_isbn TEXT," +
-			"target_documentidentifier_title TEXT," +
-			"target_documentidentifier_publicationdate TEXT," +
-			"target_range_start_part TEXT," +
-			"target_range_start_path_xpath TEXT," +
-			"target_range_start_path_charoffset INTEGER," +
-			"target_range_end_part TEXT," +
-			"target_range_end_path_xpath TEXT," +
-			"target_range_end_path_charoffset INTEGER," +
-			"highlightcolor INTEGER," +
-			"underlined TEXT," +
-			"crossout TEXT," +
-			"content TEXT," +
-			"upb_id TEXT," +
-			"updated_at TEXT," +
-			"epub_id TEXT," +
-			"FOREIGN KEY(epub_id) REFERENCES EPubs(_id))");
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.w(TAG, "Upgrading database from version "
-    				+ oldVersion + " to " + newVersion);
-            db.execSQL("DROP TABLE IF EXISTS " + ANNOTATIONS_TABLE_NAME);
-            onCreate(db);
-        }
-        
-        @Override
-        public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.w(TAG, "Downgrading database from version "
-    				+ oldVersion + " to " + newVersion);
-            db.execSQL("DROP TABLE IF EXISTS " + ANNOTATIONS_TABLE_NAME);
-            onCreate(db);
-        }
-    }
-
-    private DatabaseHelper dbHelper;
 
     @Override
     public int delete(Uri uri, String where, String[] whereArgs) {

@@ -135,6 +135,13 @@ public class SemAppsListActivity extends ListActivity {
 			
 			Log.v("UPBLibraryLoginActivity.HttpHelper", result);
 			SemApp semApp = loadSemAppFromXMLString(result);
+			SemAppDummy semAppDummy = new SemAppDummy();
+			semAppDummy.setId(semApp.getId());
+			semAppDummy.setName(semApp.getName());
+			semAppDummy.setUpdatedAt(semApp.getUpdated_at());
+			if (!fbreader.SemApps.getSemApps().contains(semAppDummy)) {
+		    	fbreader.SemApps.getSemApps().add(new SemAppDummy());
+		    }
 			
 			writeSemAppToDatabase(semApp);
 			

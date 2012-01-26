@@ -55,6 +55,7 @@ import org.geometerplus.android.fbreader.provider.AnnotationsContentProvider;
 import org.geometerplus.android.fbreader.provider.SemAppsContentProvider;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.EPubs;
+import org.geometerplus.android.fbreader.semapps.model.SemApps;
 import org.geometerplus.fbreader.Paths;
 import org.geometerplus.fbreader.bookmodel.BookModel;
 import org.geometerplus.fbreader.bookmodel.TOCTree;
@@ -133,13 +134,13 @@ public final class FBReaderApp extends ZLApplication {
 	private final ZLKeyBindings myBindings = new ZLKeyBindings("Keys");
 	
 	private Context context;
-	private AnnotationsDbAdapter dbHelper;
 	private Cursor cursor;
 
 	public final FBView BookTextView;
 	public final FBView FootnoteView;
 	public Annotations Annotations;
 	public EPubs EPubs;
+	public SemApps SemApps;
 	
 	public ArrayList<String> CategoriesEN;
 	public ArrayList<String> CategoriesDE;
@@ -188,6 +189,7 @@ public final class FBReaderApp extends ZLApplication {
 		FootnoteView = new FBView(this);
 		Annotations = new Annotations();
 		EPubs = new EPubs();
+		SemApps = new SemApps();
 		
 		CategoriesEN = new ArrayList<String> ();
 		CategoriesEN.add("Note");
@@ -207,8 +209,6 @@ public final class FBReaderApp extends ZLApplication {
 		myHtmlFileNames = new ArrayList<String>();
 		myParagraphIndexList = new ArrayList<Integer>();
 		
-		dbHelper = new AnnotationsDbAdapter(context);
-
 		setView(BookTextView);
 	}
 
@@ -249,7 +249,6 @@ public final class FBReaderApp extends ZLApplication {
 		wait("loadingBook", new Runnable() {
 			public void run() {
 				// load the annotations of the book
-				// TODO mal schauen ob das hier überhaupt gebraucht wird
 				String path = book.File.getPath();
 				loadEPubsFromDatabase();
 				for (EPub epub : EPubs.getEPubs()) {
@@ -291,26 +290,25 @@ public final class FBReaderApp extends ZLApplication {
 		Uri uri = DBEPubs.CONTENT_URI;
 		cursor = context.getContentResolver().query(uri, projection, null, null, null);
 		
-//		dbHelper.open();
-//		cursor = dbHelper.fetchAllEPubs();
 		if (cursor.getCount() == 0) {
 			return;
 		}
 		cursor.moveToFirst();
 		do {
-			String id = cursor.getString(cursor.getColumnIndex("_id"));
-			String name = cursor.getString(cursor.getColumnIndex("name"));
-			String updated_at = cursor.getString(cursor.getColumnIndex("updated_at"));
-			String file_name = cursor.getString(cursor.getColumnIndex("file_name"));
-			String file_path = cursor.getString(cursor.getColumnIndex("file_path"));
+			String id = cursor.getString(cursor.getColumnIndex(DBEPubs.EPUB_ID));
+			String name = cursor.getString(cursor.getColumnIndex(DBEPubs.NAME));
+			String updated_at = cursor.getString(cursor.getColumnIndex(DBEPubs.UPDATED_AT));
+			String file_name = cursor.getString(cursor.getColumnIndex(DBEPubs.FILENAME));
+			String file_path = cursor.getString(cursor.getColumnIndex(DBEPubs.FILEPATH));
+			String local_path = cursor.getString(cursor.getColumnIndex(DBEPubs.LOCALPATH));
+			String semapp_id = cursor.getString(cursor.getColumnIndex(DBEPubs.SEMAPP_ID));
 			
 			if (fbreader.EPubs.getEPubs() != null) {
 				fbreader.EPubs.removeAllEPubs();						
 			}
-			fbreader.EPubs.addEPub(id, name, updated_at, file_name, file_path);
+			fbreader.EPubs.addEPub(id, name, updated_at, file_name, file_path, local_path, semapp_id);
 		} while (cursor.moveToNext());
 		cursor.close();
-//		dbHelper.close();
 	}
 	
 	/**
@@ -327,8 +325,6 @@ public final class FBReaderApp extends ZLApplication {
 		String selection = DBEPubs.LOCALPATH + "=\"" + local_path + "\"";
 		cursor = context.getContentResolver().query(uri, projection, selection, null, null);
 		
-//		dbHelper.open();
-//		cursor = dbHelper.fetchEPubByPath(local_path);
 		if (cursor.getCount() == 0) {
 			return;
 		}
@@ -340,7 +336,6 @@ public final class FBReaderApp extends ZLApplication {
 		projection = DBAnnotations.Projection;
 		selection = DBAnnotations.EPUB_ID + "=\"" + ePubId + "\"";
 		cursor = context.getContentResolver().query(uri, projection, selection, null, null);
-//		cursor = dbHelper.fetchAnnotationsByEPubId(ePubId);
 		if (cursor.getCount() == 0) {
 			return;
 		}
@@ -390,7 +385,7 @@ public final class FBReaderApp extends ZLApplication {
 			Annotations.addAnnotation(annotation_id, created, modified, category, tags, 
 					author_name, bookid, targetannotationid, isbn, title, authors, publicationdate, start_part, 
 					start_xpath, start_charoffset, end_part, end_xpath, end_charoffset, 
-					highlightcolor, underlined, crossout, content, upb_id, updated_at);
+					highlightcolor, underlined, crossout, content, epub_id, upb_id, updated_at);
 	    } while (cursor.moveToNext());
 		cursor.close();
 //		dbHelper.close();

@@ -214,30 +214,24 @@ public class SelectionNoteActivity extends Activity {
 					saveToXML(fbreader.Annotations);
 				}
 				
+				String semapp_id;
 				String bookPath = book.File.getPath();
-				EPub epub = fbreader.EPubs.getEPubByPath(bookPath);
+				EPub epub = fbreader.EPubs.getEPubByLocalPath(bookPath);
 				if (epub == null) {
 					epub_id = fbreader.md5(book.getContentHashCode());
 					String name = book.getTitle();
 					String updated_at = new Date().toString();
 					String file_name = book.File.getShortName();
 					String file_path = bookPath;
-					epub = fbreader.EPubs.addEPub(epub_id, name, updated_at, file_name, file_path);
+					String local_path = bookPath;
+					semapp_id = "";
+
+					epub = fbreader.EPubs.addEPub(
+							epub_id, name, updated_at, file_name, file_path, local_path, semapp_id);
 				} 
+				annotation.setEPubId(epub.getId());
 				
-				String semapp_id;
-				
-				Uri uri = DBEPubs.CONTENT_URI;
-				String[] projection = DBEPubs.Projection;
-				String selection = DBEPubs.EPUB_ID + "=\"" + epub_id + "\"";
-				cursor = getContentResolver().query(uri, projection, selection, null, null);
-				
-				if (cursor.getCount() == 0) {
-					semapp_id = null;
-				} else {
-					semapp_id = cursor.getString(cursor.getColumnIndex(DBEPubs.SEMAPP_ID));
-				}
-				cursor.close();
+				semapp_id = epub.getSemAppId();
 				
 				fbreader.writeEPubAndAnnotationToDatabase(SelectionNoteActivity.this, epub, bookPath, semapp_id, annotation, epub.getId());
 				

@@ -21,13 +21,7 @@ import android.util.Log;
  * @author Andreas Hoffmann
  * 
  */
-public class AuthorsContentProvider extends ContentProvider {
-
-    private static final String TAG = "AuthorsContentProvider";
-
-    private static final String DATABASE_NAME = "annotations.db";
-
-    private static final int DATABASE_VERSION = 1;
+public class AuthorsContentProvider extends BaseProvider {
 
     private static final String AUTHORS_TABLE_NAME = "Authors";
 
@@ -38,40 +32,6 @@ public class AuthorsContentProvider extends ContentProvider {
     private static final int AUTHORS = 1;
 
     private static HashMap<String, String> authorsProjectionMap;
-
-    private static class DatabaseHelper extends SQLiteOpenHelper {
-
-        DatabaseHelper(Context context) {
-            super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            db.execSQL("CREATE TABLE Authors(" +
-					"_id INTEGER PRIMARY KEY AUTOINCREMENT," +
-					"name TEXT," +
-					"annotation_id TEXT," +
-					"FOREIGN KEY(annotation_id) REFERENCES Annotations(_id))");
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.w(TAG, "Upgrading database from version "
-    				+ oldVersion + " to " + newVersion);
-            db.execSQL("DROP TABLE IF EXISTS " + AUTHORS_TABLE_NAME);
-            onCreate(db);
-        }
-        
-        @Override
-        public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.w(TAG, "Downgrading database from version "
-    				+ oldVersion + " to " + newVersion);
-            db.execSQL("DROP TABLE IF EXISTS " + AUTHORS_TABLE_NAME);
-            onCreate(db);
-        }
-    }
-
-    private DatabaseHelper dbHelper;
 
     @Override
     public int delete(Uri uri, String where, String[] whereArgs) {

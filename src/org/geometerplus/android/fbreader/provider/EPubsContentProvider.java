@@ -21,13 +21,7 @@ import android.util.Log;
  * @author Andreas Hoffmann
  * 
  */
-public class EPubsContentProvider extends ContentProvider {
-
-    private static final String TAG = "EPubsContentProvider";
-
-    private static final String DATABASE_NAME = "annotations.db";
-
-    private static final int DATABASE_VERSION = 1;
+public class EPubsContentProvider extends BaseProvider {
 
     private static final String EPUBS_TABLE_NAME = "EPubs";
 
@@ -38,44 +32,6 @@ public class EPubsContentProvider extends ContentProvider {
     private static final int EPUBS = 1;
 
     private static HashMap<String, String> ePubsProjectionMap;
-
-    private static class DatabaseHelper extends SQLiteOpenHelper {
-
-        DatabaseHelper(Context context) {
-            super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-            db.execSQL("CREATE TABLE EPubs(" +
-			"_id TEXT PRIMARY KEY," +
-			"name TEXT NOT NULL," +
-			"updated_at TEXT NOT NULL," +
-			"file_name TEXT NOT NULL," +
-			"file_path TEXT UNIQUE NOT NULL," +
-			"local_path TEXT UNIQUE," +
-			"semapp_id TEXT," +
-			"FOREIGN KEY(semapp_id) REFERENCES SemApps(_id))");
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.w(TAG, "Upgrading database from version "
-    				+ oldVersion + " to " + newVersion);
-            db.execSQL("DROP TABLE IF EXISTS " + EPUBS_TABLE_NAME);
-            onCreate(db);
-        }
-        
-        @Override
-        public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            Log.w(TAG, "Downgrading database from version "
-    				+ oldVersion + " to " + newVersion);
-            db.execSQL("DROP TABLE IF EXISTS " + EPUBS_TABLE_NAME);
-            onCreate(db);
-        }
-    }
-
-    private DatabaseHelper dbHelper;
 
     @Override
     public int delete(Uri uri, String where, String[] whereArgs) {

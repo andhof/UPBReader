@@ -3,11 +3,12 @@ package org.geometerplus.android.fbreader.semapps.model;
 import org.simpleframework.xml.Default;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.Order;
+import org.simpleframework.xml.Root;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
-@Default
+@Root
 @Order(elements={"id", "name", "updated_at", "file", "annotations"})
 public class EPub implements Parcelable {
 	
@@ -22,6 +23,9 @@ public class EPub implements Parcelable {
 	@Element(required=false)
 	protected SemAppsAnnotations annotations;
 	
+	protected String local_path;
+	protected String semapp_id;
+	
 	/**
 	 * Standard empty constructor
 	 */
@@ -31,6 +35,8 @@ public class EPub implements Parcelable {
 		updated_at = "";
 		file = new File();
 		annotations = new SemAppsAnnotations();
+		local_path = "";
+		semapp_id = "";
     }
 	
 	public EPub(Parcel in) {
@@ -47,6 +53,14 @@ public class EPub implements Parcelable {
 	
 	public void setUpdated_at(String updated_at) {
 		this.updated_at = updated_at;
+	}
+	
+	public void setLocalPath(String local_path) {
+		this.local_path = local_path;
+	}
+	
+	public void setSemAppId(String semapp_id) {
+		this.semapp_id = semapp_id;
 	}
 	
 	public String getId() {
@@ -68,6 +82,14 @@ public class EPub implements Parcelable {
 	public SemAppsAnnotations getAnnotations() {
 		return annotations;
 	}
+	
+	public String getLocalPath() {
+		return local_path;
+	}
+	
+	public String getSemAppId() {
+		return semapp_id;
+	}
 
 	@Override
 	public int describeContents() {
@@ -81,6 +103,8 @@ public class EPub implements Parcelable {
 		updated_at = in.readString();
 		file = in.readParcelable(File.class.getClassLoader());
 		annotations = in.readParcelable(SemAppsAnnotations.class.getClassLoader());
+		local_path = in.readString();
+		semapp_id = in.readString();
 	}
 	
 	@Override
@@ -90,6 +114,8 @@ public class EPub implements Parcelable {
 		dest.writeString(updated_at);
 		dest.writeParcelable(file, flags);
 		dest.writeParcelable(annotations, flags);
+		dest.writeString(local_path);
+		dest.writeString(semapp_id);
 	}
 	
 	public static final Parcelable.Creator<EPub> CREATOR = new Parcelable.Creator<EPub>() {
