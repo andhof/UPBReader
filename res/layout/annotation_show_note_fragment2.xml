@@ -15,13 +15,17 @@
         android:textSize="20px"
         android:gravity="center_horizontal"
         android:paddingTop="10dp" />
-
-    <ListView
-        android:id="@+id/ListView01"
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp" />
-
+        android:layout_weight="0.1">
+	    <ListView
+	        android:id="@+id/ListView01"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:padding="5dp" />
+    </LinearLayout>
     <TextView
         android:id="@+id/new_comment_label"
         android:layout_width="fill_parent"
@@ -55,6 +59,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:paddingTop="5dp"
+        android:paddingBottom="5dp"
         android:orientation="horizontal"
     >
         <TextView

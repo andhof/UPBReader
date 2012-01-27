@@ -22,6 +22,7 @@
     <string name="selectionnote_category2">Question</string>
     <string name="selectionnote_category3">Issue</string>
     <string name="selectionnote_category4">Comment</string>
+    <string name="selectionnote_upload">Uploading note to the server.</string>
     
     <string name="shownote_title">Annotation</string>
     <string name="shownote_selection">Selected text:</string>

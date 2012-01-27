@@ -115,7 +115,7 @@ public class SelectionShowNoteActivity extends Activity {
 			
 			list.setAdapter(adapter);
 			
-			findTextView(R.id.new_comment_label).setText("Neuer Kommentar");
+//			findTextView(R.id.new_comment_label).setText("Neuer Kommentar");
 			
 			final EditText textInput = (EditText) findViewById(R.id.comment_input);
 			
@@ -141,7 +141,11 @@ public class SelectionShowNoteActivity extends Activity {
 					newAnnotation.setCreated(new Date().getTime());
 					newAnnotation.setModified(new Date().getTime());
 					newAnnotation.setCategory(getString(R.string.selectionnote_category4));
-					newAnnotation.getAnnotationTarget().setTargetAnnotationId(annotation.getUPBId());
+					if (annotation.getUPBId().isEmpty()) {
+						newAnnotation.getAnnotationTarget().setTargetAnnotationId(annotation.getId());
+					} else {
+						newAnnotation.getAnnotationTarget().setTargetAnnotationId(annotation.getUPBId());
+					}
 					newAnnotation.getAnnotationTarget().getRange().getStart().setPart(startPart);
 					newAnnotation.getAnnotationTarget().getRange().getEnd().setPart(endPart);
 					newAnnotation.getAnnotationContent().setAnnotationText(content);
