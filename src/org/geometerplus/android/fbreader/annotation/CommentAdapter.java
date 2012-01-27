@@ -1,5 +1,6 @@
 package org.geometerplus.android.fbreader.annotation;
 
+import java.util.Date;
 import java.util.List;
 
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
@@ -32,7 +33,7 @@ public class CommentAdapter extends BaseAdapter implements OnItemClickListener {
 	}
 
 	@Override
-	public Object getItem(int position) {
+	public Annotation getItem(int position) {
 		return listOfComments.get(position);
 	}
 
@@ -49,15 +50,21 @@ public class CommentAdapter extends BaseAdapter implements OnItemClickListener {
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.annotation_comment_row, null);
         }
-        TextView tvContact = (TextView) convertView.findViewById(R.id.tvContact);
-        tvContact.setText("BlaBla");
-
-        TextView tvPhone = (TextView) convertView.findViewById(R.id.tvMobile);
-        tvPhone.setText("BlaBla2");
-
-        TextView tvMail = (TextView) convertView.findViewById(R.id.tvMail);
-        tvMail.setText("BlaBla3");
-
+        
+        Annotation comment = listOfComments.get(position);
+        
+        TextView tvNumber = (TextView) convertView.findViewById(R.id.comment_number);
+        tvNumber.setText("#" + (position+1));
+        
+        TextView tvAuthor = (TextView) convertView.findViewById(R.id.comment_author);
+        tvAuthor.setText(comment.getAuthor().getName());
+        
+        TextView tvUpdatedAt = (TextView) convertView.findViewById(R.id.comment_updated_at);
+        tvUpdatedAt.setText(new Date(comment.getModified()).toString());
+        
+        TextView tvContent = (TextView) convertView.findViewById(R.id.comment_content);
+        tvContent.setText(comment.getAnnotationContent().getAnnotationText());
+        
         return convertView;
 	}
 
