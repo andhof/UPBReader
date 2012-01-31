@@ -15,6 +15,7 @@ import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
+import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.simpleframework.xml.Serializer;
@@ -36,7 +37,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class SemAppsListActivity extends ListActivity {
-	private AnnotationsDbAdapter dbHelper;
 	private Cursor cursor;
 	
 	private HttpHelper asyncTask;
@@ -47,8 +47,6 @@ public class SemAppsListActivity extends ListActivity {
 	@Override
 	public void onCreate(Bundle bundle) {
 		super.onCreate(bundle);
-		
-		dbHelper = new AnnotationsDbAdapter(this);
 		
 		Intent intent = getIntent();
 		SemApps semApps = intent.getParcelableExtra("semapps");
@@ -97,12 +95,11 @@ public class SemAppsListActivity extends ListActivity {
 	
 	private class HttpHelper extends AsyncTask<String, Void, String> {
 
-		private HttpClient client;
 		private String getURL;
-		private HttpGet get;
-		private HttpResponse responseGet;
 		private HttpEntity resEntityGet;
 		private String resEntityGetResult;
+		private Object[] connectionResult;
+		private String myStatusCode;
 		
 		@Override
 		protected void onPreExecute() {
@@ -115,7 +112,13 @@ public class SemAppsListActivity extends ListActivity {
 				getURL = params[0];
 				
 				ConnectionManager conn = ConnectionManager.getInstance();
-				resEntityGet = conn.postStuff(getURL);
+				connectionResult = conn.postStuffGet(getURL);
+				resEntityGet = (HttpEntity) connectionResult[0];
+				myStatusCode = (String) connectionResult[1];
+				if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
+						myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
+					return myStatusCode;
+				}
 		        resEntityGetResult = EntityUtils.toString(resEntityGet);
 		        
 			} catch (Exception e) {
@@ -129,6 +132,15 @@ public class SemAppsListActivity extends ListActivity {
 		protected void onPostExecute(String result) {
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
+			}
+			ConnectionManager conn = ConnectionManager.getInstance();
+			if (result.equals(conn.AUTHENTICATION_FAILED)) {
+				UIUtil.createDialog(SemAppsListActivity.this, "Error", getString(R.string.authentication_failed));
+				return;
+			}
+			if (result.equals(conn.NO_INTERNET_CONNECTION)) {
+				UIUtil.createDialog(SemAppsListActivity.this, "Error", getString(R.string.no_internet_connection));
+				return;
 			}
 			
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
@@ -170,21 +182,16 @@ public class SemAppsListActivity extends ListActivity {
 					Uri uri = DBSemApps.CONTENT_URI;
 					cursor = getContentResolver().query(uri, projection, null, null, null);
 					
-//					dbHelper.open();
-//					cursor = dbHelper.fetchSemApp(id);
 					ContentValues values = new ContentValues();
 					values.put(DBSemApps.SEMAPP_ID, id);
 					values.put(DBSemApps.NAME, name);
 					values.put(DBSemApps.UPDATED_AT, updated_at);
 					if (cursor.getCount() == 0) {
 						getContentResolver().insert(uri, values);
-//						dbHelper.createSemApp(id, name, updated_at);
 					} else {
 						getContentResolver().update(uri, values, null, null);
-//						dbHelper.updateSemApp(id, name, updated_at);
 					}
 					cursor.close();
-//					dbHelper.close();
 				}
 			}).start();
 			

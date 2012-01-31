@@ -6,12 +6,17 @@
     <string name="upblogin_unencryptedWarning">Your password will be sent unencrypted</string>
     <string name="upblogin_login">Username</string>
     <string name="upblogin_password">Password</string>
+    <string name="upblogin_checkbox">Check to download a new book.</string>
     <string name="upblogin_loginIsEmpty">Username should be non-empty</string>
     <string name="upblogin_register">Sign up</string>
     
+    <string name="loggingin">Logging in. Please, wait&#8230;</string>
 	<string name="loadingsemlist">Loading SeminarApparate List. Please, wait&#8230;</string>
     <string name="loadingepublist">Loading Book List. Please, wait&#8230;</string>
     <string name="downloadingFile">Downloading book %s</string>
+    
+    <string name="authentication_failed">Wrong Username or Password</string>
+    <string name="no_internet_connection">Couldn\'t connect to server</string>
     
     <string name="selectionnote_title">Note</string>
     <string name="selectionnote_author">Author: Localuser</string>
@@ -29,6 +34,7 @@
     <string name="shownote_author">Author:</string>
     <string name="shownote_category">Category:</string>
     <string name="shownote_tags">Tags:</string>
+    <string name="shownote_local">Local:</string>
     <string name="shownote_modified">Modified:</string>
     <string name="shownote_content">Note:</string>
     

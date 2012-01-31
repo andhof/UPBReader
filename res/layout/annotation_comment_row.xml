@@ -21,7 +21,6 @@
                 android:layout_weight="1"
                 android:id="@+id/comment_number"
                 android:layout_alignParentLeft="true" 
-                android:text="Name" 
                 android:typeface="sans" 
                 android:textSize="14sp" />
             <TextView 
@@ -30,7 +29,6 @@
                 android:layout_weight="1"
                 android:id="@+id/comment_author"
                 android:layout_toRightOf="@+id/comment_number" 
-                android:text="Name" 
                 android:typeface="sans" 
                 android:textSize="14sp" 
                 android:textStyle="bold"
@@ -39,9 +37,19 @@
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content" 
                 android:layout_weight="1"
+                android:id="@+id/comment_local"
+                android:layout_toLeftOf="@+id/comment_updated_at"
+                android:paddingRight="5dp"
+                android:typeface="sans" 
+                android:textSize="13sp" 
+                android:textColor="#6666DD"
+                android:layout_gravity="right" />
+            <TextView 
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content" 
+                android:layout_weight="1"
                 android:id="@+id/comment_updated_at"
                 android:layout_alignParentRight="true" 
-                android:text="Name" 
                 android:typeface="sans" 
                 android:textSize="14sp" 
                 android:layout_gravity="right" />
@@ -57,7 +65,6 @@
 	        <TextView android:id="@+id/comment_content" 
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Content" 
                 android:textSize="14sp"
                 android:paddingLeft="20dp" />
 	     </LinearLayout>

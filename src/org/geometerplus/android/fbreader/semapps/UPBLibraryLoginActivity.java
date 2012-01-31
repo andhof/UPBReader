@@ -26,6 +26,7 @@ import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapte
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
+import org.geometerplus.android.util.UIUtil;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
@@ -37,6 +38,7 @@ public class UPBLibraryLoginActivity extends Activity {
 	private static final String TAG = "SelectionHighlightActivity";
 	private HttpHelper asyncTask;
 	private ProgressDialog progressDialog;
+	private boolean checked;
 	
 	@Override
 	public void onCreate(Bundle bundle) {
@@ -46,14 +48,21 @@ public class UPBLibraryLoginActivity extends Activity {
 		
 		setContentView(R.layout.upb_login);
 		
-		myResource = ZLResource.resource("dialog").getResource("UPBLoginDialog");
+		SharedPreferences settings = getSharedPreferences("upblogin", 0);
+		String username = settings.getString("user", null);
+		String password = settings.getString("password", null);
 		
-		setTitle(myResource.getResource("title").getValue());
+		setTitle(R.string.upblogin_title);
 		
 		findTextView(R.id.authentication_username_label).setText(R.string.upblogin_login);
 		final EditText userInput = (EditText) findViewById(R.id.authentication_username);
+		if (username != null) userInput.setText(username);
 		findTextView(R.id.authentication_password_label).setText(R.string.upblogin_password);
 		final EditText passwordInput = (EditText) findViewById(R.id.authentication_password);
+		if (password != null) passwordInput.setText(password);
+		final CheckBox checkBox = (CheckBox) findViewById(R.id.authentication_download_checkbox);
+		checkBox.setChecked(false);
+		findTextView(R.id.authentication_download_label).setText(R.string.upblogin_checkbox);
 		
 		final ZLResource buttonResource = ZLResource.resource("dialog").getResource("button");
 		
@@ -67,19 +76,22 @@ public class UPBLibraryLoginActivity extends Activity {
 		myOkButton.setOnClickListener(new Button.OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				checked = checkBox.isChecked() ? true : false;
 				int usersize = userInput.getText().length();
                 int passsize = passwordInput.getText().length();
 				if(usersize > 0 && passsize > 0) {
 					if (asyncTask != null) asyncTask.cancel(true);
 					progressDialog = new ProgressDialog(UPBLibraryLoginActivity.this);
-					progressDialog.setMessage(getApplicationContext().getText(R.string.loadingsemlist));
+					if (checked) {
+						progressDialog.setMessage(getApplicationContext().getText(R.string.loadingsemlist));
+					} else {
+						progressDialog.setMessage(getApplicationContext().getText(R.string.loggingin));
+					}
 				    asyncTask = new HttpHelper();
 				    asyncTask.execute("http://epubdummy.provideal.net/api/semapps", 
 				    		userInput.getText().toString(), passwordInput.getText().toString());
-	//			    asyncTask.execute("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001");
-	//				finish();
 				} else {
-					createDialog("Error","Please enter Username and Password");
+					UIUtil.createDialog(UPBLibraryLoginActivity.this, "Error","Please enter Username and Password");
 				}
 			}
 		});
@@ -94,26 +106,15 @@ public class UPBLibraryLoginActivity extends Activity {
 		});
 	}
 	
-	private void createDialog(String title, String text) {
-        AlertDialog ad = new AlertDialog.Builder(this)
-        .setPositiveButton("Ok", null)
-        .setTitle(title)
-        .setMessage(text)
-        .create();
-        ad.show();
-    }
-	
 	private TextView findTextView(int resourceId) {
 		return (TextView)findViewById(resourceId);
 	}
 	
 	private class HttpHelper extends AsyncTask<String, Void, String> {
 
-		private HttpParams httpParams;
-		private DefaultHttpClient httpClient;
-		private HttpGet get;
-		private HttpResponse responseGet;
+		private Object[] connectionResult;
 		private HttpEntity resEntityGet;
+		private String myStatusCode;
 		private String resEntityGetResult;
 		
 		@Override
@@ -130,10 +131,20 @@ public class UPBLibraryLoginActivity extends Activity {
 				
 				ConnectionManager conn = ConnectionManager.getInstance();
 				conn.authenticate(user, password);
-				resEntityGet = conn.postStuff(getURL);
-				if (resEntityGet == null) {
-					return null;
-				} 			
+				connectionResult = conn.postStuffGet(getURL);
+				resEntityGet = (HttpEntity) connectionResult[0];
+				myStatusCode = (String) connectionResult[1];
+				
+				if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
+						myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
+					return myStatusCode;
+				}
+				
+		    	SharedPreferences settings = getSharedPreferences("upblogin", 0);
+		    	SharedPreferences.Editor e = settings.edit();
+		    	e.putString("user", user);
+		    	e.putString("password", password);
+		    	e.commit();
 				
 		        resEntityGetResult = EntityUtils.toString(resEntityGet);
 		        
@@ -146,14 +157,22 @@ public class UPBLibraryLoginActivity extends Activity {
 		
 		@Override
 		protected void onPostExecute(String result) {
+			ConnectionManager conn = ConnectionManager.getInstance();
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
 			}
-			if (result == null) {
-				createDialog("Error","Wrong Username or Password");
+			if (result.equals(conn.AUTHENTICATION_FAILED)) {
+				UIUtil.createDialog(UPBLibraryLoginActivity.this, "Error", getString(R.string.authentication_failed));
+				return;
+			}
+			if (result.equals(conn.NO_INTERNET_CONNECTION)) {
+				UIUtil.createDialog(UPBLibraryLoginActivity.this, "Error", getString(R.string.no_internet_connection));
 				return;
 			}
 			finish();
+			if (!checked) {
+				return;
+			}
 			
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 			
@@ -185,7 +204,6 @@ public class UPBLibraryLoginActivity extends Activity {
 //						">\n    <updated_at>2011-12-19 16:39:25 +0100</updated_at>\n  </sem" +
 //						"app>\n</semapps>\n";
 	    		semApps = serializer.read(SemApps.class, xml);
-	    		System.out.println();
 	    	} catch (Exception e) {
 	    		Log.e("loadFromXMLString", e.toString());
 	    	}

@@ -1,15 +1,29 @@
 package org.geometerplus.android.fbreader.annotation;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.util.EntityUtils;
 import org.geometerplus.android.fbreader.FBReader;
 import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
 import org.geometerplus.android.fbreader.annotation.database.DBEPub.DBEPubs;
+import org.geometerplus.android.fbreader.annotation.database.DBSemApp.DBSemApps;
 import org.geometerplus.android.fbreader.annotation.model.*;
+import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
+import org.geometerplus.android.fbreader.semapps.model.SemApp;
+import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
+import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
+import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotations;
+import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.fbreader.Paths;
 import org.geometerplus.fbreader.bookmodel.TOCTree;
 import org.geometerplus.fbreader.fbreader.ActionCode;
@@ -31,9 +45,14 @@ import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings.Secure;
 import android.util.Log;
@@ -46,13 +65,14 @@ import android.widget.TextView;
 
 public class SelectionNoteActivity extends Activity {
 
-	private AnnotationsDbAdapter dbHelper;
-	private Cursor cursor;
+	private HttpHelper asyncTask;
 	
+	Annotation annotation;
 	private boolean newAnnotation;
 	private Button myOkButton;
 	private Button cancelButton;
-	private String epub_id;
+	private String username;
+	private String password;
 	
 	@Override
 	protected void onCreate(Bundle icicle) {
@@ -60,7 +80,7 @@ public class SelectionNoteActivity extends Activity {
 		
 		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 		Intent intent = getIntent();
-		final Annotation annotation;
+		
 		if (intent.getParcelableExtra("annotation") == null) {
 			annotation = fbreader.Annotations.addAnnotation();
 			newAnnotation = true;
@@ -71,11 +91,17 @@ public class SelectionNoteActivity extends Activity {
 		
 		Thread.setDefaultUncaughtExceptionHandler(new org.geometerplus.zlibrary.ui.android.library.UncaughtExceptionHandler(this));
 		
+		SharedPreferences settings = getSharedPreferences("upblogin", 0);
+		username = settings.getString("user", "Localuser");
+		password = settings.getString("password", null);
+		
 		setContentView(R.layout.annotation_note_dialog);
 		
 		setTitle(R.string.selectionnote_title);
 		
-		findTextView(R.id.note_author).setText(R.string.selectionnote_author);
+		findTextView(R.id.note_author_label).setText(R.string.selectionnote_author);
+		
+		findTextView(R.id.note_author_name).setText(username);
 		
 		findTextView(R.id.note_input_label).setText(R.string.selectionnote_input);
 		
@@ -168,9 +194,7 @@ public class SelectionNoteActivity extends Activity {
 					
 					ZLColor highlightColor = new ZLColor(150, 150, 255);
 					
-					// using the deviceid for user identification, should be the imt account name
-					String deviceId = Secure.getString(SelectionNoteActivity.this.getContentResolver(), Secure.ANDROID_ID);
-					annotation.getAuthor().setName(deviceId);
+					annotation.getAuthor().setName(username);
 					
 					annotation.setCategory(spinner.getSelectedItem().toString());
 					annotation.setCreated(new Date().getTime());
@@ -196,7 +220,7 @@ public class SelectionNoteActivity extends Activity {
 					ZLTextFixedPosition newEndPos = new ZLTextFixedPosition(selectionEndPos.getParagraphIndex(), selectionEndPos.getElementIndex()+1, selectionEndPos.getCharIndex());
 					fbreader.BookTextView.addAnnotationHighlight(selectionStartPos, newEndPos, highlightColor, true, annotation);
 					
-					saveToXML(fbreader.Annotations);
+//					saveToXML(fbreader.Annotations);
 				} else {
 					annotation.getAnnotationContent().setAnnotationText(content);
 					annotation.setTags(new ArrayList(Arrays.asList(tags)));
@@ -211,10 +235,11 @@ public class SelectionNoteActivity extends Activity {
 					in.putExtras(bundle);
 			        setResult(3,in);
 					
-					saveToXML(fbreader.Annotations);
+//					saveToXML(fbreader.Annotations);
 				}
 				
 				String semapp_id;
+				String epub_id;
 				String bookPath = book.File.getPath();
 				EPub epub = fbreader.EPubs.getEPubByLocalPath(bookPath);
 				if (epub == null) {
@@ -229,11 +254,27 @@ public class SelectionNoteActivity extends Activity {
 					epub = fbreader.EPubs.addEPub(
 							epub_id, name, updated_at, file_name, file_path, local_path, semapp_id);
 				} 
-				annotation.setEPubId(epub.getId());
-				
+				epub_id = epub.getId();
 				semapp_id = epub.getSemAppId();
 				
-				fbreader.writeEPubAndAnnotationToDatabase(SelectionNoteActivity.this, epub, bookPath, semapp_id, annotation, epub.getId());
+				annotation.setEPubId(epub_id);
+				
+				fbreader.writeEPubAndAnnotationToDatabase(SelectionNoteActivity.this, epub, bookPath, semapp_id, annotation, epub_id);
+				
+				// Start asynctask for uploading annotation
+				if (!semapp_id.isEmpty()) {
+					if (asyncTask != null) asyncTask.cancel(true);
+				    asyncTask = new HttpHelper();
+				    String xml = fbreader.saveAnnotationToString(annotation);
+				    
+				    if (newAnnotation) {
+				    	asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+ 
+				    			semapp_id + "/epubs/" + epub_id + "/annotations", xml);
+				    } else {
+				    	asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+ 
+				    			semapp_id + "/epubs/" + epub_id + "/annotations/" + annotation.getUPBId(), xml);
+				    }
+				}
 				
 				runOnUiThread(new Runnable() {
 					public void run() {
@@ -315,8 +356,6 @@ public class SelectionNoteActivity extends Activity {
 	}
 	
 	public void saveToXML(Annotations annotations) {
-		Reader xml = null;
-		
 		try {
 //    		xml = new FileReader("xmlDocument.xml");
     		
@@ -332,4 +371,91 @@ public class SelectionNoteActivity extends Activity {
     	}
 	}
 	
+	private class HttpHelper extends AsyncTask<String, Void, String> {
+
+		private String url;
+		private String xml;
+		private Object[] connectionResult;
+		private String myStatusCode;
+		private HttpEntity resEntityPost;
+		private HttpEntity resEntityGet;
+		private HttpEntity resEntityPut;
+		private String resEntityGetResult;
+		
+		@Override
+		protected String doInBackground(String... params) {
+			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+			try {
+				url = params[0];
+				xml = params[1];
+				
+				ConnectionManager conn = ConnectionManager.getInstance();
+				conn.authenticate(username, password);
+				if (newAnnotation) {
+					connectionResult = conn.postStuffPost(url, xml);
+					myStatusCode = (String) connectionResult[1];
+					if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
+							myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
+						return myStatusCode;
+					}
+					connectionResult = conn.postStuffGet(url);
+					myStatusCode = (String) connectionResult[1];
+					if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
+							myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
+						return myStatusCode;
+					}
+					resEntityGet = (HttpEntity) connectionResult[0];
+					resEntityGetResult = EntityUtils.toString(resEntityGet);
+				} else {
+					connectionResult = conn.postStuffPut(url, xml);
+					myStatusCode = (String) connectionResult[1];
+					if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
+							myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
+						return myStatusCode;
+					}
+				}
+			} catch (Exception e) {
+			    e.printStackTrace();
+			    Log.e("SelectionNoteActivity", e.toString());
+			} 
+			
+			SemAppsAnnotations saAnnotations = loadAnnotationsListFromXMLString(resEntityGetResult);
+			
+			SemAppsAnnotation saAnnotation = saAnnotations.getAnnotationByData(xml);
+			annotation.setUPBId(saAnnotation.getId());
+			annotation.setUpdatedAt(saAnnotation.getUpdated_at());
+			
+			fbreader.writeAnnotationToDatabase(SelectionNoteActivity.this, annotation, annotation.getEPubId());
+			
+			return resEntityGetResult;
+		}
+		
+		@Override
+		protected void onPostExecute(String result) {
+			ConnectionManager conn = ConnectionManager.getInstance();
+			if (result.equals(conn.AUTHENTICATION_FAILED)) {
+				UIUtil.createDialog(SelectionNoteActivity.this, "Error", getString(R.string.authentication_failed));
+				return;
+			}
+			if (result.equals(conn.NO_INTERNET_CONNECTION)) {
+				UIUtil.createDialog(SelectionNoteActivity.this, "Error", getString(R.string.no_internet_connection));
+				return;
+			}
+		}
+		
+		/**
+		 * load an XML String of annotations into the annotations object structure
+		 * @param xml
+		 */
+		private SemAppsAnnotations loadAnnotationsListFromXMLString(String xml) {
+			SemAppsAnnotations saAnnotations = null;
+			try {
+				Serializer serializer = new Persister();
+	    		saAnnotations = serializer.read(SemAppsAnnotations.class, xml);
+	    	} catch (Exception e) {
+	    		Log.e("loadFromXMLString", e.toString());
+	    	}
+	    	return saAnnotations;
+		}
+	}
 }

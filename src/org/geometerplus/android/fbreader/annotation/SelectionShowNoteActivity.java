@@ -5,28 +5,35 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.http.HttpEntity;
 import org.geometerplus.android.fbreader.annotation.database.DBAnnotation.DBAnnotations;
 import org.geometerplus.android.fbreader.annotation.database.DBEPub.DBEPubs;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.fragments.AnnotationShowNoteFragment1;
 import org.geometerplus.android.fbreader.fragments.AnnotationShowNoteFragment2;
+import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
+import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.fbreader.fbreader.ActionCode;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.library.Book;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings.Secure;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
@@ -42,6 +49,11 @@ import de.upb.android.reader.R;
 
 public class SelectionShowNoteActivity extends Activity {
 	
+	private HttpHelper asyncTask;
+	private String username;
+	private String password;
+	private List<Annotation> listOfComments;
+	
 	@Override
 	public void onCreate(Bundle bundle) {
 		super.onCreate(bundle);
@@ -52,6 +64,10 @@ public class SelectionShowNoteActivity extends Activity {
 		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 		
 		Thread.setDefaultUncaughtExceptionHandler(new org.geometerplus.zlibrary.ui.android.library.UncaughtExceptionHandler(this));
+		
+		SharedPreferences settings = getSharedPreferences("upblogin", 0);
+		username = settings.getString("user", "Localuser");
+		password = settings.getString("password", null);
 		
 		String semapp_id = null;
 		if (annotation != null && fbreader.EPubs.getEPubById(annotation.getEPubId()) != null) {
@@ -97,8 +113,8 @@ public class SelectionShowNoteActivity extends Activity {
 		if (!semapp_id.isEmpty()){
 			findTextView(R.id.comment_title).setText("Kommentare");
 			
-			final List<Annotation> listOfComments = 
-				fbreader.getAnnotationsByCategory(getString(R.string.selectionnote_category4));
+			listOfComments = fbreader.getAnnotationsByCategory(
+					getString(R.string.selectionnote_category4), annotation.getUPBId());
 			
 			CommentAdapter adapter = new CommentAdapter(this, listOfComments);
 			
@@ -134,9 +150,7 @@ public class SelectionShowNoteActivity extends Activity {
 					String endPart = annotation.getAnnotationTarget().getRange().getEnd().getPart();
 					String content = textInput.getText().toString();
 					
-					// using the deviceid for user identification, should be the imt account name
-					String author_name = Secure.getString(SelectionShowNoteActivity.this.getContentResolver(), Secure.ANDROID_ID);
-					newAnnotation.getAuthor().setName(author_name);
+					newAnnotation.getAuthor().setName(username);
 					
 					newAnnotation.setCreated(new Date().getTime());
 					newAnnotation.setModified(new Date().getTime());
@@ -156,12 +170,17 @@ public class SelectionShowNoteActivity extends Activity {
 					
 					String bookPath = book.File.getPath();
 					EPub epub = fbreader.EPubs.getEPubByLocalPath(bookPath);
-					String eid = epub.getId();
-					if (epub == null) {
-						eid = fbreader.md5(book.getContentHashCode());
-					}
+					String epub_id = epub.getId();
+					String semapp_id = epub.getSemAppId();
 					
-					fbreader.writeAnnotationToDatabase(SelectionShowNoteActivity.this, newAnnotation, eid);
+					// Start asynctask for uploading annotation
+					asyncTask = new HttpHelper();
+				    String xml = fbreader.saveAnnotationToString(newAnnotation);
+					
+					asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+ 
+			    			semapp_id + "/epubs/" + epub_id + "/annotations", xml);
+					
+					fbreader.writeAnnotationToDatabase(SelectionShowNoteActivity.this, newAnnotation, epub_id);
 				}
 			});
 		}
@@ -186,5 +205,53 @@ public class SelectionShowNoteActivity extends Activity {
 	
 	private TextView findTextView(int resourceId) {
 		return (TextView)findViewById(resourceId);
+	}
+	
+	private class HttpHelper extends AsyncTask<String, Void, String> {
+
+		private String url;
+		private String xml;
+		private String username;
+		private String password;
+		private HttpEntity resEntityPost;
+		private String resEntityPostResult;
+		private Object[] connectionResult;
+		private String myStatusCode;
+		
+		@Override
+		protected String doInBackground(String... params) {
+			try {
+				url = params[0];
+				xml = params[1];
+				
+				ConnectionManager conn = ConnectionManager.getInstance();
+				conn.authenticate(username, password);
+				connectionResult = conn.postStuffPost(url, xml);
+				resEntityPost = (HttpEntity) connectionResult[0];
+				myStatusCode = (String) connectionResult[1];
+				if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
+						myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
+					return myStatusCode;
+				}
+				
+			} catch (Exception e) {
+			    e.printStackTrace();
+			    Log.e("SelectionNoteActivity", e.toString());
+			} 
+			return resEntityPostResult;
+		}
+		
+		@Override
+		protected void onPostExecute(String result) {
+			ConnectionManager conn = ConnectionManager.getInstance();
+			if (result.equals(conn.AUTHENTICATION_FAILED)) {
+				UIUtil.createDialog(SelectionShowNoteActivity.this, "Error", getString(R.string.authentication_failed));
+				return;
+			}
+			if (result.equals(conn.NO_INTERNET_CONNECTION)) {
+				UIUtil.createDialog(SelectionShowNoteActivity.this, "Error", getString(R.string.no_internet_connection));
+				return;
+			}
+		}
 	}
 }

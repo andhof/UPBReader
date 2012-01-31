@@ -23,6 +23,7 @@ import java.util.Queue;
 import java.util.LinkedList;
 
 import android.content.Context;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.os.Handler;
 import android.os.Message;
@@ -129,4 +130,16 @@ public abstract class UIUtil {
 			ZLResource.resource("errorMessage").getResource(resourceKey).getValue().replace("%s", parameter)
 		);
 	}
+	
+	/**
+	 * Alert dialog for connection messages or similar 
+	 */
+	public static void createDialog(Context context, String title, String text) {
+        AlertDialog ad = new AlertDialog.Builder(context)
+        .setPositiveButton("Ok", null)
+        .setTitle(title)
+        .setMessage(text)
+        .create();
+        ad.show();
+    }
 }

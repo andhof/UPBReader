@@ -1,5 +1,7 @@
 package org.geometerplus.android.fbreader.annotation;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -60,7 +62,23 @@ public class CommentAdapter extends BaseAdapter implements OnItemClickListener {
         tvAuthor.setText(comment.getAuthor().getName());
         
         TextView tvUpdatedAt = (TextView) convertView.findViewById(R.id.comment_updated_at);
-        tvUpdatedAt.setText(new Date(comment.getModified()).toString());
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        Date date = null;
+        try {
+        	String dateString;
+			if (comment.getUpdatedAt().isEmpty()) {
+				date = new Date(comment.getModified());
+				TextView tvLocal = (TextView) convertView.findViewById(R.id.comment_local);
+				tvLocal.setText(R.string.shownote_local);
+			} else {
+				date = format.parse(comment.getUpdatedAt());
+			}
+        	tvUpdatedAt.setText(date.toString());
+        	
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+        
         
         TextView tvContent = (TextView) convertView.findViewById(R.id.comment_content);
         tvContent.setText(comment.getAnnotationContent().getAnnotationText());

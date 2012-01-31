@@ -20,6 +20,7 @@ import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotations;
+import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.fbreader.Paths;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.library.Book;
@@ -31,6 +32,7 @@ import org.simpleframework.xml.core.Persister;
 
 import de.upb.android.reader.R;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -128,6 +130,8 @@ public class EPubListActivity extends ListActivity {
 	private class HttpHelper extends AsyncTask<String, Void, String> {
 
 		private HttpEntity resEntityGet;
+		private Object[] connectionResult;
+		private String myStatusCode;
 		
 		@Override
 		protected void onPreExecute() {
@@ -144,7 +148,13 @@ public class EPubListActivity extends ListActivity {
 				String ePubID = params[2];
 				
 				ConnectionManager conn = ConnectionManager.getInstance();
-				resEntityGet = conn.postStuff(getURL);
+				connectionResult = conn.postStuffGet(getURL);
+				resEntityGet = (HttpEntity) connectionResult[0];
+				myStatusCode = (String) connectionResult[1];
+				if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
+						myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
+					return myStatusCode;
+				}
 				
 				InputStream inputStream = resEntityGet.getContent();
 				
@@ -184,9 +194,18 @@ public class EPubListActivity extends ListActivity {
 		}
 		
 		@Override
-		protected void onPostExecute(String path) {
+		protected void onPostExecute(String result) {
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
+			}
+			ConnectionManager conn = ConnectionManager.getInstance();
+			if (result.equals(conn.AUTHENTICATION_FAILED)) {
+				UIUtil.createDialog(EPubListActivity.this, "Error", getString(R.string.authentication_failed));
+				return;
+			}
+			if (result.equals(conn.NO_INTERNET_CONNECTION)) {
+				UIUtil.createDialog(EPubListActivity.this, "Error", getString(R.string.no_internet_connection));
+				return;
 			}
 			
 			setResult(4);
@@ -207,7 +226,7 @@ public class EPubListActivity extends ListActivity {
 			}
 			
 			// load the downloaded book
-			fbreader.openFile(ZLFile.createFileByPath(path));
+			fbreader.openFile(ZLFile.createFileByPath(result));
 		}
 		
 		/**

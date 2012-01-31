@@ -14,7 +14,7 @@ public abstract class BaseProvider extends ContentProvider {
 
 	private static final String DATABASE_NAME = "annotations.db";
 	
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 2;
 
 	static class DatabaseHelper extends SQLiteOpenHelper {
 
