@@ -57,6 +57,7 @@ import org.geometerplus.android.fbreader.provider.SemAppsContentProvider;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.EPubs;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
+import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
 import org.geometerplus.fbreader.Paths;
 import org.geometerplus.fbreader.bookmodel.BookModel;
 import org.geometerplus.fbreader.bookmodel.TOCTree;
@@ -67,9 +68,11 @@ import org.simpleframework.xml.core.Persister;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 public final class FBReaderApp extends ZLApplication {
 	public final ZLBooleanOption AllowScreenBrightnessAdjustmentOption =
@@ -232,6 +235,16 @@ public final class FBReaderApp extends ZLApplication {
 				for (EPub epub : EPubs.getEPubs()) {
 					loadAnnotationsFromDatabase(path);
 				}
+				
+				//clear job queue
+//				SharedPreferences settings = context.getSharedPreferences("annotation_stack", 0);
+//				Set<String> urlset = new HashSet<String>();
+//				SharedPreferences.Editor e = settings.edit();
+//				e.putStringSet("add", urlset);
+//				e.putStringSet("update", urlset);
+//				e.putStringSet("delete", urlset);
+//				e.commit();
+				
 				
 				openBookInternal(book, null);
 			}
@@ -938,16 +951,18 @@ public final class FBReaderApp extends ZLApplication {
 	}
 	
 	/**
-	 * load an XML String of annotations into the annotations object structure
+	 * load an XML String of annotations into a annotations object structure
 	 * @param xml
 	 */
-	public void loadAnnotationsFromXMLString(String xml) {
+	public SemAppsAnnotation loadAnnotationFromXMLString(String xml) {
+		SemAppsAnnotation annotation = null;
 		try {
-    		Serializer serializer = new Persister();
-    		Annotations = serializer.read(Annotations.class, xml);
+			Serializer serializer = new Persister();
+			annotation = serializer.read(SemAppsAnnotation.class, xml);
     	} catch (Exception e) {
     		Log.e("loadFromXMLString", e.toString());
     	}
+    	return annotation;
 	}
 	
 	/**
@@ -1044,6 +1059,10 @@ public final class FBReaderApp extends ZLApplication {
 		int absoluteElementCharOffset = charOffset + ((ZLTextWord)startElement).Offset;
 		
 		return tmpCursor.getIndexesByCharOffset(absoluteElementCharOffset);
+	}
+	
+	public void showToast(String text) {
+		Toast.makeText(context, text, Toast.LENGTH_LONG).show();
 	}
 
 

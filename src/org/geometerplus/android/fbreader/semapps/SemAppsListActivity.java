@@ -96,10 +96,11 @@ public class SemAppsListActivity extends ListActivity {
 	private class HttpHelper extends AsyncTask<String, Void, String> {
 
 		private String getURL;
+		private ConnectionManager conn;
 		private HttpEntity resEntityGet;
 		private String resEntityGetResult;
 		private Object[] connectionResult;
-		private String myStatusCode;
+		private int myStatusCode;
 		
 		@Override
 		protected void onPreExecute() {
@@ -111,13 +112,13 @@ public class SemAppsListActivity extends ListActivity {
 			try {
 				getURL = params[0];
 				
-				ConnectionManager conn = ConnectionManager.getInstance();
+				conn = ConnectionManager.getInstance();
 				connectionResult = conn.postStuffGet(getURL);
 				resEntityGet = (HttpEntity) connectionResult[0];
-				myStatusCode = (String) connectionResult[1];
-				if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
-						myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
-					return myStatusCode;
+				myStatusCode = ((Integer) connectionResult[1]).intValue();
+				if (myStatusCode == conn.AUTHENTICATION_FAILED ||
+						myStatusCode == conn.NO_INTERNET_CONNECTION) {
+					return null;
 				}
 		        resEntityGetResult = EntityUtils.toString(resEntityGet);
 		        
@@ -133,12 +134,11 @@ public class SemAppsListActivity extends ListActivity {
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
 			}
-			ConnectionManager conn = ConnectionManager.getInstance();
-			if (result.equals(conn.AUTHENTICATION_FAILED)) {
+			if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 				UIUtil.createDialog(SemAppsListActivity.this, "Error", getString(R.string.authentication_failed));
 				return;
 			}
-			if (result.equals(conn.NO_INTERNET_CONNECTION)) {
+			if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
 				UIUtil.createDialog(SemAppsListActivity.this, "Error", getString(R.string.no_internet_connection));
 				return;
 			}
@@ -205,15 +205,6 @@ public class SemAppsListActivity extends ListActivity {
 			SemApp semApp = null;
 			try {
 				Serializer serializer = new Persister();
-//				xml = "<?xml version='1.0' encoding='UTF-8'?>\n<semapps type='array'>" +
-//						"\n  <semapp>\n    <id>4eef5aadd0434c1fa6000001</id>\n    <name>" +
-//						"Test Semapp</name>\n    <updated_at>2011-12-19 16:39:25 +0100" +
-//						"</updated_at>\n  </semapp>\n<semapp>\n    <id>4eef5aadd0434c1f" +
-//						"a6000002</id>\n    <name>Test Semapp2</name>\n    <updated_at>201" +
-//						"1-12-19 16:39:25 +0100</updated_at>\n  </semapp>\n<semapp>\n    " +
-//						"<id>4eef5aadd0434c1fa6000003</id>\n    <name>Test Semapp3</name" +
-//						">\n    <updated_at>2011-12-19 16:39:25 +0100</updated_at>\n  </sem" +
-//						"app>\n</semapps>\n";
 	    		semApp = serializer.read(SemApp.class, xml);
 	    		System.out.println();
 	    	} catch (Exception e) {

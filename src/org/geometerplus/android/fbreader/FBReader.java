@@ -398,16 +398,6 @@ public final class FBReader extends ZLAndroidActivity {
 			new SQLiteBooksDatabase(this, "READER");
 		}
 		
-//		dbHelper = new AnnotationsDbAdapter(this);
-//		dbHelper.open();
-//		if (file != null) {
-//			cursor = dbHelper.fetchAllEPubs();
-//			startManagingCursor(cursor);
-//			cursor.
-//			
-//		}
-		
-		
 		return new FBReaderApp(file != null ? file.getPath() : null, this);
 	}
 

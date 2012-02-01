@@ -9,6 +9,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.util.EntityUtils;
@@ -62,6 +64,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class SelectionNoteActivity extends Activity {
 
@@ -375,43 +378,51 @@ public class SelectionNoteActivity extends Activity {
 
 		private String url;
 		private String xml;
+		private ConnectionManager conn;
 		private Object[] connectionResult;
-		private String myStatusCode;
+		private int myStatusCode;
 		private HttpEntity resEntityPost;
 		private HttpEntity resEntityGet;
 		private HttpEntity resEntityPut;
 		private String resEntityGetResult;
+		private String resEntityPostResult;
 		
 		@Override
 		protected String doInBackground(String... params) {
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+			conn = ConnectionManager.getInstance();
+			String annotation_id = "";
+			String upb_id = "";
+			String updated_at = "";
 			try {
 				url = params[0];
 				xml = params[1];
 				
-				ConnectionManager conn = ConnectionManager.getInstance();
 				conn.authenticate(username, password);
 				if (newAnnotation) {
 					connectionResult = conn.postStuffPost(url, xml);
-					myStatusCode = (String) connectionResult[1];
-					if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
-							myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
-						return myStatusCode;
+					resEntityPost = (HttpEntity) connectionResult[0];
+					myStatusCode = ((Integer) connectionResult[1]).intValue();
+					if (resEntityPost != null && myStatusCode == conn.OK) {
+						resEntityPostResult = EntityUtils.toString(resEntityPost);
+						SemAppsAnnotation saAnnotation = 
+							fbreader.loadAnnotationFromXMLString(resEntityPostResult);
+						upb_id = saAnnotation.getId();
+						updated_at = saAnnotation.getUpdated_at();
 					}
-					connectionResult = conn.postStuffGet(url);
-					myStatusCode = (String) connectionResult[1];
-					if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
-							myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
-						return myStatusCode;
+					
+					if (myStatusCode == conn.AUTHENTICATION_FAILED) {
+						return null;
 					}
-					resEntityGet = (HttpEntity) connectionResult[0];
-					resEntityGetResult = EntityUtils.toString(resEntityGet);
+					
+					annotation.setUPBId(upb_id);
+					annotation.setUpdatedAt(updated_at);
+					
 				} else {
 					connectionResult = conn.postStuffPut(url, xml);
-					myStatusCode = (String) connectionResult[1];
-					if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
-							myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
-						return myStatusCode;
+					myStatusCode = ((Integer) connectionResult[1]).intValue();
+					if (myStatusCode == conn.AUTHENTICATION_FAILED) {
+						return null;
 					}
 				}
 			} catch (Exception e) {
@@ -419,26 +430,44 @@ public class SelectionNoteActivity extends Activity {
 			    Log.e("SelectionNoteActivity", e.toString());
 			} 
 			
-			SemAppsAnnotations saAnnotations = loadAnnotationsListFromXMLString(resEntityGetResult);
-			
-			SemAppsAnnotation saAnnotation = saAnnotations.getAnnotationByData(xml);
-			annotation.setUPBId(saAnnotation.getId());
-			annotation.setUpdatedAt(saAnnotation.getUpdated_at());
+			if (annotation_id.isEmpty()) {
+				annotation_id = annotation.getId();
+			}
 			
 			fbreader.writeAnnotationToDatabase(SelectionNoteActivity.this, annotation, annotation.getEPubId());
 			
-			return resEntityGetResult;
+			if (newAnnotation && myStatusCode != conn.OK) {
+				SharedPreferences settings = getSharedPreferences("annotation_stack", 0);
+				Set<String> urlset;
+				urlset = settings.getStringSet("add", new HashSet<String>());
+				urlset.add(url + "/" + annotation_id);
+				SharedPreferences.Editor e = settings.edit();
+				e.putStringSet("add", urlset);
+				e.commit();
+			}
+			
+			if (!newAnnotation && myStatusCode != conn.OK) {
+				SharedPreferences settings = getSharedPreferences("annotation_stack", 0);
+				Set<String> urlset;
+				urlset = settings.getStringSet("update", new HashSet<String>());
+				urlset.add(url);
+				SharedPreferences.Editor e = settings.edit();
+				e.putStringSet("update", urlset);
+				e.commit();
+			}
+			
+			return null;
 		}
 		
 		@Override
 		protected void onPostExecute(String result) {
-			ConnectionManager conn = ConnectionManager.getInstance();
-			if (result.equals(conn.AUTHENTICATION_FAILED)) {
+			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+			if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 				UIUtil.createDialog(SelectionNoteActivity.this, "Error", getString(R.string.authentication_failed));
 				return;
 			}
-			if (result.equals(conn.NO_INTERNET_CONNECTION)) {
-				UIUtil.createDialog(SelectionNoteActivity.this, "Error", getString(R.string.no_internet_connection));
+			if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
+				fbreader.showToast("Couldn't upload the note. Will try it later.");
 				return;
 			}
 		}

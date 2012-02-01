@@ -2,8 +2,10 @@ package org.geometerplus.android.fbreader.annotation;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.http.HttpEntity;
 import org.geometerplus.android.fbreader.annotation.database.DBAnnotation.DBAnnotations;
@@ -213,10 +215,11 @@ public class SelectionShowNoteActivity extends Activity {
 		private String xml;
 		private String username;
 		private String password;
+		private ConnectionManager conn;
 		private HttpEntity resEntityPost;
 		private String resEntityPostResult;
 		private Object[] connectionResult;
-		private String myStatusCode;
+		private int myStatusCode;
 		
 		@Override
 		protected String doInBackground(String... params) {
@@ -224,31 +227,40 @@ public class SelectionShowNoteActivity extends Activity {
 				url = params[0];
 				xml = params[1];
 				
-				ConnectionManager conn = ConnectionManager.getInstance();
+				conn = ConnectionManager.getInstance();
 				conn.authenticate(username, password);
 				connectionResult = conn.postStuffPost(url, xml);
 				resEntityPost = (HttpEntity) connectionResult[0];
-				myStatusCode = (String) connectionResult[1];
-				if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
-						myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
-					return myStatusCode;
+				myStatusCode = ((Integer) connectionResult[1]).intValue();
+				if (myStatusCode == conn.AUTHENTICATION_FAILED) {
+					return null;
 				}
 				
 			} catch (Exception e) {
 			    e.printStackTrace();
 			    Log.e("SelectionNoteActivity", e.toString());
 			} 
+			
+			if (myStatusCode != conn.OK) {
+				SharedPreferences settings = getSharedPreferences("annotation_stack", 0);
+				Set<String> urlset;
+				urlset = settings.getStringSet("add", new HashSet<String>());
+				urlset.add(url);
+				SharedPreferences.Editor e = settings.edit();
+				e.putStringSet("add", urlset);
+				e.commit();
+			}
+			
 			return resEntityPostResult;
 		}
 		
 		@Override
 		protected void onPostExecute(String result) {
-			ConnectionManager conn = ConnectionManager.getInstance();
-			if (result.equals(conn.AUTHENTICATION_FAILED)) {
+			if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 				UIUtil.createDialog(SelectionShowNoteActivity.this, "Error", getString(R.string.authentication_failed));
 				return;
 			}
-			if (result.equals(conn.NO_INTERNET_CONNECTION)) {
+			if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
 				UIUtil.createDialog(SelectionShowNoteActivity.this, "Error", getString(R.string.no_internet_connection));
 				return;
 			}

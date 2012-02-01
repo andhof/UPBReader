@@ -13,7 +13,7 @@ import org.simpleframework.xml.Root;
 @Root
 public class Annotations {
 	
-	@ElementList(inline=true, name="annotation")
+	@ElementList(required=false, inline=true, name="annotation")
 	protected ArrayList<Annotation> annotations;
 	
 	/**
@@ -134,9 +134,29 @@ public class Annotations {
         return this.annotations;
     }
 	
-//	public Annotation getAnnotationById() {
-//		
-//	}
+	/**
+	 * get annotation by the given id 
+	 */
+	public Annotation getAnnotationByUPBId(String id) {
+		for (Annotation a : annotations) {
+			if (a.getUPBId().equals(id)) {
+				return a;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * get annotation by the given id 
+	 */
+	public Annotation getAnnotationById(String id) {
+		for (Annotation a : annotations) {
+			if (a.getId().equals(id)) {
+				return a;
+			}
+		}
+		return null;
+	}
 	
 	/**
 	 * remove a specific annotation

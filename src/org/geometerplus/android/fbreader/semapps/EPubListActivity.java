@@ -57,6 +57,7 @@ public class EPubListActivity extends ListActivity {
 	ArrayList<String> ePubFileNamesList = new ArrayList<String>();
 	ArrayList<String> ePubFilePathsList = new ArrayList<String>();
 	ArrayList<SemAppsAnnotations> ePubAnnotationsList = new ArrayList<SemAppsAnnotations>();
+	ArrayList<SemAppsAnnotation> semAppsAnnotations = new ArrayList<SemAppsAnnotation>();
 	
 	String annotationsXMLString;
 	String local_path;
@@ -93,12 +94,7 @@ public class EPubListActivity extends ListActivity {
 		String item = (String) getListAdapter().getItem(position);
 //		Toast.makeText(this, item + " selected", Toast.LENGTH_LONG).show();
 		
-		// Make one string of the annotations of one epub
-	    annotationsXMLString = "<annotations>";
-	    for (SemAppsAnnotation annotation : ePubAnnotationsList.get(position).getAnnotations()) {
-	    	annotationsXMLString += annotation.getData();
-	    }
-	    annotationsXMLString += "</annotations>";
+		semAppsAnnotations = ePubAnnotationsList.get(position).getAnnotations();
 		
 	    // save book information in database
 	    ePub = ePubList.get(position);
@@ -129,9 +125,10 @@ public class EPubListActivity extends ListActivity {
 	
 	private class HttpHelper extends AsyncTask<String, Void, String> {
 
+		private ConnectionManager conn;
 		private HttpEntity resEntityGet;
 		private Object[] connectionResult;
-		private String myStatusCode;
+		private int myStatusCode;
 		
 		@Override
 		protected void onPreExecute() {
@@ -147,13 +144,13 @@ public class EPubListActivity extends ListActivity {
 				String fileName = params[1];
 				String ePubID = params[2];
 				
-				ConnectionManager conn = ConnectionManager.getInstance();
+				conn = ConnectionManager.getInstance();
 				connectionResult = conn.postStuffGet(getURL);
 				resEntityGet = (HttpEntity) connectionResult[0];
-				myStatusCode = (String) connectionResult[1];
-				if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
-						myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
-					return myStatusCode;
+				myStatusCode = ((Integer) connectionResult[1]).intValue();
+				if (myStatusCode == conn.AUTHENTICATION_FAILED ||
+				myStatusCode == conn.NO_INTERNET_CONNECTION) {
+					return null;
 				}
 				
 				InputStream inputStream = resEntityGet.getContent();
@@ -198,12 +195,11 @@ public class EPubListActivity extends ListActivity {
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
 			}
-			ConnectionManager conn = ConnectionManager.getInstance();
-			if (result.equals(conn.AUTHENTICATION_FAILED)) {
+			if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 				UIUtil.createDialog(EPubListActivity.this, "Error", getString(R.string.authentication_failed));
 				return;
 			}
-			if (result.equals(conn.NO_INTERNET_CONNECTION)) {
+			if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
 				UIUtil.createDialog(EPubListActivity.this, "Error", getString(R.string.no_internet_connection));
 				return;
 			}
@@ -213,16 +209,24 @@ public class EPubListActivity extends ListActivity {
 			
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 			
-			// load the annotations into object structure
-			Annotations newAnnotations = loadAnnotationsFromXMLString(annotationsXMLString);
 			// add the missing annotations to local structure
-			for (Annotation annotation : newAnnotations.getAnnotations()) {
+			Annotation annotation;
+			String upb_id = "";
+			String updated_at = "";
+			for (SemAppsAnnotation a : semAppsAnnotations) {
+				String data = a.getData();
+				if (data.isEmpty()) {
+					continue;
+				}
+				annotation = loadAnnotationFromXMLString(data);
+				upb_id = a.getId();
+				updated_at = a.getUpdated_at();
 				if (!fbreader.Annotations.getAnnotations().contains(annotation)) {
+					annotation.setUPBId(upb_id);
+					annotation.setUpdatedAt(updated_at);
 					fbreader.Annotations.addAnnotation(annotation);
 					fbreader.writeAnnotationToDatabase(EPubListActivity.this, annotation, ePub.getId());
 				}
-				// TODO wenn updated_at neuer ist als lokal, dann sollte lokal überschrieben werden. natürlich
-				// nur wenn die annotation schon existiert
 			}
 			
 			// load the downloaded book
@@ -233,24 +237,15 @@ public class EPubListActivity extends ListActivity {
 		 * load an XML String of annotations into the annotations object structure
 		 * @param xml
 		 */
-		public Annotations loadAnnotationsFromXMLString(String xml) {
-			Annotations annotations = null;
+		public Annotation loadAnnotationFromXMLString(String xml) {
+			Annotation annotation = null;
 			try {
 				Serializer serializer = new Persister();
-//				xml = "<?xml version='1.0' encoding='UTF-8'?>\n<semapps type='array'>" +
-//						"\n  <semapp>\n    <id>4eef5aadd0434c1fa6000001</id>\n    <name>" +
-//						"Test Semapp</name>\n    <updated_at>2011-12-19 16:39:25 +0100" +
-//						"</updated_at>\n  </semapp>\n<semapp>\n    <id>4eef5aadd0434c1f" +
-//						"a6000002</id>\n    <name>Test Semapp2</name>\n    <updated_at>201" +
-//						"1-12-19 16:39:25 +0100</updated_at>\n  </semapp>\n<semapp>\n    " +
-//						"<id>4eef5aadd0434c1fa6000003</id>\n    <name>Test Semapp3</name" +
-//						">\n    <updated_at>2011-12-19 16:39:25 +0100</updated_at>\n  </sem" +
-//						"app>\n</semapps>\n";
-				annotations = serializer.read(Annotations.class, xml);
+				annotation = serializer.read(Annotation.class, xml);
 	    	} catch (Exception e) {
 	    		Log.e("loadFromXMLString", e.toString());
 	    	}
-	    	return annotations;
+	    	return annotation;
 		}
 	}
 }

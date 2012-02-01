@@ -28,8 +28,10 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 public class ConnectionManager {
-	public final String NO_INTERNET_CONNECTION = "1";
-	public final String AUTHENTICATION_FAILED = "2";
+	public final int OK = 0;
+	public final int NO_INTERNET_CONNECTION = 1;
+	public final int AUTHENTICATION_FAILED = 2;
+	public final int NOT_FOUND = 3;
 	
 	private static ConnectionManager instance = null;
     private HttpParams httpParams;
@@ -70,12 +72,16 @@ public class ConnectionManager {
 	}
 
     public Object[] postStuffGet(String url) {
+    	response = null;
+    	resEntity = null;
     	try {
 	    	get = new HttpGet(url);
 	    	response = httpClient.execute(get);
 	    	if (response.getStatusLine().getStatusCode() != 200) {
 				if (response.getStatusLine().getStatusCode() == 401) {
 					return new Object[] {null, AUTHENTICATION_FAILED};
+				} else if (response.getStatusLine().getStatusCode() == 404) {
+					return new Object[] {null, NOT_FOUND};
 				} else {
 					throw new RuntimeException("Failed : HTTP error code : "
 							   + response.getStatusLine().getStatusCode());
@@ -83,24 +89,30 @@ public class ConnectionManager {
 			}
 	        resEntity = response.getEntity();  
     	} catch (Exception e) {
+		    Log.e("ConnectionManager", e.toString());
     		if (response == null) {
     			return new Object[] {null, NO_INTERNET_CONNECTION};
     		}
     		e.printStackTrace();
-		    Log.e("UPBLibraryLoginActivity", e.toString());
 		} 
-		return new Object[] {resEntity, 0};
+		return new Object[] {resEntity, OK};
 	}
     
     public Object[] postStuffPut(String url, String input) {
+    	response = null;
+    	resEntity = null;
     	try {
 	    	put = new HttpPut(url);
 	    	Log.v("ConnectionManager", url);
-	    	put.setEntity(new StringEntity(input));
+	    	List<NameValuePair> params = new ArrayList<NameValuePair>();
+	    	params.add(new BasicNameValuePair("data", input));
+	    	put.setEntity(new UrlEncodedFormEntity(params));
 	    	response = httpClient.execute(put);
 	    	if (response.getStatusLine().getStatusCode() != 200) {
 				if (response.getStatusLine().getStatusCode() == 401) {
 					return new Object[] {null, AUTHENTICATION_FAILED};
+				} else if (response.getStatusLine().getStatusCode() == 404) {
+					return new Object[] {null, NOT_FOUND};
 				} else {
 					throw new RuntimeException("Failed : HTTP error code : "
 							   + response.getStatusLine().getStatusCode());
@@ -108,16 +120,18 @@ public class ConnectionManager {
 			}
 	        resEntity = response.getEntity();  
     	} catch (Exception e) {
+    		Log.e("ConnectionManager", e.toString());
     		if (response == null) {
     			return new Object[] {null, NO_INTERNET_CONNECTION};
     		}
 		    e.printStackTrace();
-		    Log.e("UPBLibraryLoginActivity", e.toString());
 		} 
-    	return new Object[] {resEntity, 0};
+    	return new Object[] {resEntity, OK};
 	}
     
     public Object[] postStuffPost(String url, String input) {
+    	response = null;
+    	resEntity = null;
     	try {
 	    	post = new HttpPost(url);
 	    	Log.v("ConnectionManager", url);
@@ -128,6 +142,8 @@ public class ConnectionManager {
 	    	if (response.getStatusLine().getStatusCode() != 200) {
 				if (response.getStatusLine().getStatusCode() == 401) {
 					return new Object[] {null, AUTHENTICATION_FAILED};
+				} else if (response.getStatusLine().getStatusCode() == 404) {
+					return new Object[] {null, NOT_FOUND};
 				} else {
 					throw new RuntimeException("Failed : HTTP error code : "
 							   + response.getStatusLine().getStatusCode());
@@ -135,24 +151,27 @@ public class ConnectionManager {
 			}
 	        resEntity = response.getEntity();  
     	} catch (Exception e) {
+    		Log.e("ConnectionManager", e.toString());
     		if (response == null) {
     			return new Object[] {null, NO_INTERNET_CONNECTION};
     		}
 		    e.printStackTrace();
-		    Log.e("UPBLibraryLoginActivity", e.toString());
 		} 
-    	return new Object[] {resEntity, 0};
+    	return new Object[] {resEntity, OK};
 	}
     
     public Object[] postStuffDelete(String url) {
+    	response = null;
+    	resEntity = null;
     	try {
 	    	delete = new HttpDelete(url);
 	    	Log.v("ConnectionManager", url);
-	    	List<NameValuePair> params = new ArrayList<NameValuePair>();
 	    	response = httpClient.execute(delete);
 	    	if (response.getStatusLine().getStatusCode() != 200) {
 				if (response.getStatusLine().getStatusCode() == 401) {
 					return new Object[] {null, AUTHENTICATION_FAILED};
+				} else if (response.getStatusLine().getStatusCode() == 404) {
+					return new Object[] {null, NOT_FOUND};
 				} else {
 					throw new RuntimeException("Failed : HTTP error code : "
 							   + response.getStatusLine().getStatusCode());
@@ -160,13 +179,14 @@ public class ConnectionManager {
 			}
 	        resEntity = response.getEntity();  
     	} catch (Exception e) {
+		    Log.e("ConnectionManager", e.toString());
     		if (response == null) {
     			return new Object[] {null, NO_INTERNET_CONNECTION};
     		}
+    		Log.v("ConnectionManager", "statuscode: "+response.getStatusLine().getStatusCode());
 		    e.printStackTrace();
-		    Log.e("UPBLibraryLoginActivity", e.toString());
 		} 
-    	return new Object[] {resEntity, 0};
+    	return new Object[] {resEntity, OK};
 	}
     
     public String getLoginUsername() {

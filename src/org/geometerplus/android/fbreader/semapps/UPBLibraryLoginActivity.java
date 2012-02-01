@@ -114,8 +114,9 @@ public class UPBLibraryLoginActivity extends Activity {
 
 		private Object[] connectionResult;
 		private HttpEntity resEntityGet;
-		private String myStatusCode;
+		private int myStatusCode;
 		private String resEntityGetResult;
+		private ConnectionManager conn;
 		
 		@Override
 		protected void onPreExecute() {
@@ -129,15 +130,15 @@ public class UPBLibraryLoginActivity extends Activity {
 				String user = params[1];
 				String password = params[2];
 				
-				ConnectionManager conn = ConnectionManager.getInstance();
+				conn = ConnectionManager.getInstance();
 				conn.authenticate(user, password);
 				connectionResult = conn.postStuffGet(getURL);
 				resEntityGet = (HttpEntity) connectionResult[0];
-				myStatusCode = (String) connectionResult[1];
+				myStatusCode = ((Integer) connectionResult[1]).intValue();
 				
-				if (myStatusCode.equals(conn.AUTHENTICATION_FAILED) ||
-						myStatusCode.equals(conn.NO_INTERNET_CONNECTION)) {
-					return myStatusCode;
+				if (myStatusCode == conn.AUTHENTICATION_FAILED ||
+						myStatusCode == conn.NO_INTERNET_CONNECTION) {
+					return null;
 				}
 				
 		    	SharedPreferences settings = getSharedPreferences("upblogin", 0);
@@ -157,15 +158,14 @@ public class UPBLibraryLoginActivity extends Activity {
 		
 		@Override
 		protected void onPostExecute(String result) {
-			ConnectionManager conn = ConnectionManager.getInstance();
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
 			}
-			if (result.equals(conn.AUTHENTICATION_FAILED)) {
+			if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 				UIUtil.createDialog(UPBLibraryLoginActivity.this, "Error", getString(R.string.authentication_failed));
 				return;
 			}
-			if (result.equals(conn.NO_INTERNET_CONNECTION)) {
+			if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
 				UIUtil.createDialog(UPBLibraryLoginActivity.this, "Error", getString(R.string.no_internet_connection));
 				return;
 			}
