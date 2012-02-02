@@ -11,6 +11,7 @@ import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapte
 import org.geometerplus.android.fbreader.annotation.database.DBAnnotation.DBAnnotations;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
+import org.geometerplus.android.fbreader.services.AnnotationService;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 
 import de.upb.android.reader.R;
@@ -18,7 +19,9 @@ import de.upb.android.reader.R;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 
 public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 	private FBReaderApp fbreader;
@@ -109,7 +112,16 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 				e.commit();
 				
 				if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
-					fbreader.showToast(BaseActivity.getString(R.string.toast_remove_noconnection));
+//					fbreader.showToast(BaseActivity.getString(R.string.toast_remove_noconnection));
+					Handler h = new Handler(BaseActivity.getMainLooper());
+
+				    h.post(new Runnable() {
+				        @Override
+				        public void run() {
+				        	Log.v("AnnotationService", "Toast wird angezeigt. Fertig.");
+				            Toast.makeText(BaseActivity, BaseActivity.getString(R.string.toast_remove_noconnection), Toast.LENGTH_LONG).show();
+				        }
+				    });
 					return;
 				}
 				
