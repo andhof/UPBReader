@@ -62,7 +62,7 @@ public class CommentAdapter extends BaseAdapter implements OnItemClickListener {
         tvAuthor.setText(comment.getAuthor().getName());
         
         TextView tvUpdatedAt = (TextView) convertView.findViewById(R.id.comment_updated_at);
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzzz");
         Date date = null;
         try {
         	String dateString;

@@ -3,6 +3,8 @@ package org.geometerplus.android.fbreader.annotation.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
@@ -14,13 +16,13 @@ import org.simpleframework.xml.Root;
 public class Annotations {
 	
 	@ElementList(required=false, inline=true, name="annotation")
-	protected ArrayList<Annotation> annotations;
+	protected LinkedList<Annotation> annotations;
 	
 	/**
 	 * Standard empty constructor
 	 */
 	public Annotations(){
-		annotations = new ArrayList<Annotation>();
+		annotations = new LinkedList<Annotation>();
     }
 	
 	/**
@@ -127,9 +129,9 @@ public class Annotations {
 	 * 
 	 * @return
 	 */
-	public ArrayList<Annotation> getAnnotations() {
+	public LinkedList<Annotation> getAnnotations() {
         if (annotations == null) {
-        	annotations = new ArrayList<Annotation>();
+        	annotations = new LinkedList<Annotation>();
         }
         return this.annotations;
     }
@@ -159,15 +161,25 @@ public class Annotations {
 	}
 	
 	/**
+	 * get annotation by the given targetannotationid 
+	 */
+	public ArrayList<Annotation> getAnnotationsByTargetAnnotationId(String id) {
+		ArrayList<Annotation> annotationList = new ArrayList<Annotation>();
+		for (Annotation a : annotations) {
+			if (a.annotationTarget.getTargetAnnotationId().equals(id)) {
+				annotationList.add(a);
+			}
+		}
+		return annotationList;
+	}
+	
+	/**
 	 * remove a specific annotation
 	 * 
 	 * @param annotation
 	 */
 	public void removeAnnotation(Annotation annotation) {
-		ArrayList<Annotation> annotationList = getAnnotations();
-		if (annotationList.contains(annotation)) {
-			annotationList.remove(annotation);
-		}
+		annotations.remove(annotation);
 	}
 	
 	/**

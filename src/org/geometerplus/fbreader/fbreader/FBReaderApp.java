@@ -986,7 +986,7 @@ public final class FBReaderApp extends ZLApplication {
 	 */
 	public void loadAnnotationHighlighting() {
 		ZLTextModel textModel = BookTextView.getModel();
-		ArrayList<Annotation> annotations = Annotations.getAnnotations();
+		LinkedList<Annotation> annotations = Annotations.getAnnotations();
 		
 		String startPart;
 		String startXPath;

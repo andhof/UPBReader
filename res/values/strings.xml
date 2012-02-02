@@ -49,4 +49,7 @@
     <string name="quickaction_edit">Edit</string>
     <string name="quickaction_comment">Comment</string>
     <string name="quickaction_remove">Remove</string>
+    
+    <string name="toast_add_noconnection">Couldn\'t upload the note. Will try it later.</string>
+    <string name="toast_remove_noconnection">Couldn\'t delete the note from Server. Will try it later.</string>
 </resources>

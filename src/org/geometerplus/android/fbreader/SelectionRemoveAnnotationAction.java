@@ -1,5 +1,6 @@
 package org.geometerplus.android.fbreader;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,6 +11,8 @@ import org.geometerplus.android.fbreader.annotation.database.DBAnnotation.DBAnno
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
+
+import de.upb.android.reader.R;
 
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -27,6 +30,8 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 	private String username;
 	private String password;
 	private ConnectionManager conn;
+	private ArrayList<Annotation> annotationsToRemove;
+	private SharedPreferences settings;
 	
 	SelectionRemoveAnnotationAction(FBReader baseActivity, FBReaderApp fbreader) {
 		super(baseActivity, fbreader);
@@ -36,50 +41,66 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 	@Override
 	protected void run(Object... params) {
 		final Annotation annotation = (Annotation) params[0];
-		fbreader.Annotations.removeAnnotation(annotation);
 		BaseActivity.hideAnnotationSelectionPanel();
 		fbreader.BookTextView.removeAnnotationHighlight(annotation);
+		annotationsToRemove = new ArrayList<Annotation>();
+		annotationsToRemove.add(annotation);
+		annotationsToRemove.addAll(
+				fbreader.Annotations.getAnnotationsByTargetAnnotationId(annotation.getUPBId()));
+		fbreader.Annotations.getAnnotations().removeAll(annotationsToRemove);
 		
 		new Thread(new Runnable() {
 			
 			@Override
 			public void run() {
+				Set<String> urlset = new HashSet<String>();
+				
+				for (Annotation a : annotationsToRemove) {
+					Uri uri = DBAnnotations.CONTENT_URI;
+					String selection = DBAnnotations.ANNOTATION_ID + "=\"" + a.getId() + "\"";
+					BaseActivity.getContentResolver().delete(uri, selection, null);
+				}
+				
+				Log.v("SelectionRemoveAnnotationAction", "remove count: "+annotationsToRemove.size());
+				
 				conn = ConnectionManager.getInstance();
 				if (annotation.getUPBId() != null && !annotation.getUPBId().isEmpty()) {
-					SharedPreferences settings = BaseActivity.getSharedPreferences("upblogin", 0);
+					settings = BaseActivity.getSharedPreferences("upblogin", 0);
 					username = settings.getString("user", "Localuser");
 					password = settings.getString("password", null);
 					
-					String annotation_id = annotation.getUPBId();
+					conn.authenticate(username, password);
+					
 					String epub_id = annotation.getEPubId();
 					String semapp_id = fbreader.EPubs.getEPubById(epub_id).getSemAppId();
-					url = "http://epubdummy.provideal.net/api/semapps/"+ 
-			    			semapp_id + "/epubs/" + epub_id + "/annotations/" + annotation_id; 
-					
-					conn.authenticate(username, password);
-					connectionResult = conn.postStuffDelete(url);
-					resEntityPost = (HttpEntity) connectionResult[0];
-					myStatusCode = ((Integer) connectionResult[1]).intValue();
-					
-					if (myStatusCode == conn.AUTHENTICATION_FAILED) {
-						Log.v("SelectionRemoveAnnotationAction", "Authentication failed. Return.");
-						return;
+					for (Annotation a : annotationsToRemove) {
+						url = "http://epubdummy.provideal.net/api/semapps/"+ 
+							semapp_id + "/epubs/" + epub_id + "/annotations/" + a.getUPBId();
+						
+						connectionResult = conn.postStuffDelete(url);
+						resEntityPost = (HttpEntity) connectionResult[0];
+						myStatusCode = ((Integer) connectionResult[1]).intValue();
+						
+						if (myStatusCode == conn.AUTHENTICATION_FAILED) {
+							Log.v("SelectionRemoveAnnotationAction", "Authentication failed. Return.");
+							return;
+						}
+						
+						if (myStatusCode != conn.OK) {
+							settings = BaseActivity.getSharedPreferences("annotation_stack", 0);
+							urlset = settings.getStringSet("delete", new HashSet<String>());
+							urlset.add(url);
+						}
 					}
 				}
+				settings = BaseActivity.getSharedPreferences("annotation_stack", 0);
+				SharedPreferences.Editor e = settings.edit();
+				e.putStringSet("delete", urlset);
+				e.commit();
 				
-				Uri uri = DBAnnotations.CONTENT_URI;
-				String selection = DBAnnotations.ANNOTATION_ID + "=\"" + annotation.getId() + "\"";
-				BaseActivity.getContentResolver().delete(uri, selection, null);
-				
-				if (myStatusCode != conn.OK) {
-					SharedPreferences settings = BaseActivity.getSharedPreferences("annotation_stack", 0);
-					Set<String> urlset;
-					urlset = settings.getStringSet("delete", new HashSet<String>());
-					urlset.add(url);
-					SharedPreferences.Editor e = settings.edit();
-					e.putStringSet("delete", urlset);
-					e.commit();
-					settings = BaseActivity.getSharedPreferences("annotation_stack", 0);
+				if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
+					fbreader.showToast(BaseActivity.getString(R.string.toast_remove_noconnection));
+					return;
 				}
 				
 				// TODO hier entfernen

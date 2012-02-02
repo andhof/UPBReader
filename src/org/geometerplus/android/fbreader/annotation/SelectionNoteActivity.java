@@ -467,7 +467,7 @@ public class SelectionNoteActivity extends Activity {
 				return;
 			}
 			if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
-				fbreader.showToast("Couldn't upload the note. Will try it later.");
+				fbreader.showToast(getString(R.string.toast_add_noconnection));
 				return;
 			}
 		}

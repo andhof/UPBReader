@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.util.EntityUtils;
 import org.geometerplus.android.fbreader.annotation.database.DBAnnotation.DBAnnotations;
 import org.geometerplus.android.fbreader.annotation.database.DBEPub.DBEPubs;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
@@ -16,6 +17,7 @@ import org.geometerplus.android.fbreader.fragments.AnnotationShowNoteFragment2;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
+import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
 import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.fbreader.fbreader.ActionCode;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
@@ -55,6 +57,7 @@ public class SelectionShowNoteActivity extends Activity {
 	private String username;
 	private String password;
 	private List<Annotation> listOfComments;
+	private Annotation newAnnotation;
 	
 	@Override
 	public void onCreate(Bundle bundle) {
@@ -146,7 +149,7 @@ public class SelectionShowNoteActivity extends Activity {
 					}
 					
 					Book book = fbreader.Model.Book;
-					Annotation newAnnotation = fbreader.Annotations.addAnnotation();
+					newAnnotation = fbreader.Annotations.addAnnotation();
 					
 					String startPart = annotation.getAnnotationTarget().getRange().getStart().getPart();
 					String endPart = annotation.getAnnotationTarget().getRange().getEnd().getPart();
@@ -166,13 +169,11 @@ public class SelectionShowNoteActivity extends Activity {
 					newAnnotation.getAnnotationTarget().getRange().getEnd().setPart(endPart);
 					newAnnotation.getAnnotationContent().setAnnotationText(content);
 					
+					newAnnotation.setEPubId(annotation.getEPubId());
 					newAnnotation.setId(fbreader.md5(book.getContentHashCode() + newAnnotation.toString()));
 					
-					reload();
-					
-					String bookPath = book.File.getPath();
-					EPub epub = fbreader.EPubs.getEPubByLocalPath(bookPath);
-					String epub_id = epub.getId();
+					String epub_id = newAnnotation.getEPubId();
+					EPub epub = fbreader.EPubs.getEPubById(epub_id);
 					String semapp_id = epub.getSemAppId();
 					
 					// Start asynctask for uploading annotation
@@ -183,6 +184,8 @@ public class SelectionShowNoteActivity extends Activity {
 			    			semapp_id + "/epubs/" + epub_id + "/annotations", xml);
 					
 					fbreader.writeAnnotationToDatabase(SelectionShowNoteActivity.this, newAnnotation, epub_id);
+					
+					reload();
 				}
 			});
 		}
@@ -213,8 +216,6 @@ public class SelectionShowNoteActivity extends Activity {
 
 		private String url;
 		private String xml;
-		private String username;
-		private String password;
 		private ConnectionManager conn;
 		private HttpEntity resEntityPost;
 		private String resEntityPostResult;
@@ -223,23 +224,44 @@ public class SelectionShowNoteActivity extends Activity {
 		
 		@Override
 		protected String doInBackground(String... params) {
+			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+			String annotation_id = "";
+			String upb_id = "";
+			String updated_at = "";
+			
+			url = params[0];
+			xml = params[1];
+			
 			try {
-				url = params[0];
-				xml = params[1];
-				
 				conn = ConnectionManager.getInstance();
 				conn.authenticate(username, password);
 				connectionResult = conn.postStuffPost(url, xml);
 				resEntityPost = (HttpEntity) connectionResult[0];
 				myStatusCode = ((Integer) connectionResult[1]).intValue();
+				if (resEntityPost != null && myStatusCode == conn.OK) {
+					resEntityPostResult = EntityUtils.toString(resEntityPost);
+					SemAppsAnnotation saAnnotation = 
+						fbreader.loadAnnotationFromXMLString(resEntityPostResult);
+					upb_id = saAnnotation.getId();
+					updated_at = saAnnotation.getUpdated_at();
+				}
 				if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 					return null;
 				}
+				
+				newAnnotation.setUPBId(upb_id);
+				newAnnotation.setUpdatedAt(updated_at);
 				
 			} catch (Exception e) {
 			    e.printStackTrace();
 			    Log.e("SelectionNoteActivity", e.toString());
 			} 
+			
+			if (annotation_id.isEmpty()) {
+				annotation_id = newAnnotation.getId();
+			}
+			
+			fbreader.writeAnnotationToDatabase(SelectionShowNoteActivity.this, newAnnotation, newAnnotation.getEPubId());
 			
 			if (myStatusCode != conn.OK) {
 				SharedPreferences settings = getSharedPreferences("annotation_stack", 0);
@@ -256,14 +278,16 @@ public class SelectionShowNoteActivity extends Activity {
 		
 		@Override
 		protected void onPostExecute(String result) {
+			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 			if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 				UIUtil.createDialog(SelectionShowNoteActivity.this, "Error", getString(R.string.authentication_failed));
 				return;
 			}
 			if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
-				UIUtil.createDialog(SelectionShowNoteActivity.this, "Error", getString(R.string.no_internet_connection));
+				fbreader.showToast(getString(R.string.toast_add_noconnection));
 				return;
 			}
+			reload();
 		}
 	}
 }

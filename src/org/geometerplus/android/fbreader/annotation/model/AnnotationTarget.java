@@ -16,6 +16,7 @@ public class AnnotationTarget implements Parcelable {
 	protected DocumentIdentifier documentIdentifier;
 	@Element(required=false)
 	protected Range range;
+	@Element(required=false)
 	protected String targetAnnotationId;
 	
 	public AnnotationTarget(String bookId, DocumentIdentifier documentidentifier, Range range) {
