@@ -3,7 +3,6 @@ package org.geometerplus.android.fbreader.annotation.model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.simpleframework.xml.ElementList;

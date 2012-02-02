@@ -2,6 +2,7 @@ package org.geometerplus.android.fbreader.annotation;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -420,7 +421,16 @@ public class SelectionNoteActivity extends Activity {
 					
 				} else {
 					connectionResult = conn.postStuffPut(url, xml);
+					resEntityPut = (HttpEntity) connectionResult[0];
 					myStatusCode = ((Integer) connectionResult[1]).intValue();
+					if (resEntityPut != null) {
+						try {
+							resEntityPut.consumeContent();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
 					if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 						return null;
 					}

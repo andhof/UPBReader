@@ -3,6 +3,7 @@ package org.geometerplus.android.fbreader.services;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.http.HttpEntity;
@@ -33,14 +34,13 @@ public class AnnotationService extends Service {
 	private Object[] connectionResult;
 	private HttpEntity resEntityPost;
 	private HttpEntity resEntityPut;
+	private HttpEntity resEntityDelete;
 	private int myStatusCode;
 	private String resEntityPostResult;
-	private String resEntityPutResult;
 	
 	private SharedPreferences settings;
 	private Set<String> urlset;
 	private ArrayList<String> urlList;
-	private ArrayList<String> urlRemoveList;
 	private String xml;
 	private int successfulJobs;
 	
@@ -55,12 +55,9 @@ public class AnnotationService extends Service {
 		username = settings.getString("user", "Localuser");
 		password = settings.getString("password", null);
 		
-		// TODO hier sollen die ganzen annotationsaktionen nachgeholt werden, 
-		// die nich durchgeführt werden konnten
 		Log.v("AnnotationService", "Der Service läuft soweit!");
 		
 		settings = getSharedPreferences("annotation_stack", 0);
-		
 		
 		new Thread(new Runnable() {
 
@@ -71,23 +68,27 @@ public class AnnotationService extends Service {
 				String updated_at = "";
 				SharedPreferences.Editor edit = settings.edit();
 				successfulJobs = 0; 
+				Iterator<String> it;
 				
 				// Add new annotations to the server
 				myStatusCode = -1;
 				urlset = settings.getStringSet("add", new HashSet<String>());
 				urlList = new ArrayList<String>(urlset);
-				urlRemoveList = new ArrayList<String>();
 				
 				conn.authenticate(username, password);
-				for (String url : urlList) {
-					Log.v("AnnotationService", "add: "+ url);
-					annotation_id = url.substring(url.lastIndexOf("/")+1);
-					url = url.substring(0, url.lastIndexOf("/"));
+				
+				it = urlList.iterator();
+				while(it.hasNext()){
+					String current = it.next();
+					
+					Log.v("AnnotationService", "add: "+ current);
+					annotation_id = current.substring(current.lastIndexOf("/")+1);
+					current = current.substring(0, current.lastIndexOf("/"));
 					Annotation annotation = fbreader.Annotations.getAnnotationById(annotation_id);
 					xml = fbreader.saveAnnotationToString(annotation);
 					
 					try {
-						connectionResult = conn.postStuffPost(url, xml);
+						connectionResult = conn.postStuffPost(current, xml);
 						resEntityPost = (HttpEntity) connectionResult[0];
 						myStatusCode = ((Integer) connectionResult[1]).intValue();
 						Log.v("AnnotationService", "statuscode: "+myStatusCode);
@@ -109,11 +110,11 @@ public class AnnotationService extends Service {
 						e.printStackTrace();
 					}
 					if (myStatusCode == conn.OK) {
-						urlRemoveList.add(url + "/" + annotation_id);
+						it.remove();
 						successfulJobs++;
 					}
 				}
-				urlList.removeAll(urlRemoveList);
+				
 				urlset = new HashSet<String>(urlList);
 				edit = settings.edit();
 				edit.putStringSet("add", urlset);
@@ -123,23 +124,32 @@ public class AnnotationService extends Service {
 				myStatusCode = -1;
 				urlset = settings.getStringSet("update", new HashSet<String>());
 				urlList = new ArrayList<String>(urlset);
-				urlRemoveList = new ArrayList<String>();
 				
-				for (String url : urlList) {
-					Log.v("AnnotationService", "update: "+ url);
-					upb_id = url.substring(url.lastIndexOf("/")+1);
+				it = urlList.iterator();
+				while(it.hasNext()){
+					String current = it.next();
+					
+					Log.v("AnnotationService", "update: "+ current);
+					upb_id = current.substring(current.lastIndexOf("/")+1);
 					Annotation annotation = fbreader.Annotations.getAnnotationByUPBId(upb_id);
 					xml = fbreader.saveAnnotationToString(annotation);
 					
-					connectionResult = conn.postStuffPut(url, xml);
+					connectionResult = conn.postStuffPut(current, xml);
 					resEntityPut = (HttpEntity) connectionResult[0];
 					myStatusCode = ((Integer) connectionResult[1]).intValue();
+					if (resEntityPut != null) {
+						try {
+							resEntityPut.consumeContent();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
 					if (myStatusCode == conn.OK) {
-						urlRemoveList.add(url);
+						it.remove();
 						successfulJobs++;
 					}
 				}
-				urlList.removeAll(urlRemoveList);
+				
 				urlset = new HashSet<String>(urlList);
 				edit = settings.edit();
 				edit.putStringSet("update", urlset);
@@ -149,20 +159,28 @@ public class AnnotationService extends Service {
 				myStatusCode = -1;
 				urlset = settings.getStringSet("delete", new HashSet<String>());
 				urlList = new ArrayList<String>(urlset);
-				urlRemoveList = new ArrayList<String>();
 				
-				for (String url : urlList) {
-					Log.v("AnnotationService", "delete: "+ url);
-					connectionResult = conn.postStuffDelete(url);
-					resEntityPut = (HttpEntity) connectionResult[0];
+				it = urlList.iterator();
+				while(it.hasNext()){
+					String current = it.next();
+					
+					Log.v("AnnotationService", "delete: "+ current);
+					connectionResult = conn.postStuffDelete(current);
+					resEntityDelete = (HttpEntity) connectionResult[0];
 					myStatusCode = ((Integer) connectionResult[1]).intValue();
+					if (resEntityDelete != null) {
+						try {
+							resEntityDelete.consumeContent();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
 					if (myStatusCode == conn.OK) {
-						urlRemoveList.add(url);
+						it.remove();
 						successfulJobs++;
 					}
 				}
-				urlList.removeAll(urlRemoveList);
-				urlList.removeAll(urlList);
+				
 				urlset = new HashSet<String>(urlList);
 				edit.putStringSet("delete", urlset);
 				edit.commit();

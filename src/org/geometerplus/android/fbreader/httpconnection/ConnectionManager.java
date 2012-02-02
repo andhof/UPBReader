@@ -8,6 +8,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -50,10 +51,6 @@ public class ConnectionManager {
     	httpParams = new BasicHttpParams();
 		HttpConnectionParams.setConnectionTimeout(httpParams, 15000);
 		httpClient = new DefaultHttpClient(httpParams);
-		ClientConnectionManager mgr = httpClient.getConnectionManager();
-		HttpParams params = httpClient.getParams();
-		httpClient = new DefaultHttpClient(new ThreadSafeClientConnManager(params, 
-	            mgr.getSchemeRegistry()), params);
     }
 
     //public method that will be invoked from other classes.
@@ -167,10 +164,13 @@ public class ConnectionManager {
 	    	delete = new HttpDelete(url);
 	    	Log.v("ConnectionManager", url);
 	    	response = httpClient.execute(delete);
+	    	Log.v("ConnectionManager", "delete aufruf. direkt nach execute");
 	    	if (response.getStatusLine().getStatusCode() != 200) {
 				if (response.getStatusLine().getStatusCode() == 401) {
+					Log.v("ConnectionManager", "statuscode: "+response.getStatusLine().getStatusCode());
 					return new Object[] {null, AUTHENTICATION_FAILED};
 				} else if (response.getStatusLine().getStatusCode() == 404) {
+					Log.v("ConnectionManager", "statuscode: "+response.getStatusLine().getStatusCode());
 					return new Object[] {null, NOT_FOUND};
 				} else {
 					throw new RuntimeException("Failed : HTTP error code : "

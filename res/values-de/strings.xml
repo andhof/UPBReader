@@ -49,4 +49,7 @@
     <string name="quickaction_edit">Bearbeiten</string>
     <string name="quickaction_comment">Kommentieren</string>
     <string name="quickaction_remove">Entfernen</string>
+    
+    <string name="toast_add_noconnection">Konnte Notiz nicht hochladen. Versuche es später erneut.</string>
+    <string name="toast_remove_noconnection">Konnte Notiz nicht vom Server löschen. Versuche es später erneut.</string>
 </resources>

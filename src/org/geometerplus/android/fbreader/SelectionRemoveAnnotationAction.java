@@ -1,5 +1,6 @@
 package org.geometerplus.android.fbreader;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -81,6 +82,15 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 						resEntityPost = (HttpEntity) connectionResult[0];
 						myStatusCode = ((Integer) connectionResult[1]).intValue();
 						
+						if (resEntityPost != null) {
+							try {
+								resEntityPost.consumeContent();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						
 						if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 							Log.v("SelectionRemoveAnnotationAction", "Authentication failed. Return.");
 							return;
@@ -107,18 +117,31 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 				// alles andere auskommentieren, dann kann man selber bestimmte annotationen löschen
 				
 //				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
-//						"4f287777d0434c17a6000011");
+//						"4f2ac582d0434c0f04000029");
 //				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
-//						"4f287e0ad0434c17a6000012");
+//						"4f2ac585d0434c0f0400002a");
+//				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
+//						"4f2ac4acd0434c0f04000027");
+//				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
+//						"4f2ac581d0434c0f04000028");
 			}
 			
 			private void deleteByHand(String url) {
-				username = "admin";
+				username = "user1";
 				password = "123456";
 				
+				conn = ConnectionManager.getInstance();
 				conn.authenticate(username, password);
 				connectionResult = conn.postStuffDelete(url);
 				resEntityPost = (HttpEntity) connectionResult[0];
+				if (resEntityPost != null) {
+					try {
+						resEntityPost.consumeContent();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
 			}
 		}).start();
 	}
