@@ -60,11 +60,23 @@ public class SemAppsListActivity extends ListActivity {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, 
 				android.R.layout.simple_list_item_1, semAppNamesList);
 		setListAdapter(adapter);
+		
+		asyncTask = (HttpHelper) getLastNonConfigurationInstance();
+        if (asyncTask != null) {
+        	asyncTask.mActivity = this;
+        } else {
+        	if (asyncTask != null) asyncTask.cancel(true);
+        	asyncTask = new HttpHelper(this);
+        }
 	}
 	
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		
+		if (asyncTask != null) {
+        	asyncTask.mActivity = null;
+        }
 		
 		finishActivity(5);
 		finishActivity(4);
@@ -72,6 +84,11 @@ public class SemAppsListActivity extends ListActivity {
 		
 		finish();
 	}
+	
+	@Override
+    public Object onRetainNonConfigurationInstance() {
+        return asyncTask;
+    }
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -85,22 +102,26 @@ public class SemAppsListActivity extends ListActivity {
 		String item = (String) getListAdapter().getItem(position);
 //		Toast.makeText(this, item + " selected", Toast.LENGTH_LONG).show();
 		
-		if (asyncTask != null) asyncTask.cancel(true);
 		progressDialog = new ProgressDialog(SemAppsListActivity.this);
 		progressDialog.setMessage(this.getText(R.string.loadingepublist));
-	    asyncTask = new HttpHelper();
-	    asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+semAppIDsList.get(position));
-	    
+
+		asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+semAppIDsList.get(position));
 	}
 	
 	private class HttpHelper extends AsyncTask<String, Void, String> {
 
+		SemAppsListActivity mActivity;
+		
 		private String getURL;
 		private ConnectionManager conn;
 		private HttpEntity resEntityGet;
 		private String resEntityGetResult;
 		private Object[] connectionResult;
 		private int myStatusCode;
+		
+		HttpHelper(SemAppsListActivity activity) {
+            mActivity = activity;
+        }
 		
 		@Override
 		protected void onPreExecute() {

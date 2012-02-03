@@ -35,6 +35,7 @@
     <string name="shownote_author">Autor:</string>
     <string name="shownote_category">Kategorie:</string>
     <string name="shownote_tags">Tags:</string>
+    <string name="shownote_comments_title">Kommentare</string>
     <string name="shownote_local">Lokal:</string>
     <string name="shownote_modified">Geändert:</string>
     <string name="shownote_content">Notiz:</string>

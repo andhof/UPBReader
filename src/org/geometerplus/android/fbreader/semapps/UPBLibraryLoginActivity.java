@@ -80,14 +80,13 @@ public class UPBLibraryLoginActivity extends Activity {
 				int usersize = userInput.getText().length();
                 int passsize = passwordInput.getText().length();
 				if(usersize > 0 && passsize > 0) {
-					if (asyncTask != null) asyncTask.cancel(true);
 					progressDialog = new ProgressDialog(UPBLibraryLoginActivity.this);
 					if (checked) {
 						progressDialog.setMessage(getApplicationContext().getText(R.string.loadingsemlist));
 					} else {
 						progressDialog.setMessage(getApplicationContext().getText(R.string.loggingin));
 					}
-				    asyncTask = new HttpHelper();
+					
 				    asyncTask.execute("http://epubdummy.provideal.net/api/semapps", 
 				    		userInput.getText().toString(), passwordInput.getText().toString());
 				} else {
@@ -104,7 +103,29 @@ public class UPBLibraryLoginActivity extends Activity {
 				finish();
 			}
 		});
+		
+		asyncTask = (HttpHelper) getLastNonConfigurationInstance();
+        if (asyncTask != null) {
+        	asyncTask.mActivity = this;
+        } else {
+        	if (asyncTask != null) asyncTask.cancel(true);
+        	asyncTask = new HttpHelper(this);
+        }
 	}
+	
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		
+		if (asyncTask != null) {
+        	asyncTask.mActivity = null;
+        }
+	}
+	
+	@Override
+    public Object onRetainNonConfigurationInstance() {
+        return asyncTask;
+    }
 	
 	private TextView findTextView(int resourceId) {
 		return (TextView)findViewById(resourceId);
@@ -112,11 +133,17 @@ public class UPBLibraryLoginActivity extends Activity {
 	
 	private class HttpHelper extends AsyncTask<String, Void, String> {
 
+		UPBLibraryLoginActivity mActivity;
+		
 		private Object[] connectionResult;
 		private HttpEntity resEntityGet;
 		private int myStatusCode;
 		private String resEntityGetResult;
 		private ConnectionManager conn;
+		
+		HttpHelper(UPBLibraryLoginActivity activity) {
+            mActivity = activity;
+        }
 		
 		@Override
 		protected void onPreExecute() {

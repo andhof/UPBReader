@@ -85,7 +85,28 @@ public class EPubListActivity extends ListActivity {
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_1, ePubNamesList);
 		setListAdapter(adapter);
+		
+		asyncTask = (HttpHelper) getLastNonConfigurationInstance();
+        if (asyncTask != null) {
+        	asyncTask.mActivity = this;
+        } else {
+        	if (asyncTask != null) asyncTask.cancel(true);
+        	asyncTask = new HttpHelper(this);
+        }
 	}
+	
+	@Override
+    public Object onRetainNonConfigurationInstance() {
+        return asyncTask;
+    }
+	
+	@Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (asyncTask != null) {
+        	asyncTask.mActivity = null;
+        }
+    }
 	
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
@@ -104,13 +125,13 @@ public class EPubListActivity extends ListActivity {
 	    local_path = Paths.BooksDirectoryOption().getValue()+"/"+ePubIDsList.get(position)+"/"+ePubFileNamesList.get(position);
 	    fbreader.writeEPubToDatabase(EPubListActivity.this, ePub, local_path, semApp.getId());
 	    
-		if (asyncTask != null) asyncTask.cancel(true);
 		progressDialog = new ProgressDialog(EPubListActivity.this);
 		progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
 		String progressText = String.format((String) this.getText(R.string.downloadingFile), ePubNamesList.get(position));
 		progressDialog.setMessage(progressText);
-		asyncTask = new HttpHelper();
-	    asyncTask.execute("http://epubdummy.provideal.net" + ePubFilePathsList.get(position)
+	    
+        
+        asyncTask.execute("http://epubdummy.provideal.net" + ePubFilePathsList.get(position)
 	    		, ePubFileNamesList.get(position), ePubIDsList.get(position));
 	}
 	
@@ -123,12 +144,18 @@ public class EPubListActivity extends ListActivity {
 		);
 	}
 	
-	private class HttpHelper extends AsyncTask<String, Void, String> {
+	private class HttpHelper extends AsyncTask<String, Integer, String> {
+
+		EPubListActivity mActivity;
 
 		private ConnectionManager conn;
 		private HttpEntity resEntityGet;
 		private Object[] connectionResult;
 		private int myStatusCode;
+		
+		HttpHelper(EPubListActivity activity) {
+            mActivity = activity;
+        }
 		
 		@Override
 		protected void onPreExecute() {
@@ -172,7 +199,7 @@ public class EPubListActivity extends ListActivity {
 					//add up the size so we know how much is downloaded
 					downloadedSize += bufferLength;
 					
-					updateProgress(downloadedSize, totalSize);
+					publishProgress((int) (((double) downloadedSize / totalSize)*100));
 				}
 				path = file.getPath();
 				fileOutput.close();
@@ -184,11 +211,10 @@ public class EPubListActivity extends ListActivity {
 			return path;
 		}
 		
-		public void updateProgress(int currentSize, int totalSize){ 
-			double value = ((double) currentSize / totalSize)*100;
-			progressDialog.setProgress((int) value);
-//			mProgressText.setText(Long.toString()+"%"); 
-		}
+		@Override
+		protected void onProgressUpdate(Integer... progress) {
+			progressDialog.setProgress(progress[0]);
+	    }
 		
 		@Override
 		protected void onPostExecute(String result) {

@@ -116,7 +116,7 @@ public class SelectionShowNoteActivity extends Activity {
 		
 		// Comment fragment
 		if (!semapp_id.isEmpty()){
-			findTextView(R.id.comment_title).setText("Kommentare");
+			findTextView(R.id.comment_title).setText(getString(R.string.shownote_comments_title));
 			
 			listOfComments = fbreader.getAnnotationsByCategory(
 					getString(R.string.selectionnote_category4), annotation.getUPBId());
@@ -135,8 +135,6 @@ public class SelectionShowNoteActivity extends Activity {
 	        });
 			
 			list.setAdapter(adapter);
-			
-//			findTextView(R.id.new_comment_label).setText("Neuer Kommentar");
 			
 			final EditText textInput = (EditText) findViewById(R.id.comment_input);
 			
