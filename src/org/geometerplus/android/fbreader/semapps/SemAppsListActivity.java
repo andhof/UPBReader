@@ -157,10 +157,12 @@ public class SemAppsListActivity extends ListActivity {
 			}
 			if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 				UIUtil.createDialog(SemAppsListActivity.this, "Error", getString(R.string.authentication_failed));
+				asyncTask = new HttpHelper(SemAppsListActivity.this);
 				return;
 			}
 			if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
 				UIUtil.createDialog(SemAppsListActivity.this, "Error", getString(R.string.no_internet_connection));
+				asyncTask = new HttpHelper(SemAppsListActivity.this);
 				return;
 			}
 			

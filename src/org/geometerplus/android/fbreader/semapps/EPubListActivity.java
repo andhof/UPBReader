@@ -185,6 +185,18 @@ public class EPubListActivity extends ListActivity {
 				File bookDirectory = new File(Paths.BooksDirectoryOption().getValue()+"/"+ePubID);
 				bookDirectory.mkdirs();
 				File file = new File(bookDirectory, fileName);
+				
+				if (file.length() == resEntityGet.getContentLength()) {
+					if (resEntityGet != null) {
+					try {
+						resEntityGet.consumeContent();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+					return null;
+				}
+				
 				FileOutputStream fileOutput = new FileOutputStream(file);
 
 				int totalSize = (int) resEntityGet.getContentLength();
@@ -223,13 +235,19 @@ public class EPubListActivity extends ListActivity {
 			}
 			if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 				UIUtil.createDialog(EPubListActivity.this, "Error", getString(R.string.authentication_failed));
+				asyncTask = new HttpHelper(EPubListActivity.this);
 				return;
 			}
 			if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
 				UIUtil.createDialog(EPubListActivity.this, "Error", getString(R.string.no_internet_connection));
+				asyncTask = new HttpHelper(EPubListActivity.this);
 				return;
 			}
-			
+			if (result == null) {
+				UIUtil.createDialog(EPubListActivity.this, "Error", getString(R.string.complete_file_exists));
+				asyncTask = new HttpHelper(EPubListActivity.this);
+				return;
+			}
 			setResult(4);
 			finish();
 			

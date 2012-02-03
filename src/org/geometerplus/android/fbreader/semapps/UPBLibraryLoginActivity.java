@@ -190,10 +190,12 @@ public class UPBLibraryLoginActivity extends Activity {
 			}
 			if (myStatusCode == conn.AUTHENTICATION_FAILED) {
 				UIUtil.createDialog(UPBLibraryLoginActivity.this, "Error", getString(R.string.authentication_failed));
+				asyncTask = new HttpHelper(UPBLibraryLoginActivity.this);
 				return;
 			}
 			if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
 				UIUtil.createDialog(UPBLibraryLoginActivity.this, "Error", getString(R.string.no_internet_connection));
+				asyncTask = new HttpHelper(UPBLibraryLoginActivity.this);
 				return;
 			}
 			finish();

@@ -18,6 +18,7 @@
     <string name="authentication_failed">Wrong Username or Password</string>
     <string name="no_internet_connection">Couldn\'t connect to server</string>
     <string name="not_allowed">You are not allowed to do this</string>
+    <string name="complete_file_exists">File was already downloaded entirely</string>
     
     <string name="selectionnote_title">Note</string>
     <string name="selectionnote_author">Author: Localuser</string>
