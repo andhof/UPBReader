@@ -7,11 +7,13 @@ import java.util.Set;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.util.EntityUtils;
+import org.geometerplus.android.fbreader.annotation.SelectionNoteActivity;
 import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
 import org.geometerplus.android.fbreader.annotation.database.DBAnnotation.DBAnnotations;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.services.AnnotationService;
+import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 
 import de.upb.android.reader.R;
@@ -46,6 +48,17 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 	protected void run(Object... params) {
 		final Annotation annotation = (Annotation) params[0];
 		BaseActivity.hideAnnotationSelectionPanel();
+		
+		settings = BaseActivity.getSharedPreferences("upblogin", 0);
+		username = settings.getString("user", "Localuser");
+		password = settings.getString("password", null);
+		
+		// Only delete if the user has the rights to do it
+		if (!annotation.getAuthor().getName().equals(username)) {
+			UIUtil.createDialog(BaseActivity, "Error", BaseActivity.getString(R.string.not_allowed));
+			return;
+		}
+		
 		fbreader.BookTextView.removeAnnotationHighlight(annotation);
 		annotationsToRemove = new ArrayList<Annotation>();
 		annotationsToRemove.add(annotation);
@@ -69,10 +82,6 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 				
 				conn = ConnectionManager.getInstance();
 				if (annotation.getUPBId() != null && !annotation.getUPBId().isEmpty()) {
-					settings = BaseActivity.getSharedPreferences("upblogin", 0);
-					username = settings.getString("user", "Localuser");
-					password = settings.getString("password", null);
-					
 					conn.authenticate(username, password);
 					
 					String epub_id = annotation.getEPubId();

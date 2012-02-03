@@ -17,6 +17,7 @@
     
     <string name="authentication_failed">Benutzername oder Passwort falsch</string>
     <string name="no_internet_connection">Keine Verbindung zum Server möglich</string>
+    <string name="not_allowed">Sie besitzen nicht die notwendigen Rechte</string>
     
     <string name="selectionnote_title">Notiz</string>
     <string name="selectionnote_author">Autor: </string>
