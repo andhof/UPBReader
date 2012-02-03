@@ -397,7 +397,7 @@ public final class FBReaderApp extends ZLApplication {
 				
 				uri = DBAuthors.CONTENT_URI;
 				projection = DBAuthors.Projection;
-				selection = DBAuthors.ANNOTATION_ID + "=\"" + annotation_id + "\"";
+				selection = DBAuthors.EPUB_ID + "=\"" + epub_id + "\"";
 				Cursor aCursor = context.getContentResolver().query(uri, projection, selection, null, null);
 				ArrayList<String> authors = new ArrayList<String>();
 				try {
@@ -530,22 +530,45 @@ public final class FBReaderApp extends ZLApplication {
 					FBReaderApp.this.context.getContentResolver().insert(uri, values);
 					uri = DBAuthors.CONTENT_URI;
 					projection = DBAuthors.Projection;
-					for (TargetAuthor author : authors) {
-						values.clear();
-						values.put(DBAuthors.NAME, author.getName());
-						values.put(DBAuthors.ANNOTATION_ID, annotation_id);
-						FBReaderApp.this.context.getContentResolver().insert(uri, values);
+					selection = DBAuthors.EPUB_ID + "=\"" + epub_id + "\"";
+					Cursor aCursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
+					ArrayList<String> dbAuthors = new ArrayList<String>();
+					try {
+						aCursor.moveToFirst();
+						if (aCursor.getCount() == 0) { 
+							for (TargetAuthor author : authors) {
+								values.clear();
+								values.put(DBAuthors.NAME, author.getName());
+								values.put(DBAuthors.EPUB_ID, epub_id);
+								FBReaderApp.this.context.getContentResolver().insert(uri, values);
+							}
+						}
+					} catch(Exception e) {
+						e.printStackTrace();
+					} finally {
+						aCursor.close();
 					}
 				} else if (cursor.getCount() > 0) {
 					FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
 					uri = DBAuthors.CONTENT_URI;
 					projection = DBAuthors.Projection;
-					selection = DBAuthors.ANNOTATION_ID + "=\"" + annotation_id + "\"";
-					for (TargetAuthor author : authors) {
-						values.clear();
-						values.put(DBAuthors.NAME, author.getName());
-						values.put(DBAuthors.ANNOTATION_ID, annotation_id);
-						FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
+					selection = DBAuthors.EPUB_ID + "=\"" + epub_id + "\"";
+					Cursor aCursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
+					ArrayList<String> dbAuthors = new ArrayList<String>();
+					try {
+						aCursor.moveToFirst();
+						if (aCursor.getCount() == 0) { 
+							for (TargetAuthor author : authors) {
+								values.clear();
+								values.put(DBAuthors.NAME, author.getName());
+								values.put(DBAuthors.EPUB_ID, epub_id);
+								FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
+							}
+						}
+					} catch(Exception e) {
+						e.printStackTrace();
+					} finally {
+						aCursor.close();
 					}
 				}
 				
@@ -689,22 +712,45 @@ public final class FBReaderApp extends ZLApplication {
 						FBReaderApp.this.context.getContentResolver().insert(uri, values);
 						uri = DBAuthors.CONTENT_URI;
 						projection = DBAuthors.Projection;
-						for (TargetAuthor author : authors) {
-							values.clear();
-							values.put(DBAuthors.NAME, author.getName());
-							values.put(DBAuthors.ANNOTATION_ID, annotation_id);
-							FBReaderApp.this.context.getContentResolver().insert(uri, values);
+						selection = DBAuthors.EPUB_ID + "=\"" + epub_id + "\"";
+						Cursor aCursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
+						ArrayList<String> dbAuthors = new ArrayList<String>();
+						try {
+							aCursor.moveToFirst();
+							if (aCursor.getCount() == 0) { 
+								for (TargetAuthor author : authors) {
+									values.clear();
+									values.put(DBAuthors.NAME, author.getName());
+									values.put(DBAuthors.EPUB_ID, epub_id);
+									FBReaderApp.this.context.getContentResolver().insert(uri, values);
+								}
+							}
+						} catch(Exception e) {
+							e.printStackTrace();
+						} finally {
+							aCursor.close();
 						}
-					}  if (cursor.getCount() > 0) {
+					}  else if (cursor.getCount() > 0) {
 						FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
 						uri = DBAuthors.CONTENT_URI;
 						projection = DBAuthors.Projection;
-						selection = DBAuthors.ANNOTATION_ID + "=\"" + annotation_id + "\"";
-						for (TargetAuthor author : authors) {
-							values.clear();
-							values.put(DBAuthors.NAME, author.getName());
-							values.put(DBAuthors.ANNOTATION_ID, annotation_id);
-							FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
+						selection = DBAuthors.EPUB_ID + "=\"" + epub_id + "\"";
+						Cursor aCursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
+						ArrayList<String> dbAuthors = new ArrayList<String>();
+						try {
+							aCursor.moveToFirst();
+							if (aCursor.getCount() == 0) { 
+								for (TargetAuthor author : authors) {
+									values.clear();
+									values.put(DBAuthors.NAME, author.getName());
+									values.put(DBAuthors.EPUB_ID, epub_id);
+									FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
+								}
+							}
+						} catch(Exception e) {
+							e.printStackTrace();
+						} finally {
+							aCursor.close();
 						}
 					}
 				} catch(Exception e) {

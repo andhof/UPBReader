@@ -89,7 +89,6 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 							try {
 								resEntityPost.consumeContent();
 							} catch (IOException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
@@ -112,7 +111,6 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 				e.commit();
 				
 				if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
-//					fbreader.showToast(BaseActivity.getString(R.string.toast_remove_noconnection));
 					Handler h = new Handler(BaseActivity.getMainLooper());
 
 				    h.post(new Runnable() {
@@ -150,7 +148,6 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 					try {
 						resEntityPost.consumeContent();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}

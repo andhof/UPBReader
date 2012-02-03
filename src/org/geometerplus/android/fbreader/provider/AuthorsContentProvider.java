@@ -134,7 +134,7 @@ public class AuthorsContentProvider extends BaseProvider {
         authorsProjectionMap = new HashMap<String, String>();
         authorsProjectionMap.put(DBAuthors.AUTHOR_ID, DBAuthors.AUTHOR_ID);
         authorsProjectionMap.put(DBAuthors.NAME, DBAuthors.NAME);
-        authorsProjectionMap.put(DBAuthors.ANNOTATION_ID, DBAuthors.ANNOTATION_ID);
+        authorsProjectionMap.put(DBAuthors.EPUB_ID, DBAuthors.EPUB_ID);
 
     }
 }

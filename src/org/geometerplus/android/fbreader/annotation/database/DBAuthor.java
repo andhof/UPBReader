@@ -23,10 +23,10 @@ public class DBAuthor {
 
 		public static final String NAME = "name";
 
-		public static final String ANNOTATION_ID = "annotation_id";
+		public static final String EPUB_ID = "epub_id";
 		
 		public static final String[] Projection = new String[] {
-			AUTHOR_ID, NAME, ANNOTATION_ID};
+			AUTHOR_ID, NAME, EPUB_ID};
 	}
 
 }
