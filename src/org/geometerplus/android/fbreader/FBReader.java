@@ -198,6 +198,8 @@ public final class FBReader extends ZLAndroidActivity {
 		fbReader.addAction(ActionCode.SHOW_NETWORK_LIBRARY, new ShowNetworkLibraryAction(this, fbReader));
 		fbReader.addAction(ActionCode.SHOW_UPB_LOGIN_SCREEN, new ShowUPBLibraryLoginAction(this, fbReader));
 		
+		fbReader.addAction(ActionCode.REFRESH_ANNOTATIONS, new RefreshAnnotationsAction(this, fbReader));
+		
 //		fbReader.addAction(ActionCode.SHOW_SEMAPPS_LIST, new ShowSemAppsListAction(this, fbReader));
 //		fbReader.addAction(ActionCode.SHOW_EPUB_LIST, new ShowEPubListAction(this, fbReader));
 		
@@ -579,6 +581,7 @@ public final class FBReader extends ZLAndroidActivity {
 		addMenuItem(menu, ActionCode.SHOW_UPB_LOGIN_SCREEN, R.drawable.ic_menu_upblibrary);
 		addMenuItem(menu, ActionCode.SHOW_TOC, R.drawable.ic_menu_toc);
 		addMenuItem(menu, ActionCode.SHOW_BOOKMARKS, R.drawable.ic_menu_bookmarks);
+		addMenuItem(menu, ActionCode.REFRESH_ANNOTATIONS, getString(R.string.upbrefresh_label));
 		addMenuItem(menu, ActionCode.SWITCH_TO_NIGHT_PROFILE, R.drawable.ic_menu_night);
 		addMenuItem(menu, ActionCode.SWITCH_TO_DAY_PROFILE, R.drawable.ic_menu_day);
 		addMenuItem(menu, ActionCode.SEARCH, R.drawable.ic_menu_search);

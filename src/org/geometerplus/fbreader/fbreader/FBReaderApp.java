@@ -58,6 +58,7 @@ import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.EPubs;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
+import org.geometerplus.android.util.SQLiteUtil;
 import org.geometerplus.fbreader.Paths;
 import org.geometerplus.fbreader.bookmodel.BookModel;
 import org.geometerplus.fbreader.bookmodel.TOCTree;
@@ -231,9 +232,9 @@ public final class FBReaderApp extends ZLApplication {
 				
 				// load the annotations of the book
 				String path = book.File.getPath();
-				loadEPubsFromDatabase();
+				SQLiteUtil.loadEPubsFromDatabase(context);
 				for (EPub epub : EPubs.getEPubs()) {
-					loadAnnotationsFromDatabase(path);
+					SQLiteUtil.loadAnnotationsFromDatabase(context, path);
 				}
 				
 				//clear job queue
@@ -264,9 +265,9 @@ public final class FBReaderApp extends ZLApplication {
 			public void run() {
 				// load the annotations of the book
 				String path = book.File.getPath();
-				loadEPubsFromDatabase();
+				SQLiteUtil.loadEPubsFromDatabase(context);
 				for (EPub epub : EPubs.getEPubs()) {
-					loadAnnotationsFromDatabase(path);
+					SQLiteUtil.loadAnnotationsFromDatabase(context, path);
 				}
 				
 				openBookInternal(book, bookmark);
@@ -294,474 +295,6 @@ public final class FBReaderApp extends ZLApplication {
 		this.myHtmlFileNames = tmpHtmlFileNames;
 	}
 	
-	/**
-	 * load all epubs information
-	 */
-	private void loadEPubsFromDatabase() {
-		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
-		
-		String[] projection = DBEPubs.Projection;
-		Uri uri = DBEPubs.CONTENT_URI;
-		try {
-			cursor = context.getContentResolver().query(uri, projection, null, null, null);
-			
-			if (cursor.getCount() == 0) {
-				return;
-			}
-			cursor.moveToFirst();
-			do {
-				String id = cursor.getString(cursor.getColumnIndex(DBEPubs.EPUB_ID));
-				String name = cursor.getString(cursor.getColumnIndex(DBEPubs.NAME));
-				String updated_at = cursor.getString(cursor.getColumnIndex(DBEPubs.UPDATED_AT));
-				String file_name = cursor.getString(cursor.getColumnIndex(DBEPubs.FILENAME));
-				String file_path = cursor.getString(cursor.getColumnIndex(DBEPubs.FILEPATH));
-				String local_path = cursor.getString(cursor.getColumnIndex(DBEPubs.LOCALPATH));
-				String semapp_id = cursor.getString(cursor.getColumnIndex(DBEPubs.SEMAPP_ID));
-				
-				if (fbreader.EPubs.getEPubs() != null) {
-					fbreader.EPubs.removeAllEPubs();						
-				}
-				fbreader.EPubs.addEPub(id, name, updated_at, file_name, file_path, local_path, semapp_id);
-			} while (cursor.moveToNext());
-		} catch (Exception e) {
-			e.printStackTrace();
-		    Log.e("FBReaderApp", e.toString());
-		} finally {
-			cursor.close();
-		}
-	}
-	
-	/**
-	 * load the annotations of one book
-	 * @param path
-	 */
-	private void loadAnnotationsFromDatabase(final String local_path) {
-		if (Annotations.getAnnotations().size() != 0) {
-			Annotations.removeAllAnnotations();
-		}
-		
-		String ePubId = null;
-		Uri uri = DBEPubs.CONTENT_URI;
-		String[] projection = DBEPubs.Projection;
-		String selection = DBEPubs.LOCALPATH + "=\"" + local_path + "\"";
-		
-		try {
-			cursor = context.getContentResolver().query(uri, projection, selection, null, null);
-			if (cursor.getCount() == 0) {
-				return;
-			}
-			cursor.moveToFirst();
-			ePubId = cursor.getString(cursor.getColumnIndex(DBEPubs.EPUB_ID));
-		} catch(Exception e) {
-			e.printStackTrace();
-		} finally {
-			cursor.close();
-		}
-		
-		uri = DBAnnotations.CONTENT_URI;
-		projection = DBAnnotations.Projection;
-		selection = DBAnnotations.EPUB_ID + "=\"" + ePubId + "\"";
-		try {
-			cursor = context.getContentResolver().query(uri, projection, selection, null, null);
-			if (cursor.getCount() == 0) {
-				return;
-			}
-			
-			cursor.moveToFirst();
-			do {
-				String annotation_id = cursor.getString(cursor.getColumnIndex(DBAnnotations.ANNOTATION_ID));
-				long created = cursor.getLong(cursor.getColumnIndex(DBAnnotations.CREATED));
-				long modified = cursor.getLong(cursor.getColumnIndex(DBAnnotations.MODIFIED));
-				String category = cursor.getString(cursor.getColumnIndex(DBAnnotations.CATEGORY));
-				String[] tagsarray = cursor.getString(cursor.getColumnIndex(DBAnnotations.TAGS)).split(", ");
-				ArrayList<String> tags = new ArrayList(Arrays.asList(tagsarray));
-				String author_name = cursor.getString(cursor.getColumnIndex(DBAnnotations.AUTHOR_NAME));
-				String bookid = cursor.getString(cursor.getColumnIndex(DBAnnotations.BOOKID));
-				String targetannotationid = cursor.getString(cursor.getColumnIndex(DBAnnotations.TARGET_ANNOTATION_ID));
-				String isbn = cursor.getString(cursor.getColumnIndex(DBAnnotations.ISBN));
-				String title = cursor.getString(cursor.getColumnIndex(DBAnnotations.TITLE));
-				String publicationdate = cursor.getString(cursor.getColumnIndex(DBAnnotations.PUBLICATIONDATE));
-				String start_part = cursor.getString(cursor.getColumnIndex(DBAnnotations.START_PART));
-				String start_xpath = cursor.getString(cursor.getColumnIndex(DBAnnotations.START_PATH_XPATH));
-				int start_charoffset = cursor.getInt(cursor.getColumnIndex(DBAnnotations.START_PATH_CHAROFFSET));
-				String end_part = cursor.getString(cursor.getColumnIndex(DBAnnotations.END_PART));
-				String end_xpath = cursor.getString(cursor.getColumnIndex(DBAnnotations.END_PATH_XPATH));
-				int end_charoffset = cursor.getInt(cursor.getColumnIndex(DBAnnotations.END_PATH_CHAROFFSET));
-				int highlightcolor = cursor.getInt(cursor.getColumnIndex(DBAnnotations.HIGHLIGHTCOLOR));
-				boolean underlined = cursor.getString(cursor.getColumnIndex(DBAnnotations.UNDERLINED)).equals("true") ?	 true : false;
-				boolean crossout = cursor.getString(cursor.getColumnIndex(DBAnnotations.CROSSOUT)).equals("true") ? true : false;
-				String content = cursor.getString(cursor.getColumnIndex(DBAnnotations.CONTENT));
-				String upb_id = cursor.getString(cursor.getColumnIndex(DBAnnotations.UPB_ID));
-				String updated_at = cursor.getString(cursor.getColumnIndex(DBAnnotations.UPDATED_AT));
-				String epub_id = cursor.getString(cursor.getColumnIndex(DBAnnotations.EPUB_ID));
-				
-				uri = DBAuthors.CONTENT_URI;
-				projection = DBAuthors.Projection;
-				selection = DBAuthors.EPUB_ID + "=\"" + epub_id + "\"";
-				Cursor aCursor = context.getContentResolver().query(uri, projection, selection, null, null);
-				ArrayList<String> authors = new ArrayList<String>();
-				try {
-					aCursor.moveToFirst();
-					do {
-						if (aCursor.getCount() != 0) {
-							authors.add(aCursor.getString(aCursor.getColumnIndex(DBAuthors.NAME)));
-						}
-					} while (aCursor.moveToNext());
-				} catch(Exception e) {
-					e.printStackTrace();
-				} finally {
-					aCursor.close();
-				}
-				
-				Annotations.addAnnotation(annotation_id, created, modified, category, tags, 
-						author_name, bookid, targetannotationid, isbn, title, authors, publicationdate, start_part, 
-						start_xpath, start_charoffset, end_part, end_xpath, end_charoffset, 
-						highlightcolor, underlined, crossout, content, epub_id, upb_id, updated_at);
-		    } while (cursor.moveToNext());
-		} catch(Exception e) {
-			e.printStackTrace();
-		} finally {
-			cursor.close();
-		}
-	}
-	
-	/**
-	 * Insert the ePub and annotation information into the database or update it 
-	 * @param semApp
-	 */
-	public void writeEPubAndAnnotationToDatabase(Context context, EPub ePub, 
-			final String local_path, String sid, Annotation annotation, final String eid) {
-		// epub data
-		final String epub_id = ePub.getId();
-		final String name = ePub.getName();
-		final String updated_at = ePub.getUpdated_at();
-		final String file_name = ePub.getFile().getName();
-		final String file_path = ePub.getFile().getPath();
-		final String semapp_id = sid;
-		
-		// annotation data
-		final String annotation_id = annotation.getId();
-		final long created = annotation.getCreated();
-		final long modified = annotation.getModified();
-		final String category = annotation.getCategory();
-		String tags_tmp = "";
-		for (String tag : annotation.getTags()) {
-			tags_tmp += tag;
-			tags_tmp += ", ";
-		}
-		if (tags_tmp.length() > 0) {
-			tags_tmp = tags_tmp.substring(0, tags_tmp.length()-2);
-		}
-		final String tags = tags_tmp;
-		final String author_name = annotation.getAuthor().getName();
-		final String bookid = annotation.getAnnotationTarget().getBookId();
-		final String targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();
-		final String isbn = annotation.getAnnotationTarget().getDocumentIdentifier().getISBN();
-		final String title = annotation.getAnnotationTarget().getDocumentIdentifier().getTitle();
-		final ArrayList<TargetAuthor> authors = annotation.getAnnotationTarget().getDocumentIdentifier().getAuthors();
-		final String publicationdate = annotation.getAnnotationTarget().getDocumentIdentifier().getPublicationDate();
-		final String start_part = annotation.getAnnotationTarget().getRange().getStart().getPart();
-		final String start_xpath = annotation.getAnnotationTarget().getRange().getStart().getPath().getXPath();
-		final long start_charoffset = annotation.getAnnotationTarget().getRange().getStart().getPath().getCharOffset();
-		final String end_part = annotation.getAnnotationTarget().getRange().getEnd().getPart();
-		final String end_xpath = annotation.getAnnotationTarget().getRange().getEnd().getPath().getXPath();
-		final long end_charoffset = annotation.getAnnotationTarget().getRange().getEnd().getPath().getCharOffset();
-		final long highlightcolor = annotation.getRenderingInfo().getHighlightColor();
-		final String underlined = annotation.getRenderingInfo().isUnderlined() ? "true" : "false";
-		final String crossout = annotation.getRenderingInfo().isCrossedOut() ? "true" : "false";
-		final String content = annotation.getAnnotationContent().getAnnotationText();
-		final String upb_id = annotation.getUPBId();
-		final String updated_at2 = annotation.getUpdatedAt();
-		
-		// working on database in a different thread
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				Uri uri = DBEPubs.CONTENT_URI;
-				String[] projection = DBEPubs.Projection;
-				String selection = DBEPubs.EPUB_ID + "=\"" + epub_id + "\"";
-				cursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
-
-				ContentValues values = new ContentValues();
-				values.put(DBEPubs.EPUB_ID, epub_id);
-				values.put(DBEPubs.NAME, name);
-				values.put(DBEPubs.UPDATED_AT, updated_at);
-				values.put(DBEPubs.FILENAME, file_name);
-				values.put(DBEPubs.FILEPATH, file_path);
-				values.put(DBEPubs.SEMAPP_ID, semapp_id);
-				values.put(DBEPubs.LOCALPATH, local_path);
-				if (cursor.getCount() == 0) {
-					FBReaderApp.this.context.getContentResolver().insert(uri, values);
-				} else {
-					FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
-				}
-				cursor.close();
-				
-				uri = DBAnnotations.CONTENT_URI;
-				projection = DBAnnotations.Projection;
-				selection = DBAnnotations.ANNOTATION_ID + "=\"" + annotation_id + "\"";
-				cursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
-				values.clear();
-				values.put(DBAnnotations.ANNOTATION_ID, annotation_id);
-				values.put(DBAnnotations.CREATED, created);
-				values.put(DBAnnotations.MODIFIED, modified);
-				values.put(DBAnnotations.CATEGORY, category);
-				values.put(DBAnnotations.TAGS, tags);
-				values.put(DBAnnotations.AUTHOR_NAME, author_name);
-				values.put(DBAnnotations.BOOKID, bookid);
-				values.put(DBAnnotations.TARGET_ANNOTATION_ID, targetannotationid);
-				values.put(DBAnnotations.ISBN, isbn);
-				values.put(DBAnnotations.TITLE, title);
-				values.put(DBAnnotations.PUBLICATIONDATE, publicationdate);
-				values.put(DBAnnotations.START_PART, start_part);
-				values.put(DBAnnotations.START_PATH_XPATH, start_xpath);
-				values.put(DBAnnotations.START_PATH_CHAROFFSET, start_charoffset);
-				values.put(DBAnnotations.END_PART, end_part);
-				values.put(DBAnnotations.END_PATH_XPATH, end_xpath);
-				values.put(DBAnnotations.END_PATH_CHAROFFSET, end_charoffset);
-				values.put(DBAnnotations.HIGHLIGHTCOLOR, highlightcolor);
-				values.put(DBAnnotations.UNDERLINED, underlined);
-				values.put(DBAnnotations.CROSSOUT, crossout);
-				values.put(DBAnnotations.CONTENT, content);
-				values.put(DBAnnotations.UPB_ID, upb_id);
-				values.put(DBAnnotations.UPDATED_AT, updated_at2);
-				values.put(DBAnnotations.EPUB_ID, epub_id);
-				if (cursor.getCount() == 0) {
-					FBReaderApp.this.context.getContentResolver().insert(uri, values);
-					uri = DBAuthors.CONTENT_URI;
-					projection = DBAuthors.Projection;
-					selection = DBAuthors.EPUB_ID + "=\"" + epub_id + "\"";
-					Cursor aCursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
-					ArrayList<String> dbAuthors = new ArrayList<String>();
-					try {
-						aCursor.moveToFirst();
-						if (aCursor.getCount() == 0) { 
-							for (TargetAuthor author : authors) {
-								values.clear();
-								values.put(DBAuthors.NAME, author.getName());
-								values.put(DBAuthors.EPUB_ID, epub_id);
-								FBReaderApp.this.context.getContentResolver().insert(uri, values);
-							}
-						}
-					} catch(Exception e) {
-						e.printStackTrace();
-					} finally {
-						aCursor.close();
-					}
-				} else if (cursor.getCount() > 0) {
-					FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
-					uri = DBAuthors.CONTENT_URI;
-					projection = DBAuthors.Projection;
-					selection = DBAuthors.EPUB_ID + "=\"" + epub_id + "\"";
-					Cursor aCursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
-					ArrayList<String> dbAuthors = new ArrayList<String>();
-					try {
-						aCursor.moveToFirst();
-						if (aCursor.getCount() == 0) { 
-							for (TargetAuthor author : authors) {
-								values.clear();
-								values.put(DBAuthors.NAME, author.getName());
-								values.put(DBAuthors.EPUB_ID, epub_id);
-								FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
-							}
-						}
-					} catch(Exception e) {
-						e.printStackTrace();
-					} finally {
-						aCursor.close();
-					}
-				}
-				
-				cursor.close();
-			}
-		}).start();
-	}
-	
-	/**
-	 * Insert the ePub information into the database or update it 
-	 * @param semApp
-	 */
-	public void writeEPubToDatabase(Context context, EPub ePub, final String local_path, String sid) {
-		final String epub_id = ePub.getId();
-		final String name = ePub.getName();
-		final String updated_at = ePub.getUpdated_at();
-		final String file_name = ePub.getFile().getName();
-		final String file_path = ePub.getFile().getPath();
-		final String semapp_id = sid;
-		
-		// working on database in a different thread
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				Uri uri = DBEPubs.CONTENT_URI;
-				String[] projection = DBEPubs.Projection;
-				String selection = DBEPubs.EPUB_ID + "=\"" + epub_id + "\"";
-				try {
-					cursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
-
-					ContentValues values = new ContentValues();
-					values.put(DBEPubs.EPUB_ID, epub_id);
-					values.put(DBEPubs.NAME, name);
-					values.put(DBEPubs.UPDATED_AT, updated_at);
-					values.put(DBEPubs.FILENAME, file_name);
-					values.put(DBEPubs.FILEPATH, file_path);
-					values.put(DBEPubs.SEMAPP_ID, semapp_id);
-					values.put(DBEPubs.LOCALPATH, local_path);
-					if (cursor.getCount() == 0) {
-						FBReaderApp.this.context.getContentResolver().insert(uri, values);
-					} else {
-						FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					cursor.close();
-				}
-			}
-		}).start();
-	}
-	
-	/**
-	 * Insert one Annotation of the book into the database or update it 
-	 */
-	public void writeAnnotationToDatabase(Context context, Annotation annotation, final String eid) {
-		final String annotation_id = annotation.getId();
-		final long created = annotation.getCreated();
-		final long modified = annotation.getModified();
-		final String category = annotation.getCategory();
-		String tags_tmp = "";
-		for (String tag : annotation.getTags()) {
-			tags_tmp += tag;
-			tags_tmp += ", ";
-		}
-		if (tags_tmp.length() > 0) {
-			tags_tmp = tags_tmp.substring(0, tags_tmp.length()-2);
-		}
-		final String tags = tags_tmp;
-		final String author_name = annotation.getAuthor().getName();
-		final String bookid = annotation.getAnnotationTarget().getBookId();
-		final String targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();
-		final String isbn = annotation.getAnnotationTarget().getDocumentIdentifier().getISBN();
-		final String title = annotation.getAnnotationTarget().getDocumentIdentifier().getTitle();
-		final ArrayList<TargetAuthor> authors = annotation.getAnnotationTarget().getDocumentIdentifier().getAuthors();
-		final String publicationdate = annotation.getAnnotationTarget().getDocumentIdentifier().getPublicationDate();
-		final String start_part = annotation.getAnnotationTarget().getRange().getStart().getPart();
-		final String start_xpath = annotation.getAnnotationTarget().getRange().getStart().getPath().getXPath();
-		final long start_charoffset = annotation.getAnnotationTarget().getRange().getStart().getPath().getCharOffset();
-		final String end_part = annotation.getAnnotationTarget().getRange().getEnd().getPart();
-		final String end_xpath = annotation.getAnnotationTarget().getRange().getEnd().getPath().getXPath();
-		final long end_charoffset = annotation.getAnnotationTarget().getRange().getEnd().getPath().getCharOffset();
-		final long highlightcolor = annotation.getRenderingInfo().getHighlightColor();
-		final String underlined = annotation.getRenderingInfo().isUnderlined() ? "true" : "false";
-		final String crossout = annotation.getRenderingInfo().isCrossedOut() ? "true" : "false";
-		final String content = annotation.getAnnotationContent().getAnnotationText();
-		final String upb_id = annotation.getUPBId();
-		final String updated_at2 = annotation.getUpdatedAt();
-		
-		// working on database in a different thread
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				String epub_id;
-				
-				Uri uri = DBEPubs.CONTENT_URI;
-				String[] projection = DBEPubs.Projection;
-				String selection = DBEPubs.EPUB_ID + "=\"" + eid + "\"";
-				try {
-					cursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
-					cursor.moveToFirst();
-					if (cursor.getCount() == 0) {
-						epub_id = eid;
-					} else {
-						epub_id = cursor.getString(cursor.getColumnIndex(DBEPubs.EPUB_ID));
-					}
-					
-					uri = DBAnnotations.CONTENT_URI;
-					projection = DBAnnotations.Projection;
-					selection = DBAnnotations.ANNOTATION_ID + "=\"" + annotation_id + "\"";
-					cursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
-					ContentValues values = new ContentValues();
-					values.put(DBAnnotations.ANNOTATION_ID, annotation_id);
-					values.put(DBAnnotations.CREATED, created);
-					values.put(DBAnnotations.MODIFIED, modified);
-					values.put(DBAnnotations.CATEGORY, category);
-					values.put(DBAnnotations.TAGS, tags);
-					values.put(DBAnnotations.AUTHOR_NAME, author_name);
-					values.put(DBAnnotations.BOOKID, bookid);
-					values.put(DBAnnotations.TARGET_ANNOTATION_ID, targetannotationid);
-					values.put(DBAnnotations.ISBN, isbn);
-					values.put(DBAnnotations.TITLE, title);
-					values.put(DBAnnotations.PUBLICATIONDATE, publicationdate);
-					values.put(DBAnnotations.START_PART, start_part);
-					values.put(DBAnnotations.START_PATH_XPATH, start_xpath);
-					values.put(DBAnnotations.START_PATH_CHAROFFSET, start_charoffset);
-					values.put(DBAnnotations.END_PART, end_part);
-					values.put(DBAnnotations.END_PATH_XPATH, end_xpath);
-					values.put(DBAnnotations.END_PATH_CHAROFFSET, end_charoffset);
-					values.put(DBAnnotations.HIGHLIGHTCOLOR, highlightcolor);
-					values.put(DBAnnotations.UNDERLINED, underlined);
-					values.put(DBAnnotations.CROSSOUT, crossout);
-					values.put(DBAnnotations.CONTENT, content);
-					values.put(DBAnnotations.UPB_ID, upb_id);
-					values.put(DBAnnotations.UPDATED_AT, updated_at2);
-					values.put(DBAnnotations.EPUB_ID, epub_id);
-					
-					if (cursor.getCount() == 0) {
-						FBReaderApp.this.context.getContentResolver().insert(uri, values);
-						uri = DBAuthors.CONTENT_URI;
-						projection = DBAuthors.Projection;
-						selection = DBAuthors.EPUB_ID + "=\"" + epub_id + "\"";
-						Cursor aCursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
-						ArrayList<String> dbAuthors = new ArrayList<String>();
-						try {
-							aCursor.moveToFirst();
-							if (aCursor.getCount() == 0) { 
-								for (TargetAuthor author : authors) {
-									values.clear();
-									values.put(DBAuthors.NAME, author.getName());
-									values.put(DBAuthors.EPUB_ID, epub_id);
-									FBReaderApp.this.context.getContentResolver().insert(uri, values);
-								}
-							}
-						} catch(Exception e) {
-							e.printStackTrace();
-						} finally {
-							aCursor.close();
-						}
-					}  else if (cursor.getCount() > 0) {
-						FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
-						uri = DBAuthors.CONTENT_URI;
-						projection = DBAuthors.Projection;
-						selection = DBAuthors.EPUB_ID + "=\"" + epub_id + "\"";
-						Cursor aCursor = FBReaderApp.this.context.getContentResolver().query(uri, projection, selection, null, null);
-						ArrayList<String> dbAuthors = new ArrayList<String>();
-						try {
-							aCursor.moveToFirst();
-							if (aCursor.getCount() == 0) { 
-								for (TargetAuthor author : authors) {
-									values.clear();
-									values.put(DBAuthors.NAME, author.getName());
-									values.put(DBAuthors.EPUB_ID, epub_id);
-									FBReaderApp.this.context.getContentResolver().update(uri, values, selection, null);
-								}
-							}
-						} catch(Exception e) {
-							e.printStackTrace();
-						} finally {
-							aCursor.close();
-						}
-					}
-				} catch(Exception e) {
-					e.printStackTrace();
-				} finally {
-					cursor.close();
-				}
-			}
-		}).start();
-	}
-	
 	public String md5(String s) {
 	    try {
 	        // Create MD5 Hash
@@ -784,8 +317,8 @@ public final class FBReaderApp extends ZLApplication {
 	/**
 	 * Return all annotations by the given category and an annotation upb_id
 	 */
-	public ArrayList<Annotation> getAnnotationsByCategory(String category, String id) {
-		ArrayList<Annotation> annotationList = new ArrayList<Annotation>();
+	public LinkedList<Annotation> getAnnotationsByCategory(String category, String id) {
+		LinkedList<Annotation> annotationList = new LinkedList<Annotation>();
 		
 		String de = CategoriesDE.indexOf(category) != -1 ? 
 				CategoriesDE.get(CategoriesDE.indexOf(category)) : null;
@@ -793,7 +326,7 @@ public final class FBReaderApp extends ZLApplication {
 				CategoriesEN.get(CategoriesEN.indexOf(category)) : null;
 		
 		for (Annotation annotation : Annotations.getAnnotations()) {
-			if (annotation.getCategory().equals(de) || annotation.getCategory().equals(en) &&
+			if ((annotation.getCategory().equals(de) || annotation.getCategory().equals(en)) &&
 					annotation.getAnnotationTarget().getTargetAnnotationId().equals(id)) {
 				annotationList.add(annotation);
 			}
@@ -978,53 +511,6 @@ public final class FBReaderApp extends ZLApplication {
 			}
 		}
 		getViewWidget().repaint();
-	}
-	
-	/**
-	 * load the XML structure into the annotations object structure
-	 */
-	public void loadFromXMLFile() {
-		final FBReaderApp fbReader = (FBReaderApp)ZLApplication.Instance();
-		
-		try {
-    		Serializer serializer = new Persister();
-    		String path = Paths.BooksDirectoryOption().getValue()+"/annotations.xml";
-    		File annotationXML = new File(path);
-    		fbReader.Annotations = serializer.read(Annotations.class, annotationXML);
-    	} catch (Exception e) {
-    		Log.e("loadFromXMLFile", e.toString());
-    	}
-	}
-	
-	/**
-	 * load an XML String of annotations into a annotations object structure
-	 * @param xml
-	 */
-	public SemAppsAnnotation loadAnnotationFromXMLString(String xml) {
-		SemAppsAnnotation annotation = null;
-		try {
-			Serializer serializer = new Persister();
-			annotation = serializer.read(SemAppsAnnotation.class, xml);
-    	} catch (Exception e) {
-    		Log.e("loadFromXMLString", e.toString());
-    	}
-    	return annotation;
-	}
-	
-	/**
-	 * Generates from the given annotation an XML String. 
-	 */
-	public String saveAnnotationToString(Annotation annotation) {
-		String xml = null;
-		try {
-    		Serializer serializer = new Persister();
-    		StringWriter stringWriter = new StringWriter();
-    		serializer.write(annotation, stringWriter);
-    		xml = stringWriter.toString();
-    	} catch (Exception e) {
-    		Log.e("saveToXML", e.toString());
-    	}
-    	return xml;
 	}
 	
 	/**

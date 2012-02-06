@@ -30,6 +30,8 @@ public interface ActionCode {
 	String SHOW_UPB_LOGIN_SCREEN = "upbLibrary";
 	String SHOW_SEMAPPS_LIST = "semAppsList";
 	String SHOW_EPUB_LIST = "ePubList";
+	
+	String REFRESH_ANNOTATIONS = "refreshAnnotations";
 
 	String SWITCH_TO_NIGHT_PROFILE = "night";
 	String SWITCH_TO_DAY_PROFILE = "day";

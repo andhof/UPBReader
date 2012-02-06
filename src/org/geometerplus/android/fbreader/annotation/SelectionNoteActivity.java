@@ -26,7 +26,9 @@ import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotations;
+import org.geometerplus.android.util.SQLiteUtil;
 import org.geometerplus.android.util.UIUtil;
+import org.geometerplus.android.util.XMLUtil;
 import org.geometerplus.fbreader.Paths;
 import org.geometerplus.fbreader.bookmodel.TOCTree;
 import org.geometerplus.fbreader.fbreader.ActionCode;
@@ -263,13 +265,13 @@ public class SelectionNoteActivity extends Activity {
 				
 				annotation.setEPubId(epub_id);
 				
-				fbreader.writeEPubAndAnnotationToDatabase(SelectionNoteActivity.this, epub, bookPath, semapp_id, annotation, epub_id);
+				SQLiteUtil.writeEPubAndAnnotationToDatabase(SelectionNoteActivity.this, epub, bookPath, semapp_id, annotation, epub_id);
 				
 				// Start asynctask for uploading annotation
 				if (!semapp_id.isEmpty()) {
 					if (asyncTask != null) asyncTask.cancel(true);
 				    asyncTask = new HttpHelper();
-				    String xml = fbreader.saveAnnotationToString(annotation);
+				    String xml = XMLUtil.saveAnnotationToString(annotation);
 				    
 				    if (newAnnotation) {
 				    	asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+ 
@@ -407,7 +409,7 @@ public class SelectionNoteActivity extends Activity {
 					if (resEntityPost != null && myStatusCode == conn.OK) {
 						resEntityPostResult = EntityUtils.toString(resEntityPost);
 						SemAppsAnnotation saAnnotation = 
-							fbreader.loadAnnotationFromXMLString(resEntityPostResult);
+							XMLUtil.loadSemAppsAnnotationFromXMLString(resEntityPostResult);
 						upb_id = saAnnotation.getId();
 						updated_at = saAnnotation.getUpdated_at();
 					}
@@ -444,7 +446,7 @@ public class SelectionNoteActivity extends Activity {
 				annotation_id = annotation.getId();
 			}
 			
-			fbreader.writeAnnotationToDatabase(SelectionNoteActivity.this, annotation, annotation.getEPubId());
+			SQLiteUtil.writeAnnotationToDatabase(SelectionNoteActivity.this, annotation, annotation.getEPubId());
 			
 			if (newAnnotation && myStatusCode != conn.OK) {
 				SharedPreferences settings = getSharedPreferences("annotation_stack", 0);
@@ -480,21 +482,6 @@ public class SelectionNoteActivity extends Activity {
 				fbreader.showToast(getString(R.string.toast_add_noconnection));
 				return;
 			}
-		}
-		
-		/**
-		 * load an XML String of annotations into the annotations object structure
-		 * @param xml
-		 */
-		private SemAppsAnnotations loadAnnotationsListFromXMLString(String xml) {
-			SemAppsAnnotations saAnnotations = null;
-			try {
-				Serializer serializer = new Persister();
-	    		saAnnotations = serializer.read(SemAppsAnnotations.class, xml);
-	    	} catch (Exception e) {
-	    		Log.e("loadFromXMLString", e.toString());
-	    	}
-	    	return saAnnotations;
 		}
 	}
 }

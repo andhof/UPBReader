@@ -20,7 +20,9 @@ import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotations;
+import org.geometerplus.android.util.SQLiteUtil;
 import org.geometerplus.android.util.UIUtil;
+import org.geometerplus.android.util.XMLUtil;
 import org.geometerplus.fbreader.Paths;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.library.Book;
@@ -123,7 +125,7 @@ public class EPubListActivity extends ListActivity {
 	    	fbreader.EPubs.getEPubs().add(ePub);
 	    }
 	    local_path = Paths.BooksDirectoryOption().getValue()+"/"+ePubIDsList.get(position)+"/"+ePubFileNamesList.get(position);
-	    fbreader.writeEPubToDatabase(EPubListActivity.this, ePub, local_path, semApp.getId());
+	    SQLiteUtil.writeEPubToDatabase(EPubListActivity.this, ePub, local_path, semApp.getId());
 	    
 		progressDialog = new ProgressDialog(EPubListActivity.this);
 		progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -262,34 +264,19 @@ public class EPubListActivity extends ListActivity {
 				if (data.isEmpty()) {
 					continue;
 				}
-				annotation = loadAnnotationFromXMLString(data);
+				annotation = XMLUtil.loadAnnotationFromXMLString(data);
 				upb_id = a.getId();
 				updated_at = a.getUpdated_at();
 				if (!fbreader.Annotations.getAnnotations().contains(annotation)) {
 					annotation.setUPBId(upb_id);
 					annotation.setUpdatedAt(updated_at);
 					fbreader.Annotations.addAnnotation(annotation);
-					fbreader.writeAnnotationToDatabase(EPubListActivity.this, annotation, ePub.getId());
+					SQLiteUtil.writeAnnotationToDatabase(EPubListActivity.this, annotation, ePub.getId());
 				}
 			}
 			
 			// load the downloaded book
 			fbreader.openFile(ZLFile.createFileByPath(result));
-		}
-		
-		/**
-		 * load an XML String of annotations into the annotations object structure
-		 * @param xml
-		 */
-		public Annotation loadAnnotationFromXMLString(String xml) {
-			Annotation annotation = null;
-			try {
-				Serializer serializer = new Persister();
-				annotation = serializer.read(Annotation.class, xml);
-	    	} catch (Exception e) {
-	    		Log.e("loadFromXMLString", e.toString());
-	    	}
-	    	return annotation;
 		}
 	}
 }

@@ -18,7 +18,9 @@ import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
+import org.geometerplus.android.util.SQLiteUtil;
 import org.geometerplus.android.util.UIUtil;
+import org.geometerplus.android.util.XMLUtil;
 import org.geometerplus.fbreader.fbreader.ActionCode;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.library.Book;
@@ -42,6 +44,7 @@ import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.ViewGroup.LayoutParams;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -139,7 +142,7 @@ public class SelectionShowNoteActivity extends Activity {
 			final EditText textInput = (EditText) findViewById(R.id.comment_input);
 			
 			Button addButton = (Button) findViewById(R.id.add_comment_button);
-			addButton.setText("add");
+			addButton.setText(R.string.shownote_add_button);
 			addButton.setOnClickListener(new Button.OnClickListener() {
 				public void onClick(View v) {
 					if (textInput.getText().toString().isEmpty()) {
@@ -176,14 +179,17 @@ public class SelectionShowNoteActivity extends Activity {
 					
 					// Start asynctask for uploading annotation
 					asyncTask = new HttpHelper();
-				    String xml = fbreader.saveAnnotationToString(newAnnotation);
+				    String xml = XMLUtil.saveAnnotationToString(newAnnotation);
 					
 					asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+ 
 			    			semapp_id + "/epubs/" + epub_id + "/annotations", xml);
 					
-					fbreader.writeAnnotationToDatabase(SelectionShowNoteActivity.this, newAnnotation, epub_id);
+					SQLiteUtil.writeAnnotationToDatabase(SelectionShowNoteActivity.this, newAnnotation, epub_id);
 					
 					reload();
+					
+					InputMethodManager imm = (InputMethodManager)getSystemService(SelectionShowNoteActivity.this.INPUT_METHOD_SERVICE);
+		            imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
 				}
 			});
 		}
@@ -239,7 +245,7 @@ public class SelectionShowNoteActivity extends Activity {
 				if (resEntityPost != null && myStatusCode == conn.OK) {
 					resEntityPostResult = EntityUtils.toString(resEntityPost);
 					SemAppsAnnotation saAnnotation = 
-						fbreader.loadAnnotationFromXMLString(resEntityPostResult);
+						XMLUtil.loadSemAppsAnnotationFromXMLString(resEntityPostResult);
 					upb_id = saAnnotation.getId();
 					updated_at = saAnnotation.getUpdated_at();
 				}
@@ -259,7 +265,7 @@ public class SelectionShowNoteActivity extends Activity {
 				annotation_id = newAnnotation.getId();
 			}
 			
-			fbreader.writeAnnotationToDatabase(SelectionShowNoteActivity.this, newAnnotation, newAnnotation.getEPubId());
+			SQLiteUtil.writeAnnotationToDatabase(SelectionShowNoteActivity.this, newAnnotation, newAnnotation.getEPubId());
 			
 			if (myStatusCode != conn.OK) {
 				SharedPreferences settings = getSharedPreferences("annotation_stack", 0);

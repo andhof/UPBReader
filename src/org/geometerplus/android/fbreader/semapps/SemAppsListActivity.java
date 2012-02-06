@@ -16,6 +16,7 @@ import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
 import org.geometerplus.android.util.UIUtil;
+import org.geometerplus.android.util.XMLUtil;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.simpleframework.xml.Serializer;
@@ -169,7 +170,7 @@ public class SemAppsListActivity extends ListActivity {
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 			
 			Log.v("UPBLibraryLoginActivity.HttpHelper", result);
-			SemApp semApp = loadSemAppFromXMLString(result);
+			SemApp semApp = XMLUtil.loadSemAppFromXMLString(result);
 			SemAppDummy semAppDummy = new SemAppDummy();
 			semAppDummy.setId(semApp.getId());
 			semAppDummy.setName(semApp.getName());
@@ -218,22 +219,6 @@ public class SemAppsListActivity extends ListActivity {
 				}
 			}).start();
 			
-		}
-		
-		/**
-		 * load an XML String of semapps into the semapps object structure
-		 * @param xml
-		 */
-		public SemApp loadSemAppFromXMLString(String xml) {
-			SemApp semApp = null;
-			try {
-				Serializer serializer = new Persister();
-	    		semApp = serializer.read(SemApp.class, xml);
-	    		System.out.println();
-	    	} catch (Exception e) {
-	    		Log.e("loadFromXMLString", e.toString());
-	    	}
-	    	return semApp;
 		}
 	}
 }

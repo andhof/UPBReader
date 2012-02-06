@@ -27,6 +27,7 @@ import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
 import org.geometerplus.android.util.UIUtil;
+import org.geometerplus.android.util.XMLUtil;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
@@ -206,37 +207,13 @@ public class UPBLibraryLoginActivity extends Activity {
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 			
 			Log.v("UPBLibraryLoginActivity.HttpHelper", result);
-			SemApps semApps = loadSemAppsListFromXMLString(result);
+			SemApps semApps = XMLUtil.loadSemAppsListFromXMLString(result);
 			
 			UPBLibraryLoginActivity.this.startActivityForResult(
 				new Intent(UPBLibraryLoginActivity.this.getApplicationContext(), SemAppsListActivity.class)
 					.putExtra("semapps", semApps),
 				4
 			);
-		}
-		
-		/**
-		 * load an XML String of annotations into the annotations object structure
-		 * @param xml
-		 */
-		private SemApps loadSemAppsListFromXMLString(String xml) {
-			SemApps semApps = null;
-			try {
-				Serializer serializer = new Persister();
-//				xml = "<?xml version='1.0' encoding='UTF-8'?>\n<semapps type='array'>" +
-//						"\n  <semapp>\n    <id>4eef5aadd0434c1fa6000001</id>\n    <name>" +
-//						"Test Semapp</name>\n    <updated_at>2011-12-19 16:39:25 +0100" +
-//						"</updated_at>\n  </semapp>\n<semapp>\n    <id>4eef5aadd0434c1f" +
-//						"a6000002</id>\n    <name>Test Semapp2</name>\n    <updated_at>201" +
-//						"1-12-19 16:39:25 +0100</updated_at>\n  </semapp>\n<semapp>\n    " +
-//						"<id>4eef5aadd0434c1fa6000003</id>\n    <name>Test Semapp3</name" +
-//						">\n    <updated_at>2011-12-19 16:39:25 +0100</updated_at>\n  </sem" +
-//						"app>\n</semapps>\n";
-	    		semApps = serializer.read(SemApps.class, xml);
-	    	} catch (Exception e) {
-	    		Log.e("loadFromXMLString", e.toString());
-	    	}
-	    	return semApps;
 		}
 	}
 }

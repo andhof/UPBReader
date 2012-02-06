@@ -10,6 +10,8 @@
     <string name="upblogin_loginIsEmpty">Username should be non-empty</string>
     <string name="upblogin_register">Sign up</string>
     
+    <string name="upbrefresh_label">Aktualisieren</string>
+    
     <string name="loggingin">Logging in. Please, wait&#8230;</string>
 	<string name="loadingsemlist">Loading SeminarApparate List. Please, wait&#8230;</string>
     <string name="loadingepublist">Loading Book List. Please, wait&#8230;</string>
@@ -40,6 +42,7 @@
     <string name="shownote_local">Local:</string>
     <string name="shownote_modified">Modified:</string>
     <string name="shownote_content">Note:</string>
+    <string name="shownote_add_button">Add</string>
     
     <string name="quickaction_copy">Copy</string>
     <string name="quickaction_share">Share</string>

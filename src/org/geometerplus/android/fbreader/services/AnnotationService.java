@@ -12,6 +12,8 @@ import org.apache.http.util.EntityUtils;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
+import org.geometerplus.android.util.SQLiteUtil;
+import org.geometerplus.android.util.XMLUtil;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 
@@ -78,14 +80,17 @@ public class AnnotationService extends Service {
 				conn.authenticate(username, password);
 				
 				it = urlList.iterator();
-				while(it.hasNext()){
+				while(it.hasNext()) {
 					String current = it.next();
 					
 					Log.v("AnnotationService", "add: "+ current);
 					annotation_id = current.substring(current.lastIndexOf("/")+1);
 					current = current.substring(0, current.lastIndexOf("/"));
 					Annotation annotation = fbreader.Annotations.getAnnotationById(annotation_id);
-					xml = fbreader.saveAnnotationToString(annotation);
+					if (annotation == null) {
+						continue;
+					}
+					xml = XMLUtil.saveAnnotationToString(annotation);
 					
 					try {
 						connectionResult = conn.postStuffPost(current, xml);
@@ -96,13 +101,13 @@ public class AnnotationService extends Service {
 						if (resEntityPost != null) {
 							resEntityPostResult = EntityUtils.toString(resEntityPost);
 							SemAppsAnnotation saAnnotation = 
-								fbreader.loadAnnotationFromXMLString(resEntityPostResult);
+								XMLUtil.loadSemAppsAnnotationFromXMLString(resEntityPostResult);
 							upb_id = saAnnotation.getId();
 							updated_at = saAnnotation.getUpdated_at();
 							annotation.setUPBId(upb_id);
 							annotation.setUpdatedAt(updated_at);
 							
-							fbreader.writeAnnotationToDatabase(AnnotationService.this, annotation, annotation.getEPubId());
+							SQLiteUtil.writeAnnotationToDatabase(AnnotationService.this, annotation, annotation.getEPubId());
 						}
 					} catch (ParseException e) {
 						e.printStackTrace();
@@ -126,13 +131,13 @@ public class AnnotationService extends Service {
 				urlList = new ArrayList<String>(urlset);
 				
 				it = urlList.iterator();
-				while(it.hasNext()){
+				while(it.hasNext()) {
 					String current = it.next();
 					
 					Log.v("AnnotationService", "update: "+ current);
 					upb_id = current.substring(current.lastIndexOf("/")+1);
 					Annotation annotation = fbreader.Annotations.getAnnotationByUPBId(upb_id);
-					xml = fbreader.saveAnnotationToString(annotation);
+					xml = XMLUtil.saveAnnotationToString(annotation);
 					
 					connectionResult = conn.postStuffPut(current, xml);
 					resEntityPut = (HttpEntity) connectionResult[0];
@@ -161,7 +166,7 @@ public class AnnotationService extends Service {
 				urlList = new ArrayList<String>(urlset);
 				
 				it = urlList.iterator();
-				while(it.hasNext()){
+				while(it.hasNext()) {
 					String current = it.next();
 					
 					Log.v("AnnotationService", "delete: "+ current);
