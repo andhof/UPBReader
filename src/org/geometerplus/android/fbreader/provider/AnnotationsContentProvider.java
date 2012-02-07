@@ -139,6 +139,7 @@ public class AnnotationsContentProvider extends BaseProvider {
         annotationsProjectionMap.put(DBAnnotations.TAGS, DBAnnotations.TAGS);
         annotationsProjectionMap.put(DBAnnotations.AUTHOR_NAME, DBAnnotations.AUTHOR_NAME);
         annotationsProjectionMap.put(DBAnnotations.BOOKID, DBAnnotations.BOOKID);
+        annotationsProjectionMap.put(DBAnnotations.MARKED_TEXT, DBAnnotations.MARKED_TEXT);
         annotationsProjectionMap.put(DBAnnotations.TARGET_ANNOTATION_ID, DBAnnotations.TARGET_ANNOTATION_ID);
         annotationsProjectionMap.put(DBAnnotations.ISBN, DBAnnotations.ISBN);
         annotationsProjectionMap.put(DBAnnotations.TITLE, DBAnnotations.TITLE);

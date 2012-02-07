@@ -71,6 +71,7 @@ public class Annotations {
     		ArrayList<String> tags, 
     		String author_name, 
     		String bookid,
+    		String markedText,
     		String targetannotationid,
     		String isbn,
     		String title,
@@ -101,6 +102,7 @@ public class Annotations {
 		annotation.setTags(tags);
 		annotation.getAuthor().setName(author_name);
 		annotation.getAnnotationTarget().setBookId(bookid);
+		annotation.getAnnotationTarget().setMarkedText(markedText);
 		annotation.getAnnotationTarget().setTargetAnnotationId(targetannotationid);
 		annotation.getAnnotationTarget().getDocumentIdentifier().setISBN(isbn);
 		annotation.getAnnotationTarget().getDocumentIdentifier().setTitle(title);

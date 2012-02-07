@@ -152,6 +152,7 @@ public abstract class SQLiteUtil {
 				ArrayList<String> tags = new ArrayList(Arrays.asList(tagsarray));
 				String author_name = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.AUTHOR_NAME));
 				String bookid = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.BOOKID));
+				String markedText = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.MARKED_TEXT));
 				String targetannotationid = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.TARGET_ANNOTATION_ID));
 				String isbn = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.ISBN));
 				String title = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.TITLE));
@@ -189,7 +190,7 @@ public abstract class SQLiteUtil {
 				}
 				
 				fbreader.Annotations.addAnnotation(annotation_id, created, modified, category, tags, 
-						author_name, bookid, targetannotationid, isbn, title, authors, publicationdate, start_part, 
+						author_name, bookid, markedText, targetannotationid, isbn, title, authors, publicationdate, start_part, 
 						start_xpath, start_charoffset, end_part, end_xpath, end_charoffset, 
 						highlightcolor, underlined, crossout, content, epub_id, upb_id, updated_at);
 		    } while (cursor_annotation.moveToNext());
@@ -268,6 +269,7 @@ public abstract class SQLiteUtil {
 		final String tags = annotation.getTagsAsString();
 		final String author_name = annotation.getAuthor().getName();
 		final String bookid = annotation.getAnnotationTarget().getBookId();
+		final String markedtext = annotation.getAnnotationTarget().getMarkedText();
 		final String targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();
 		final String isbn = annotation.getAnnotationTarget().getDocumentIdentifier().getISBN();
 		final String title = annotation.getAnnotationTarget().getDocumentIdentifier().getTitle();
@@ -324,6 +326,7 @@ public abstract class SQLiteUtil {
 				values.put(DBAnnotations.TAGS, tags);
 				values.put(DBAnnotations.AUTHOR_NAME, author_name);
 				values.put(DBAnnotations.BOOKID, bookid);
+				values.put(DBAnnotations.MARKED_TEXT, markedtext);
 				values.put(DBAnnotations.TARGET_ANNOTATION_ID, targetannotationid);
 				values.put(DBAnnotations.ISBN, isbn);
 				values.put(DBAnnotations.TITLE, title);
@@ -403,6 +406,7 @@ public abstract class SQLiteUtil {
 		final String tags = annotation.getTagsAsString();
 		final String author_name = annotation.getAuthor().getName();
 		final String bookid = annotation.getAnnotationTarget().getBookId();
+		final String markedtext = annotation.getAnnotationTarget().getMarkedText();
 		final String targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();
 		final String isbn = annotation.getAnnotationTarget().getDocumentIdentifier().getISBN();
 		final String title = annotation.getAnnotationTarget().getDocumentIdentifier().getTitle();
@@ -453,6 +457,7 @@ public abstract class SQLiteUtil {
 					values.put(DBAnnotations.TAGS, tags);
 					values.put(DBAnnotations.AUTHOR_NAME, author_name);
 					values.put(DBAnnotations.BOOKID, bookid);
+					values.put(DBAnnotations.MARKED_TEXT, markedtext);
 					values.put(DBAnnotations.TARGET_ANNOTATION_ID, targetannotationid);
 					values.put(DBAnnotations.ISBN, isbn);
 					values.put(DBAnnotations.TITLE, title);

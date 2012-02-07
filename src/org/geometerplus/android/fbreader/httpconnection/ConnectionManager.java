@@ -33,6 +33,7 @@ public class ConnectionManager {
 	public final int NO_INTERNET_CONNECTION = 1;
 	public final int AUTHENTICATION_FAILED = 2;
 	public final int NOT_FOUND = 3;
+	public final int FORBIDDEN = 4;
 	
 	private static ConnectionManager instance = null;
     private HttpParams httpParams;
@@ -164,11 +165,14 @@ public class ConnectionManager {
 	    	delete = new HttpDelete(url);
 	    	Log.v("ConnectionManager", url);
 	    	response = httpClient.execute(delete);
-	    	Log.v("ConnectionManager", "delete aufruf. direkt nach execute");
+	    	resEntity = response.getEntity();  
 	    	if (response.getStatusLine().getStatusCode() != 200) {
 				if (response.getStatusLine().getStatusCode() == 401) {
 					Log.v("ConnectionManager", "statuscode: "+response.getStatusLine().getStatusCode());
 					return new Object[] {null, AUTHENTICATION_FAILED};
+				} else if (response.getStatusLine().getStatusCode() == 403) {
+					Log.v("ConnectionManager", "statuscode: "+response.getStatusLine().getStatusCode());
+					return new Object[] {resEntity, FORBIDDEN};
 				} else if (response.getStatusLine().getStatusCode() == 404) {
 					Log.v("ConnectionManager", "statuscode: "+response.getStatusLine().getStatusCode());
 					return new Object[] {null, NOT_FOUND};
@@ -177,10 +181,9 @@ public class ConnectionManager {
 							   + response.getStatusLine().getStatusCode());
 				}
 			}
-	        resEntity = response.getEntity();  
     	} catch (Exception e) {
 		    Log.e("ConnectionManager", e.toString());
-    		if (response == null) {
+		    if (response == null) {
     			return new Object[] {null, NO_INTERNET_CONNECTION};
     		}
     		Log.v("ConnectionManager", "statuscode: "+response.getStatusLine().getStatusCode());

@@ -28,13 +28,17 @@
 	               android:padding="5dp"
 	               android:textSize="16px"
 	               android:text="TextView1" />
-	          <TextView
-                android:id="@+id/show_note_selection_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:textSize="16px"
-                android:text="TextView2" />
+	          <ScrollView android:layout_width="wrap_content"
+                    android:layout_height="100dp" 
+                    android:layout_weight="1">
+                      <TextView
+                        android:id="@+id/show_note_selection_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="5dp"
+                        android:textSize="16px"
+                        android:text="TextView2" />
+              </ScrollView>
           </TableRow>
 	      <TableRow
               android:layout_width="fill_parent"

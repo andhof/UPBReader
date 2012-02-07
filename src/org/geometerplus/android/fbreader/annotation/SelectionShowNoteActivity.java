@@ -39,6 +39,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings.Secure;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
@@ -89,17 +90,6 @@ public class SelectionShowNoteActivity extends Activity {
 			}
 		}
 		
-		String tagsString = "";
-		StringBuffer result = new StringBuffer();
-	    if (annotation.getTags().size() > 0) {
-	        result.append(annotation.getTags().get(0));
-	        for (int i = 1; i < annotation.getTags().size(); i++) {
-	            result.append(", ");
-	            result.append(annotation.getTags().get(i));
-	        }
-	    }
-	    tagsString = result.toString();
-		
 	    findTextView(R.id.show_note_title).setText(R.string.shownote_title);
 	    
 		findTextView(R.id.show_note_selection_label).setText(R.string.shownote_selection);
@@ -109,10 +99,11 @@ public class SelectionShowNoteActivity extends Activity {
 		findTextView(R.id.show_note_modified_label).setText(R.string.shownote_modified);
 		findTextView(R.id.show_note_content_label).setText(R.string.shownote_content);
 		
-		findTextView(R.id.show_note_selection_text).setText("Muss noch ermittelt werden.");
+		findTextView(R.id.show_note_selection_text).setText(
+				annotation.getAnnotationTarget().getMarkedText());
 		findTextView(R.id.show_note_author_text).setText(annotation.getAuthor().getName());
 		findTextView(R.id.show_note_category_text).setText(annotation.getCategory());
-		findTextView(R.id.show_note_tags_text).setText(tagsString);
+		findTextView(R.id.show_note_tags_text).setText(annotation.getTagsAsString());
 		findTextView(R.id.show_note_modified_text).setText(annotation.getUpdatedAt());
 		findTextView(R.id.show_note_content_text).setText(
 				annotation.getAnnotationContent().getAnnotationText());
@@ -236,30 +227,32 @@ public class SelectionShowNoteActivity extends Activity {
 			url = params[0];
 			xml = params[1];
 			
-			try {
-				conn = ConnectionManager.getInstance();
-				conn.authenticate(username, password);
-				connectionResult = conn.postStuffPost(url, xml);
-				resEntityPost = (HttpEntity) connectionResult[0];
-				myStatusCode = ((Integer) connectionResult[1]).intValue();
-				if (resEntityPost != null && myStatusCode == conn.OK) {
-					resEntityPostResult = EntityUtils.toString(resEntityPost);
-					SemAppsAnnotation saAnnotation = 
-						XMLUtil.loadSemAppsAnnotationFromXMLString(resEntityPostResult);
-					upb_id = saAnnotation.getId();
-					updated_at = saAnnotation.getUpdated_at();
-				}
-				if (myStatusCode == conn.AUTHENTICATION_FAILED) {
-					return null;
-				}
-				
-				newAnnotation.setUPBId(upb_id);
-				newAnnotation.setUpdatedAt(updated_at);
-				
-			} catch (Exception e) {
-			    e.printStackTrace();
-			    Log.e("SelectionNoteActivity", e.toString());
-			} 
+			if (fbreader.isNetworkAvailable()) {
+				try {
+					conn = ConnectionManager.getInstance();
+					conn.authenticate(username, password);
+					connectionResult = conn.postStuffPost(url, xml);
+					resEntityPost = (HttpEntity) connectionResult[0];
+					myStatusCode = ((Integer) connectionResult[1]).intValue();
+					if (resEntityPost != null && myStatusCode == conn.OK) {
+						resEntityPostResult = EntityUtils.toString(resEntityPost);
+						SemAppsAnnotation saAnnotation = 
+							XMLUtil.loadSemAppsAnnotationFromXMLString(resEntityPostResult);
+						upb_id = saAnnotation.getId();
+						updated_at = saAnnotation.getUpdated_at();
+					}
+					if (myStatusCode == conn.AUTHENTICATION_FAILED) {
+						return null;
+					}
+					
+					newAnnotation.setUPBId(upb_id);
+					newAnnotation.setUpdatedAt(updated_at);
+					
+				} catch (Exception e) {
+				    e.printStackTrace();
+				    Log.e("SelectionNoteActivity", e.toString());
+				} 
+			}
 			
 			if (annotation_id.isEmpty()) {
 				annotation_id = newAnnotation.getId();
@@ -267,7 +260,7 @@ public class SelectionShowNoteActivity extends Activity {
 			
 			SQLiteUtil.writeAnnotationToDatabase(SelectionShowNoteActivity.this, newAnnotation, newAnnotation.getEPubId());
 			
-			if (myStatusCode != conn.OK) {
+			if (!fbreader.isNetworkAvailable()) {
 				SharedPreferences settings = getSharedPreferences("annotation_stack", 0);
 				Set<String> urlset;
 				urlset = settings.getStringSet("add", new HashSet<String>());

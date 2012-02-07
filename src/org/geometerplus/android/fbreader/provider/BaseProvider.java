@@ -45,6 +45,7 @@ public abstract class BaseProvider extends ContentProvider {
 				"tags TEXT," +
 				"author_name TEXT," +
 				"target_bookid INTEGER," +
+				"target_markedtext TEXT," +
 				"target_annotationid TEXT," +
 				"target_documentidentifier_isbn TEXT," +
 				"target_documentidentifier_title TEXT," +

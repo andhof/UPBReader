@@ -71,6 +71,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
@@ -591,6 +593,16 @@ public final class FBReaderApp extends ZLApplication {
 		int absoluteElementCharOffset = charOffset + ((ZLTextWord)startElement).Offset;
 		
 		return tmpCursor.getIndexesByCharOffset(absoluteElementCharOffset);
+	}
+	
+	public boolean isNetworkAvailable() {
+	    ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+	    // if no network is available networkInfo will be null, otherwise check if we are connected
+	    if (networkInfo != null && networkInfo.isConnected()) {
+	        return true;
+	    }
+	    return false;
 	}
 	
 	public void showToast(String text) {

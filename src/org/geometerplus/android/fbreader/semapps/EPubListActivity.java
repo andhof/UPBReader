@@ -154,6 +154,7 @@ public class EPubListActivity extends ListActivity {
 		private HttpEntity resEntityGet;
 		private Object[] connectionResult;
 		private int myStatusCode;
+		private String filePath;
 		
 		HttpHelper(EPubListActivity activity) {
             mActivity = activity;
@@ -187,15 +188,15 @@ public class EPubListActivity extends ListActivity {
 				File bookDirectory = new File(Paths.BooksDirectoryOption().getValue()+"/"+ePubID);
 				bookDirectory.mkdirs();
 				File file = new File(bookDirectory, fileName);
-				
+				filePath = file.getPath();
 				if (file.length() == resEntityGet.getContentLength()) {
 					if (resEntityGet != null) {
-					try {
-						resEntityGet.consumeContent();
-					} catch (IOException e) {
-						e.printStackTrace();
+						try {
+							resEntityGet.consumeContent();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
 					}
-				}
 					return null;
 				}
 				
@@ -216,6 +217,7 @@ public class EPubListActivity extends ListActivity {
 					publishProgress((int) (((double) downloadedSize / totalSize)*100));
 				}
 				path = file.getPath();
+				
 				fileOutput.close();
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
@@ -245,11 +247,9 @@ public class EPubListActivity extends ListActivity {
 				asyncTask = new HttpHelper(EPubListActivity.this);
 				return;
 			}
-			if (result == null) {
-				UIUtil.createDialog(EPubListActivity.this, "Error", getString(R.string.complete_file_exists));
-				asyncTask = new HttpHelper(EPubListActivity.this);
-				return;
-			}
+//			if (result == null) {
+//				UIUtil.createDialog(EPubListActivity.this, "Error", getString(R.string.complete_file_exists));
+//			}
 			setResult(4);
 			finish();
 			
@@ -275,8 +275,11 @@ public class EPubListActivity extends ListActivity {
 				}
 			}
 			
-			// load the downloaded book
-			fbreader.openFile(ZLFile.createFileByPath(result));
+			if (result == null) {
+				fbreader.openFile(ZLFile.createFileByPath(filePath));
+			} else {
+				fbreader.openFile(ZLFile.createFileByPath(result));
+			}
 		}
 	}
 }

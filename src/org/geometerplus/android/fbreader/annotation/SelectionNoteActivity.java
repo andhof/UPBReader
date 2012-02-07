@@ -177,6 +177,8 @@ public class SelectionNoteActivity extends Activity {
 					int selectionStartParagraphIndex = selectionStartPos.getParagraphIndex();
 					int selectionEndParagraphIndex = selectionEndPos.getParagraphIndex();
 					
+					String selectedText = fbreader.BookTextView.getSelectedText();
+					
 					// define the  Annotationtarget 
 					// define the path to the chapter file
 					String startPart = fbreader.getPathToChapterFile(selectionStartPos.getParagraphIndex());
@@ -209,6 +211,7 @@ public class SelectionNoteActivity extends Activity {
 					DocumentIdentifier documentIdentifier = annotation.getAnnotationTarget().getDocumentIdentifier();
 					documentIdentifier.setTitle(book.getTitle());
 					documentIdentifier.setAuthors(book.authorNames());
+					annotation.getAnnotationTarget().setMarkedText(selectedText);
 					Range range = annotation.getAnnotationTarget().getRange();
 					range.getStart().setPart(startPart);
 					range.getStart().getPath().setXPath(startXPath);
@@ -393,54 +396,58 @@ public class SelectionNoteActivity extends Activity {
 		@Override
 		protected String doInBackground(String... params) {
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
-			conn = ConnectionManager.getInstance();
+			
 			String annotation_id = "";
 			String upb_id = "";
 			String updated_at = "";
-			try {
-				url = params[0];
-				xml = params[1];
-				
-				conn.authenticate(username, password);
-				if (newAnnotation) {
-					connectionResult = conn.postStuffPost(url, xml);
-					resEntityPost = (HttpEntity) connectionResult[0];
-					myStatusCode = ((Integer) connectionResult[1]).intValue();
-					if (resEntityPost != null && myStatusCode == conn.OK) {
-						resEntityPostResult = EntityUtils.toString(resEntityPost);
-						SemAppsAnnotation saAnnotation = 
-							XMLUtil.loadSemAppsAnnotationFromXMLString(resEntityPostResult);
-						upb_id = saAnnotation.getId();
-						updated_at = saAnnotation.getUpdated_at();
-					}
-					
-					if (myStatusCode == conn.AUTHENTICATION_FAILED) {
-						return null;
-					}
-					
-					annotation.setUPBId(upb_id);
-					annotation.setUpdatedAt(updated_at);
-					
-				} else {
-					connectionResult = conn.postStuffPut(url, xml);
-					resEntityPut = (HttpEntity) connectionResult[0];
-					myStatusCode = ((Integer) connectionResult[1]).intValue();
-					if (resEntityPut != null) {
-						try {
-							resEntityPut.consumeContent();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+			
+			url = params[0];
+			xml = params[1];
+			
+			if (fbreader.isNetworkAvailable()) {
+				try {
+					conn = ConnectionManager.getInstance();
+					conn.authenticate(username, password);
+					if (newAnnotation) {
+						connectionResult = conn.postStuffPost(url, xml);
+						resEntityPost = (HttpEntity) connectionResult[0];
+						myStatusCode = ((Integer) connectionResult[1]).intValue();
+						if (resEntityPost != null && myStatusCode == conn.OK) {
+							resEntityPostResult = EntityUtils.toString(resEntityPost);
+							SemAppsAnnotation saAnnotation = 
+								XMLUtil.loadSemAppsAnnotationFromXMLString(resEntityPostResult);
+							upb_id = saAnnotation.getId();
+							updated_at = saAnnotation.getUpdated_at();
+						}
+						
+						if (myStatusCode == conn.AUTHENTICATION_FAILED) {
+							return null;
+						}
+						
+						annotation.setUPBId(upb_id);
+						annotation.setUpdatedAt(updated_at);
+						
+					} else {
+						connectionResult = conn.postStuffPut(url, xml);
+						resEntityPut = (HttpEntity) connectionResult[0];
+						myStatusCode = ((Integer) connectionResult[1]).intValue();
+						if (resEntityPut != null) {
+							try {
+								resEntityPut.consumeContent();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						if (myStatusCode == conn.AUTHENTICATION_FAILED) {
+							return null;
 						}
 					}
-					if (myStatusCode == conn.AUTHENTICATION_FAILED) {
-						return null;
-					}
-				}
-			} catch (Exception e) {
-			    e.printStackTrace();
-			    Log.e("SelectionNoteActivity", e.toString());
-			} 
+				} catch (Exception e) {
+				    e.printStackTrace();
+				    Log.e("SelectionNoteActivity", e.toString());
+				} 
+			}
 			
 			if (annotation_id.isEmpty()) {
 				annotation_id = annotation.getId();
@@ -448,7 +455,7 @@ public class SelectionNoteActivity extends Activity {
 			
 			SQLiteUtil.writeAnnotationToDatabase(SelectionNoteActivity.this, annotation, annotation.getEPubId());
 			
-			if (newAnnotation && myStatusCode != conn.OK) {
+			if (newAnnotation && !fbreader.isNetworkAvailable()) {
 				SharedPreferences settings = getSharedPreferences("annotation_stack", 0);
 				Set<String> urlset;
 				urlset = settings.getStringSet("add", new HashSet<String>());
@@ -458,7 +465,7 @@ public class SelectionNoteActivity extends Activity {
 				e.commit();
 			}
 			
-			if (!newAnnotation && myStatusCode != conn.OK) {
+			if (!newAnnotation && !fbreader.isNetworkAvailable()) {
 				SharedPreferences settings = getSharedPreferences("annotation_stack", 0);
 				Set<String> urlset;
 				urlset = settings.getStringSet("update", new HashSet<String>());
@@ -474,12 +481,12 @@ public class SelectionNoteActivity extends Activity {
 		@Override
 		protected void onPostExecute(String result) {
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
-			if (myStatusCode == conn.AUTHENTICATION_FAILED) {
-				UIUtil.createDialog(SelectionNoteActivity.this, "Error", getString(R.string.authentication_failed));
+			if (conn == null) {
+				fbreader.showToast(getString(R.string.toast_add_noconnection));
 				return;
 			}
-			if (myStatusCode == conn.NO_INTERNET_CONNECTION) {
-				fbreader.showToast(getString(R.string.toast_add_noconnection));
+			if (myStatusCode == conn.AUTHENTICATION_FAILED) {
+				UIUtil.createDialog(SelectionNoteActivity.this, "Error", getString(R.string.authentication_failed));
 				return;
 			}
 		}

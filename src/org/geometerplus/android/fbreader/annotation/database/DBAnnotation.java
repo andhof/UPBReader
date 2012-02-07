@@ -33,6 +33,8 @@ public class DBAnnotation {
 		
 		public static final String BOOKID = "target_bookid";
 		
+		public static final String MARKED_TEXT = "target_markedtext";
+		
 		public static final String TARGET_ANNOTATION_ID = "target_annotationid";
 		
 		public static final String ISBN = "target_documentidentifier_isbn";
@@ -68,10 +70,11 @@ public class DBAnnotation {
 		public static final String EPUB_ID = "epub_id";
 		
 		public static final String[] Projection = new String[] {
-			ANNOTATION_ID, CREATED, MODIFIED, CATEGORY, TAGS, AUTHOR_NAME, BOOKID,
-			TARGET_ANNOTATION_ID, ISBN, TITLE, PUBLICATIONDATE, START_PART, START_PATH_XPATH, 
-			START_PATH_CHAROFFSET, END_PART, END_PATH_XPATH, END_PATH_CHAROFFSET, 
-			HIGHLIGHTCOLOR, UNDERLINED, CROSSOUT, CONTENT, UPB_ID, UPDATED_AT, EPUB_ID};
+			ANNOTATION_ID, CREATED, MODIFIED, CATEGORY, TAGS, AUTHOR_NAME, BOOKID, 
+			MARKED_TEXT, TARGET_ANNOTATION_ID, ISBN, TITLE, PUBLICATIONDATE, START_PART, 
+			START_PATH_XPATH, START_PATH_CHAROFFSET, END_PART, END_PATH_XPATH, 
+			END_PATH_CHAROFFSET, HIGHLIGHTCOLOR, UNDERLINED, CROSSOUT, CONTENT, 
+			UPB_ID, UPDATED_AT, EPUB_ID};
 	}
 
 }

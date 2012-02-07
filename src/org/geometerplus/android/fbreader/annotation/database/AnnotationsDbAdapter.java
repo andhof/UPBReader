@@ -21,6 +21,7 @@ public class AnnotationsDbAdapter {
 	public static final String KEY_CATEGORY = "category";
 	public static final String KEY_TAGS = "tags";
 	public static final String KEY_AUTHOR_NAME = "author_name";
+	public static final String KEY_MARKEDTEXT = "target_markedtext";
 	public static final String KEY_TARGETANNOTATIONID = "target_annotationid";
 	public static final String KEY_BOOKID = "target_bookid";
 	public static final String KEY_ISBN = "target_documentidentifier_isbn";
@@ -122,15 +123,15 @@ public class AnnotationsDbAdapter {
 	 * rowId for that note, otherwise return a -1 to indicate failure.
 	 */
 	public long createAnnotation(String id, long created, long modified, 
-			String category, String tags, String author_name, String bookid, String target_annotation_id, 
-			String isbn, String title, String publicationdate, String start_part, String start_xpath, 
-			long start_charoffset, String end_part, String end_xpath, long end_charoffset, 
-			long highlightcolor, String underlined, String crossout, String content, String upb_id, 
-			String updated_at, String epub_id) {
+			String category, String tags, String author_name, String bookid, String marked_text, 
+			String target_annotation_id, String isbn, String title, String publicationdate, 
+			String start_part, String start_xpath, long start_charoffset, String end_part, 
+			String end_xpath, long end_charoffset, long highlightcolor, String underlined, 
+			String crossout, String content, String upb_id, String updated_at, String epub_id) {
 		
 		ContentValues values = 
 			createAnnotationContentValues(id, created, modified, category, tags, author_name, 
-					bookid, target_annotation_id, isbn, title, publicationdate, start_part, start_xpath, start_charoffset, 
+					bookid, marked_text, target_annotation_id, isbn, title, publicationdate, start_part, start_xpath, start_charoffset, 
 					end_part, end_xpath, end_charoffset, highlightcolor, underlined, crossout, 
 					content, upb_id, updated_at, epub_id);
 		
@@ -141,15 +142,15 @@ public class AnnotationsDbAdapter {
 	 * Update the Annotation 
 	 */
 	public boolean updateAnnotation(String id, long created, long modified, 
-			String category, String tags, String author_name, String bookid, String target_annotation_id, 
-			String isbn, String title, String publicationdate, String start_part, String start_xpath, 
-			long start_charoffset, String end_part, String end_xpath, long end_charoffset, 
-			long highlightcolor, String underlined, String crossout, String content, String upb_id, 
-			String updated_at, String epub_id) {
+			String category, String tags, String author_name, String bookid, String marked_text, 
+			String target_annotation_id, String isbn, String title, String publicationdate, 
+			String start_part, String start_xpath, long start_charoffset, String end_part, 
+			String end_xpath, long end_charoffset, long highlightcolor, String underlined, 
+			String crossout, String content, String upb_id, String updated_at, String epub_id) {
 		
 		ContentValues values = 
 			createAnnotationContentValues(id, created, modified, category, tags, author_name, 
-					bookid, target_annotation_id, isbn, title, publicationdate, start_part, start_xpath, start_charoffset, 
+					bookid, marked_text, target_annotation_id, isbn, title, publicationdate, start_part, start_xpath, start_charoffset, 
 					end_part, end_xpath, end_charoffset, highlightcolor, underlined, crossout, 
 					content, upb_id, updated_at, epub_id);
 		
@@ -253,10 +254,11 @@ public class AnnotationsDbAdapter {
 	public Cursor fetchAllAnnotations() throws SQLException {
 		return db.query(DB_ANNOTATIONS_TABLE, new String[] {KEY_ROWID, 
 				KEY_CREATED, KEY_MODIFIED, KEY_CATEGORY, KEY_TAGS, KEY_AUTHOR_NAME, 
-				KEY_BOOKID, KEY_TARGETANNOTATIONID, KEY_ISBN, KEY_TITLE, KEY_PUBLICATIONDATE, KEY_START_PART, 
-				KEY_START_PATH_XPATH, KEY_START_PATH_CHAROFFSET, KEY_END_PART, 
-				KEY_END_PATH_XPATH, KEY_END_PATH_CHAROFFSET, KEY_HIGHLIGHTCOLOR, 
-				KEY_UNDERLINED, KEY_CROSSOUT, KEY_CONTENT, KEY_UPB_ID, KEY_UPDATED_AT, 
+				KEY_BOOKID, KEY_MARKEDTEXT, KEY_TARGETANNOTATIONID, KEY_ISBN, KEY_TITLE, 
+				KEY_PUBLICATIONDATE, KEY_START_PART, KEY_START_PATH_XPATH, 
+				KEY_START_PATH_CHAROFFSET, KEY_END_PART, KEY_END_PATH_XPATH, 
+				KEY_END_PATH_CHAROFFSET, KEY_HIGHLIGHTCOLOR, KEY_UNDERLINED, 
+				KEY_CROSSOUT, KEY_CONTENT, KEY_UPB_ID, KEY_UPDATED_AT, 
 				KEY_EPUB_ID}, null, null, null, null, null);
 	}
 	
@@ -267,10 +269,11 @@ public class AnnotationsDbAdapter {
 	public Cursor fetchAnnotation(String id) throws SQLException {
 		Cursor mCursor = db.query(true, DB_ANNOTATIONS_TABLE, new String[] {KEY_ROWID, 
 				KEY_CREATED, KEY_MODIFIED, KEY_CATEGORY, KEY_TAGS, KEY_AUTHOR_NAME, 
-				KEY_BOOKID, KEY_TARGETANNOTATIONID, KEY_ISBN, KEY_TITLE, KEY_PUBLICATIONDATE, KEY_START_PART, 
-				KEY_START_PATH_XPATH, KEY_START_PATH_CHAROFFSET, KEY_END_PART, 
-				KEY_END_PATH_XPATH, KEY_END_PATH_CHAROFFSET, KEY_HIGHLIGHTCOLOR, 
-				KEY_UNDERLINED, KEY_CROSSOUT, KEY_CONTENT, KEY_UPB_ID, KEY_UPDATED_AT, 
+				KEY_BOOKID, KEY_MARKEDTEXT, KEY_TARGETANNOTATIONID, KEY_ISBN, KEY_TITLE, 
+				KEY_PUBLICATIONDATE, KEY_START_PART, KEY_START_PATH_XPATH, 
+				KEY_START_PATH_CHAROFFSET, KEY_END_PART, KEY_END_PATH_XPATH, 
+				KEY_END_PATH_CHAROFFSET, KEY_HIGHLIGHTCOLOR, KEY_UNDERLINED, 
+				KEY_CROSSOUT, KEY_CONTENT, KEY_UPB_ID, KEY_UPDATED_AT, 
 				KEY_EPUB_ID}, KEY_ROWID + "=\"" + id + "\"", null, null, null, null, null);
 		if (mCursor != null) {
 			mCursor.moveToFirst();
@@ -287,10 +290,11 @@ public class AnnotationsDbAdapter {
 	public Cursor fetchAnnotationsByEPubId(String ePubId) throws SQLException {
 		Cursor mCursor = db.query(true, DB_ANNOTATIONS_TABLE, new String[] {KEY_ROWID, 
 				KEY_CREATED, KEY_MODIFIED, KEY_CATEGORY, KEY_TAGS, KEY_AUTHOR_NAME, 
-				KEY_BOOKID, KEY_TARGETANNOTATIONID, KEY_ISBN, KEY_TITLE, KEY_PUBLICATIONDATE, KEY_START_PART, 
-				KEY_START_PATH_XPATH, KEY_START_PATH_CHAROFFSET, KEY_END_PART, 
-				KEY_END_PATH_XPATH, KEY_END_PATH_CHAROFFSET, KEY_HIGHLIGHTCOLOR, 
-				KEY_UNDERLINED, KEY_CROSSOUT, KEY_CONTENT, KEY_UPB_ID, KEY_UPDATED_AT, 
+				KEY_BOOKID, KEY_MARKEDTEXT, KEY_TARGETANNOTATIONID, KEY_ISBN, KEY_TITLE, 
+				KEY_PUBLICATIONDATE, KEY_START_PART, KEY_START_PATH_XPATH, 
+				KEY_START_PATH_CHAROFFSET, KEY_END_PART, KEY_END_PATH_XPATH, 
+				KEY_END_PATH_CHAROFFSET, KEY_HIGHLIGHTCOLOR, KEY_UNDERLINED, 
+				KEY_CROSSOUT, KEY_CONTENT, KEY_UPB_ID, KEY_UPDATED_AT, 
 				KEY_EPUB_ID}, KEY_EPUB_ID + "=\"" + ePubId + "\"", null, null, null, null, null);
 		if (mCursor != null) {
 			mCursor.moveToFirst();
@@ -341,9 +345,9 @@ public class AnnotationsDbAdapter {
 	}
 	
 	private ContentValues createAnnotationContentValues(String id, long created, long modified, 
-			String category, String tags, String author_name, String bookid, String target_annotation_id, 
-			String isbn, String title, String publicationdate, String start_part, String start_xpath, 
-			long start_charoffset, String end_part, String end_xpath, long end_charoffset, 
+			String category, String tags, String author_name, String bookid, String marked_text, 
+			String target_annotation_id, String isbn, String title, String publicationdate, String start_part, 
+			String start_xpath, long start_charoffset, String end_part, String end_xpath, long end_charoffset, 
 			long highlightcolor, String underlined, String crossout, String content, String upb_id, 
 			String updated_at, String epub_id) {
 		ContentValues values = new ContentValues();
@@ -354,6 +358,7 @@ public class AnnotationsDbAdapter {
 		values.put(KEY_TAGS, tags);
 		values.put(KEY_AUTHOR_NAME, author_name);
 		values.put(KEY_BOOKID, bookid);
+		values.put(KEY_MARKEDTEXT, marked_text);
 		values.put(KEY_TARGETANNOTATIONID, target_annotation_id);
 		values.put(KEY_ISBN, isbn);
 		values.put(KEY_TITLE, title);
