@@ -127,6 +127,14 @@ public class AnnotationListPopup extends PopupWindow {
 		container = inflater.inflate(R.layout.annotationlist_item, null);
 		
 		TextView text 	= (TextView) container.findViewById(R.id.annotation_title);
+		TextView author = (TextView) container.findViewById(R.id.annotation_author);
+		author.setText("Autor: "+annotation.getAuthor().getName());
+		TextView updated_at = (TextView) container.findViewById(R.id.annotation_updated_at);
+		updated_at.setText(annotation.getUpdatedAt());
+		TextView tags = (TextView) container.findViewById(R.id.annotation_tags);
+		tags.setText("Tags: "+annotation.getTagsAsString());
+		TextView category = (TextView) container.findViewById(R.id.annotation_category);
+		category.setText("Kategorie: "+annotation.getCategory());
 		
 		if (title != null) {
 			text.setText(title);

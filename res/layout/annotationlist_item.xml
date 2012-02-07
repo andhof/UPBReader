@@ -21,7 +21,6 @@
 	        android:gravity="center_horizontal|center_vertical"
 	        android:paddingLeft="3dip"
 	        android:paddingRight="6dip"
-	        android:text="Chart"
 	        android:textColor="#fff"/>
 
         <LinearLayout 
@@ -35,19 +34,17 @@
 	            android:layout_height="25dip" 
 	            android:layout_centerHorizontal="true"
 	            android:gravity="center_horizontal|center_vertical"
-	            android:paddingLeft="6dip"
+	            android:paddingLeft="12dip"
 	            android:paddingRight="3dip"
-	            android:text="Chart"
 	            android:textColor="#fff"/>
 	        <TextView 
-                android:id="@+id/annotation_created"
+                android:id="@+id/annotation_tags"
                 android:layout_width="wrap_content" 
                 android:layout_height="25dip" 
                 android:layout_centerHorizontal="true"
-                android:gravity="center_horizontal|center_vertical"
-                android:paddingLeft="6dip"
+                android:gravity="right|center_vertical"
+                android:paddingLeft="12dip"
                 android:paddingRight="3dip"
-                android:text="blablaasdfjklsdf"
                 android:textColor="#fff"/>
         </LinearLayout>
         <LinearLayout 
@@ -56,25 +53,22 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" >
             <TextView 
-                android:id="@+id/annotation_tags"
-                android:layout_width="wrap_content" 
-                android:layout_height="25dip" 
-                android:layout_centerHorizontal="true"
-                android:gravity="right|center_vertical"
-                android:paddingLeft="6dip"
-                android:paddingRight="3dip"
-                android:text="Chart"
-                android:textColor="#fff"/>
-
-            <TextView 
-                android:id="@+id/annotation_content"
+                android:id="@+id/annotation_updated_at"
                 android:layout_width="wrap_content" 
                 android:layout_height="25dip" 
                 android:layout_centerHorizontal="true"
                 android:gravity="center_horizontal|center_vertical"
-                android:paddingLeft="6dip"
+                android:paddingLeft="12dip"
                 android:paddingRight="3dip"
-                android:text="blabla"
+                android:textColor="#fff"/>
+            <TextView 
+                android:id="@+id/annotation_category"
+                android:layout_width="wrap_content" 
+                android:layout_height="25dip" 
+                android:layout_centerHorizontal="true"
+                android:gravity="center_horizontal|center_vertical"
+                android:paddingLeft="12dip"
+                android:paddingRight="3dip"
                 android:textColor="#fff"/>
         </LinearLayout>
                

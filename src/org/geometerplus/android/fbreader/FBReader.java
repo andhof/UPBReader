@@ -484,9 +484,11 @@ public final class FBReader extends ZLAndroidActivity {
 		annotationListPopup = new AnnotationListPopup(this, fbReader);
 		AnnotationListItem aItem;
 		
+		int i = 0;
 		for (Annotation annotation : annotationsOnPosition) {
+			i++;
 			Log.v("FBReader", "Ein Item hinzugefügt");
-			aItem	= new AnnotationListItem(ActionCode.SELECTION_SHOW_ANNOTATION_PANEL, true, myResource.getResource("copy").getValue());
+			aItem	= new AnnotationListItem(ActionCode.SELECTION_SHOW_ANNOTATION_PANEL, true, "#"+i);
 			
 			annotationListPopup.addQuickActionItem(aItem, x, y, annotation);
 		}

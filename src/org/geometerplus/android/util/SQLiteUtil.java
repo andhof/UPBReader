@@ -265,15 +265,7 @@ public abstract class SQLiteUtil {
 		final long created = annotation.getCreated();
 		final long modified = annotation.getModified();
 		final String category = annotation.getCategory();
-		String tags_tmp = "";
-		for (String tag : annotation.getTags()) {
-			tags_tmp += tag;
-			tags_tmp += ", ";
-		}
-		if (tags_tmp.length() > 0) {
-			tags_tmp = tags_tmp.substring(0, tags_tmp.length()-2);
-		}
-		final String tags = tags_tmp;
+		final String tags = annotation.getTagsAsString();
 		final String author_name = annotation.getAuthor().getName();
 		final String bookid = annotation.getAnnotationTarget().getBookId();
 		final String targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();
@@ -408,15 +400,7 @@ public abstract class SQLiteUtil {
 		final long created = annotation.getCreated();
 		final long modified = annotation.getModified();
 		final String category = annotation.getCategory();
-		String tags_tmp = "";
-		for (String tag : annotation.getTags()) {
-			tags_tmp += tag;
-			tags_tmp += ", ";
-		}
-		if (tags_tmp.length() > 0) {
-			tags_tmp = tags_tmp.substring(0, tags_tmp.length()-2);
-		}
-		final String tags = tags_tmp;
+		final String tags = annotation.getTagsAsString();
 		final String author_name = annotation.getAuthor().getName();
 		final String bookid = annotation.getAnnotationTarget().getBookId();
 		final String targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();

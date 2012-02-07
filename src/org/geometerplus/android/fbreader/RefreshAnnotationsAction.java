@@ -19,6 +19,7 @@ import org.geometerplus.zlibrary.core.application.ZLApplication.ZLAction;
 import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -40,12 +41,13 @@ public class RefreshAnnotationsAction extends ZLAction {
 		EPub epub = fbreader.EPubs.getEPubByLocalPath(bookPath);
 		String semapp_id = epub.getSemAppId();
 		String epub_id = epub.getId();
+		asyncTask = new HttpHelper(baseActivity);
 		asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+semapp_id+"/epubs/"+epub_id);
 	}
 	
 	private class HttpHelper extends AsyncTask<String, Void, String> {
 
-		SemAppsListActivity mActivity;
+		FBReader mActivity;
 		
 		private String getURL;
 		private ConnectionManager conn;
@@ -54,16 +56,21 @@ public class RefreshAnnotationsAction extends ZLAction {
 		private Object[] connectionResult;
 		private int myStatusCode;
 		
-		HttpHelper(SemAppsListActivity activity) {
+		HttpHelper(FBReader activity) {
             mActivity = activity;
         }
 		
 		@Override
 		protected String doInBackground(String... params) {
+			SharedPreferences settings = mActivity.getSharedPreferences("upblogin", 0);
+			String username = settings.getString("user", "Localuser");
+			String password = settings.getString("password", null);
+			
 			try {
 				getURL = params[0];
 				
 				conn = ConnectionManager.getInstance();
+				conn.authenticate(username, password);
 				connectionResult = conn.postStuffGet(getURL);
 				resEntityGet = (HttpEntity) connectionResult[0];
 				myStatusCode = ((Integer) connectionResult[1]).intValue();
@@ -89,6 +96,9 @@ public class RefreshAnnotationsAction extends ZLAction {
 			EPub epub = XMLUtil.loadEPubFromXMLString(result);
 			ArrayList<SemAppsAnnotation> saAnnotations = epub.getAnnotations().getAnnotations();
 			for (SemAppsAnnotation a : saAnnotations) {
+				if (a.getData().isEmpty()) {
+					continue;
+				}
 				id = a.getId();
 				updated_at = a.getUpdated_at();
 				
@@ -111,16 +121,16 @@ public class RefreshAnnotationsAction extends ZLAction {
 				}
 				// annotation on server but is missing locally
 				if (annotation == null) {
-					Annotation newAnnotation = XMLUtil.loadAnnotationFromXMLString(a.getData());
-					newAnnotation.setUPBId(id);
-					newAnnotation.setUpdatedAt(updated_at);
-					fbreader.Annotations.addAnnotation(newAnnotation);
+					annotation = XMLUtil.loadAnnotationFromXMLString(a.getData());
+					annotation.setUPBId(id);
+					annotation.setUpdatedAt(updated_at);
+					fbreader.Annotations.addAnnotation(annotation);
 					SQLiteUtil.writeAnnotationToDatabase(baseActivity, annotation, epub.getId());
 				}
 			}
 			
 			if (saAnnotations.size() < fbreader.Annotations.getAnnotations().size()) {
-				// entferne weggefallene annotationen
+				// TODO entferne weggefallene annotationen
 			}
 			
 		}

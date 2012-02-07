@@ -187,6 +187,23 @@ public class Annotation implements Parcelable {
         return this.tags;
     }
     
+    public String getTagsAsString() {
+    	if (tags == null) {
+        	tags = new ArrayList<String>();
+        }
+    	
+    	String tagString = "";
+		for (String tag : tags) {
+			tagString += tag;
+			tagString += ", ";
+		}
+		if (tagString.length() > 0) {
+			tagString = tagString.substring(0, tagString.length()-2);
+		}
+    	
+    	return tagString;
+    }
+    
     public AnnotationTarget getAnnotationTarget() {
     	return annotationTarget;
     }
