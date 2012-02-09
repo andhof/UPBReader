@@ -98,6 +98,9 @@ abstract public class ZLPaintContext {
 		setFillColor(color, 0xFF, FillStyle.SOLID_FILL);
 	}
 	abstract public void setFillColor(ZLColor color, int alpha, int style);
+	
+	abstract public void setBorderColor(ZLColor color, int alpha, int style);
+	abstract public void setBorderWidth(int width);
 
 	abstract public int getWidth();
 	abstract public int getHeight();
@@ -177,6 +180,7 @@ abstract public class ZLPaintContext {
 
 	abstract public void drawLine(int x0, int y0, int x1, int y1);
 	abstract public void fillRectangle(int x0, int y0, int x1, int y1);
+	abstract public void drawRectangle(int x0, int y0, int x1, int y1);
 	abstract public void drawFilledCircle(int x, int y, int r);
 
 	abstract public void drawPolygonalLine(int[] xs, int ys[]);

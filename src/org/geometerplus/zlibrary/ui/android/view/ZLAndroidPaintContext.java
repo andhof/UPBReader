@@ -23,6 +23,7 @@ import java.util.*;
 import java.io.File;
 
 import android.graphics.*;
+import android.graphics.Paint.Style;
 
 import org.geometerplus.zlibrary.core.image.ZLImageData;
 import org.geometerplus.zlibrary.core.util.ZLColor;
@@ -38,6 +39,7 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 	private final Paint myLinePaint = new Paint();
 	private final Paint myFillPaint = new Paint();
 	private final Paint myOutlinePaint = new Paint();
+	private final Paint myAnnotationPaint = new Paint();
 
 	private final int myWidth;
 	private final int myHeight;
@@ -66,6 +68,10 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 		myOutlinePaint.setStyle(Paint.Style.STROKE);
 		myOutlinePaint.setPathEffect(new CornerPathEffect(5));
 		myOutlinePaint.setMaskFilter(new EmbossMaskFilter(new float[] {1, 1, 1}, .4f, 6f, 3.5f));
+		
+		myAnnotationPaint.setColor(Color.BLACK);
+		
+		myAnnotationPaint.setStrokeWidth(1);
 	}
 
 	private static ZLFile ourWallpaperFile;
@@ -240,7 +246,18 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 		// TODO: use style
 		myFillPaint.setColor(ZLAndroidColorUtil.rgba(color, alpha));
 	}
-
+	
+	@Override
+	public void setBorderColor(ZLColor color, int alpha, int style) {
+		// TODO: use style
+		myAnnotationPaint.setColor(ZLAndroidColorUtil.rgb(color));
+	}
+	
+	@Override
+	public void setBorderWidth(int width) {
+		myAnnotationPaint.setStrokeWidth(width);
+	}
+	
 	@Override
 	public int getWidth() {
 		return myWidth;
@@ -349,6 +366,23 @@ public final class ZLAndroidPaintContext extends ZLPaintContext {
 		}
 		myCanvas.drawRect(x0, y0, x1 + 1, y1 + 1, myFillPaint);
 	}
+	
+	@Override
+	public void drawRectangle(int x0, int y0, int x1, int y1) {
+		if (x1 < x0) {
+			int swap = x1;
+			x1 = x0;
+			x0 = swap;
+		}
+		if (y1 < y0) {
+			int swap = y1;
+			y1 = y0;
+			y0 = swap;
+		}
+		myAnnotationPaint.setStyle(Style.STROKE);
+		myCanvas.drawRect(x0, y0, x1 + 1, y1 + 1, myAnnotationPaint);
+	}
+	
 	@Override
 	public void drawFilledCircle(int x, int y, int r) {
 		// TODO: implement

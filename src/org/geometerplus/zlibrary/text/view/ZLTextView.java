@@ -64,20 +64,28 @@ public abstract class ZLTextView extends ZLTextViewBase {
 
 	private ZLTextRegion.Soul mySelectedRegionSoul;
 	private boolean myHighlightSelectedRegion = true;
+	private ArrayList<String> mySelectedAnnotationIds;
+	private int mySelectionPadding;
 
 	private FBReaderApp myApplication;
 	private ZLTextSelection mySelection;
 	private ZLTextHighlighting myHighlighting;
-	private ArrayList<ZLTextAnnotationHighlighting> myAnnotationHighlightings;
-	private ArrayList <ZLColor> myAnnotationHighlightingColors;
+	private ZLColor myHighlightColor;
+	private ZLColor mySelectedHighlightColor;
+	private HashMap<String, ZLTextAnnotationHighlighting> myAnnotationHighlightingMap;
+	private HashMap<String, ZLColor> myAnnotationColorMap;
 
 	public ZLTextView(ZLApplication application) {
 		super(application);
 		myApplication =(FBReaderApp) application;
 		mySelection = new ZLTextSelection(this);
 		myHighlighting = new ZLTextHighlighting();
-		myAnnotationHighlightings = new  ArrayList<ZLTextAnnotationHighlighting>();
-		myAnnotationHighlightingColors = new ArrayList<ZLColor>();
+		myHighlightColor = new ZLColor(110, 110, 110);
+		mySelectedHighlightColor = new ZLColor(255, 138, 0);
+		myAnnotationHighlightingMap = new HashMap<String, ZLTextAnnotationHighlighting>();
+		myAnnotationColorMap = new HashMap<String, ZLColor>();
+		mySelectedAnnotationIds = new ArrayList<String>();
+		mySelectionPadding = 2;
 	}
 
 	public synchronized void setModel(ZLTextModel model) {
@@ -291,8 +299,8 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	public void addAnnotationHighlight(ZLTextPosition start, ZLTextPosition end, ZLColor color, boolean isNote, Annotation annotation) {
 		ZLTextAnnotationHighlighting newAnnotationHighlight = new ZLTextAnnotationHighlighting(isNote, annotation);
 		newAnnotationHighlight.setup(start, end);
-		myAnnotationHighlightings.add(newAnnotationHighlight);
-		myAnnotationHighlightingColors.add(color);
+		myAnnotationHighlightingMap.put(annotation.getId(), newAnnotationHighlight);
+		myAnnotationColorMap.put(annotation.getId(), myHighlightColor);
 		computeAnnotationHighlightPosition(newAnnotationHighlight);
 	}
 	
@@ -306,19 +314,67 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	 * 
 	 * @return
 	 */
-	public ArrayList<ZLTextAnnotationHighlighting> getAnnotationHighlights() {
-		return myAnnotationHighlightings;
+	public HashMap<String,ZLTextAnnotationHighlighting> getAnnotationHighlights() {
+		return myAnnotationHighlightingMap;
+	}
+	
+	/**
+	 * Set one highlight color 
+	 * 
+	 * @return
+	 */
+	public void setAnnotationHighlightColors(ArrayList<String> annotation_ids, boolean isSelected) {
+		for (String annotation_id : annotation_ids) {
+			myAnnotationColorMap.remove(annotation_id);
+			if (isSelected) {
+				mySelectedAnnotationIds.add(annotation_id);
+				myAnnotationColorMap.put(annotation_id, mySelectedHighlightColor);
+			} else {
+				mySelectedAnnotationIds.add(null);
+				myAnnotationColorMap.put(annotation_id, myHighlightColor);
+			}
+		}
+	}
+	
+	/**
+	 * Clear selection highlights
+	 * 
+	 * @return
+	 */
+	public void clearSelectionHighlight() {
+		mySelectedAnnotationIds.clear();
+		mySelectionPadding = 1;
+		Iterator it = myAnnotationColorMap.keySet().iterator();
+		while(it.hasNext()) {
+		    String key = (String) it.next();
+		    ZLColor value = (ZLColor) myAnnotationColorMap.get(key);
+//		    myAnnotationColorMap.remove(key);
+		    myAnnotationColorMap.put(key, myHighlightColor);
+		}
 	}
 	
 	public void removeAnnotationHighlight(Annotation annotation) {
+		String annotation_id;
 		ZLTextAnnotationHighlighting highlight;
-		for ( int i = 0; i < myAnnotationHighlightings.size(); i++) {
-			highlight = myAnnotationHighlightings.get(i);
-			if (highlight.getAnnotation().equals(annotation)) {
-				myAnnotationHighlightings.remove(i);
-				myAnnotationHighlightingColors.remove(i);
+		
+		Iterator it = myAnnotationHighlightingMap.keySet().iterator();
+		while (it.hasNext()) {
+			annotation_id = (String) it.next();
+			highlight = (ZLTextAnnotationHighlighting)myAnnotationHighlightingMap.get(annotation_id);
+			if (highlight.getAnnotation().getId().equals(annotation_id)) {
+				myAnnotationColorMap.remove(annotation_id);
+				it.remove();
 			}
 		}
+		
+//		for (int i = 0; i < myAnnotationHighlightings.size(); i++) {
+//			highlight = myAnnotationHighlightings.get(i);
+//			if (highlight.getAnnotation().equals(annotation)) {
+//				myAnnotationHighlightings.remove(i);
+//				myAnnotationHighlightingColors.remove(i);
+//				myAnnotationColorMap.remove(annotation.getId());
+//			}
+//		}
 		Application.getViewWidget().reset();
 		Application.getViewWidget().repaint();
 	}
@@ -836,7 +892,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	 */
 	private void drawAnnotationBackground(
 			ZLTextAbstractHighlighting highlighting, ZLColor color,
-			ZLTextPage page, ZLTextLineInfo info, int from, int to, int y
+			ZLTextPage page, ZLTextLineInfo info, int from, int to, int y, String annotation_id
 		) {
 			if (!highlighting.isEmpty() && from != to) {
 				final ZLTextElementArea fromArea = page.TextElementMap.get(from);
@@ -861,8 +917,17 @@ public abstract class ZLTextView extends ZLTextViewBase {
 						right = selectionEndArea.XEnd;
 					}
 					
-					myContext.setFillColor(color);
-					myContext.fillRectangle(left, top+1, right, bottom-1);
+//					myContext.setFillColor(color);
+//					myContext.fillRectangle(left, top+1, right, bottom-1);
+					
+//					myContext.setBorderColor(new ZLColor(100, 100, 100), 0, 0);
+					myContext.setBorderColor(color, 0, 0);
+					if (mySelectedAnnotationIds.size() > 0 && mySelectedAnnotationIds.contains(annotation_id)) {
+						myContext.drawRectangle(left, top+mySelectionPadding, right, bottom-mySelectionPadding);
+					} else {
+						myContext.drawRectangle(left, top+2, right, bottom-2);
+					}
+					
 				}
 			}
 		}
@@ -928,10 +993,10 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	 */
 	@Override
 	public boolean onFingerSingleTap(int x, int y) {
-		ArrayList<ZLTextAnnotationHighlighting> annotationHighlights = getAnnotationHighlights();
+		final FBReaderApp fbreader = (FBReaderApp)FBReaderApp.Instance();
 		ArrayList<Annotation> annotationsOnPosition = new ArrayList<Annotation>(); 
 		
-		for(ZLTextAnnotationHighlighting highlight : annotationHighlights) {
+		for(ZLTextAnnotationHighlighting highlight : myAnnotationHighlightingMap.values()) {
 			boolean onCurrentPage = testForCorrectPage(highlight);
 			if (onCurrentPage) {
 				highlight.clearPositionsArray();
@@ -1001,9 +1066,14 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	private void drawTextLine(ZLTextPage page, ZLTextLineInfo info, int from, int to, int y) {
 		drawBackgroung(mySelection, getSelectedBackgroundColor(), page, info, from, to, y);
 		drawBackgroung(myHighlighting, getHighlightingColor(), page, info, from, to, y);
-		for (int i = 0; i < myAnnotationHighlightings.size(); i++) {
-			drawAnnotationBackground(myAnnotationHighlightings.get(i), myAnnotationHighlightingColors.get(i), page, info, from, to, y);
+		for (String annotation_id : myAnnotationHighlightingMap.keySet()) {
+			drawAnnotationBackground(myAnnotationHighlightingMap.get(annotation_id), 
+					myAnnotationColorMap.get(annotation_id), page, info, from, to, y, annotation_id);
 		}
+//		for (int i = 0; i < myAnnotationHighlightings.size(); i++) {
+//			drawAnnotationBackground(myAnnotationHighlightings.get(i), 
+//					myAnnotationHighlightingColors.get(i), page, info, from, to, y);
+//		}
 
 		final ZLPaintContext context = myContext;
 		final ZLTextParagraphCursor paragraph = info.ParagraphCursor;

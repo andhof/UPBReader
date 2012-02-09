@@ -129,4 +129,19 @@ final class DummyPaintContext extends ZLPaintContext {
 	@Override
 	protected void fillFamiliesList(ArrayList<String> families) {
 	}
+
+	@Override
+	public void drawRectangle(int x0, int y0, int x1, int y1) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void setBorderColor(ZLColor color, int alpha, int style) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void setBorderWidth(int width) {
+		// TODO Auto-generated method stub
+	}
 }

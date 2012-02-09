@@ -19,13 +19,27 @@
 
 package org.geometerplus.fbreader.fbreader;
 
+import java.util.ArrayList;
+
+import org.geometerplus.android.fbreader.annotation.model.Annotation;
+
 public class SelectionClearAction extends FBAction {
+	FBReaderApp fbreader;
+	
 	SelectionClearAction(FBReaderApp fbreader) {
 		super(fbreader);
+		this.fbreader = fbreader;
 	}
 
 	@Override
 	protected void run(Object ... params) {
+		if (params.length > 0) {
+			Annotation annotation = (Annotation) params[0];
+			ArrayList<String> annotation_ids = new ArrayList<String>(); 
+			annotation_ids.add(annotation.getId());
+			fbreader.BookTextView.clearSelectionHighlight();
+			fbreader.BookTextView.repaintAll();
+		}
 		Reader.getTextView().clearSelection();
 	}
 }

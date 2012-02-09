@@ -23,6 +23,7 @@ import java.util.Queue;
 import java.util.LinkedList;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.os.Handler;

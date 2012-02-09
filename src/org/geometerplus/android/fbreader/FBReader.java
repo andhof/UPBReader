@@ -23,13 +23,13 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.geometerplus.android.fbreader.annotation.AnnotationListItem;
-import org.geometerplus.android.fbreader.annotation.AnnotationListPopup;
 import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.api.PluginApi;
 import org.geometerplus.android.fbreader.library.KillerCallback;
 import org.geometerplus.android.fbreader.library.SQLiteBooksDatabase;
+import org.geometerplus.android.fbreader.quickactionbar.AnnotationListItem;
+import org.geometerplus.android.fbreader.quickactionbar.AnnotationListPopup;
 import org.geometerplus.android.fbreader.quickactionbar.QuickActionBar;
 import org.geometerplus.android.fbreader.quickactionbar.QuickActionItem;
 import org.geometerplus.android.fbreader.tips.TipsActivity;
@@ -442,14 +442,21 @@ public final class FBReader extends ZLAndroidActivity {
 	 * Show the QuickActionBar for one selected Annotation with the edit, comment...
 	 */
 	public void showAnnotationSelectionPanel(int x, int y, Annotation annotation) {
-		final FBReaderApp fbReader = (FBReaderApp)ZLApplication.Instance();
+		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 		myAnnotation = annotation;
+		
+		ArrayList<String> annotation_ids = new ArrayList<String>();
+		annotation_ids.add(annotation.getId());
+		
+		fbreader.BookTextView.clearSelectionHighlight();
+		fbreader.BookTextView.setAnnotationHighlightColors(annotation_ids, true);
+		fbreader.BookTextView.repaintAll();
 		
 		annotationListPopup.dismiss();
 		quickAnnotationActionBar.dismiss();
 //		quickSelectionActionBar.dismiss();
 		
-		quickAnnotationActionBar = new QuickActionBar(this, fbReader);
+		quickAnnotationActionBar = new QuickActionBar(this, fbreader);
 		
 		show = new QuickActionItem(ActionCode.SELECTION_SHOW_ANNOTATION, true, this.getString(R.string.quickaction_show));
 		edit	= new QuickActionItem(ActionCode.SELECTION_NOTE, true, this.getString(R.string.quickaction_edit));
@@ -461,7 +468,7 @@ public final class FBReader extends ZLAndroidActivity {
 		quickAnnotationActionBar.addQuickActionItemWithAnnotation(edit, annotation);
 //		quickAnnotationActionBar.addQuickActionItemWithAnnotation(comment, annotation);
 		quickAnnotationActionBar.addQuickActionItemWithAnnotation(remove, annotation);
-		quickAnnotationActionBar.addQuickActionItem(cancel);
+		quickAnnotationActionBar.addQuickActionItemWithAnnotation(cancel, annotation);
 		
         quickAnnotationActionBar.show(this.findViewById(R.id.root_view), x, y);
 	}
@@ -477,23 +484,26 @@ public final class FBReader extends ZLAndroidActivity {
 	 * Show the List for more than one selectable Annotations
 	 */
 	public void showAnnotationListPanel(int x, int y, ArrayList<Annotation> annotationsOnPosition) {
-		final FBReaderApp fbReader = (FBReaderApp)ZLApplication.Instance();
+		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+		ArrayList<String> annotation_ids = new ArrayList<String>();
 		annotationListPopup.dismiss();
 //		quickSelectionActionBar.dismiss();
 		quickAnnotationActionBar.dismiss();
-		annotationListPopup = new AnnotationListPopup(this, fbReader);
+		annotationListPopup = new AnnotationListPopup(this, fbreader);
 		AnnotationListItem aItem;
 		
 		int i = 0;
 		for (Annotation annotation : annotationsOnPosition) {
+			annotation_ids.add(annotation.getId());
 			i++;
 			Log.v("FBReader", "Ein Item hinzugefügt");
 			aItem	= new AnnotationListItem(ActionCode.SELECTION_SHOW_ANNOTATION_PANEL, true, "#"+i);
 			
 			annotationListPopup.addQuickActionItem(aItem, x, y, annotation);
 		}
-		
-		
+		fbreader.BookTextView.clearSelectionHighlight();
+		fbreader.BookTextView.setAnnotationHighlightColors(annotation_ids, true);
+		fbreader.BookTextView.repaintAll();
 		
 		annotationListPopup.show(this.findViewById(R.id.root_view), x, y, annotationsOnPosition);
 		

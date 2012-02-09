@@ -2,11 +2,13 @@ package org.geometerplus.android.fbreader;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.ListIterator;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.util.EntityUtils;
 import org.geometerplus.android.fbreader.annotation.SelectionNoteActivity;
+import org.geometerplus.android.fbreader.annotation.database.DBAnnotation.DBAnnotations;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.SemAppsListActivity;
@@ -20,6 +22,8 @@ import org.simpleframework.xml.Serializer;
 import org.simpleframework.xml.core.Persister;
 
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -28,6 +32,7 @@ public class RefreshAnnotationsAction extends ZLAction {
 	private HttpHelper asyncTask;
 	private FBReaderApp fbreader;
 	private FBReader baseActivity;
+	private Cursor cursor;
 	
 	RefreshAnnotationsAction(FBReader baseActivity, FBReaderApp fbreader) {
 		this.baseActivity = baseActivity;
@@ -39,6 +44,9 @@ public class RefreshAnnotationsAction extends ZLAction {
 		Log.v("RefreshAnnotationsAction", "Refresh has startet.");
 		String bookPath = fbreader.Model.Book.File.getPath();
 		EPub epub = fbreader.EPubs.getEPubByLocalPath(bookPath);
+		if (epub == null) {
+			return;
+		}
 		String semapp_id = epub.getSemAppId();
 		String epub_id = epub.getId();
 		asyncTask = new HttpHelper(baseActivity);
@@ -93,9 +101,11 @@ public class RefreshAnnotationsAction extends ZLAction {
 			String updated_at;
 			Annotation annotation;
 			
+			LinkedList<Annotation> annotationsToRemove = fbreader.Annotations.getAnnotations();
 			EPub epub = XMLUtil.loadEPubFromXMLString(result);
 			ArrayList<SemAppsAnnotation> saAnnotations = epub.getAnnotations().getAnnotations();
 			for (SemAppsAnnotation a : saAnnotations) {
+				
 				if (a.getData().isEmpty()) {
 					continue;
 				}
@@ -103,11 +113,16 @@ public class RefreshAnnotationsAction extends ZLAction {
 				updated_at = a.getUpdated_at();
 				
 				annotation = fbreader.Annotations.getAnnotationByUPBId(id);
+				if (annotation != null) {
+					annotationsToRemove.remove(annotation);
+				}
+				
 				// annotation on server is newer
 				if (annotation != null && !annotation.getUpdatedAt().equals(updated_at)) {
 					Annotation updatedAnnotation = XMLUtil.loadAnnotationFromXMLString(a.getData());
 					updatedAnnotation.setUPBId(id);
 					updatedAnnotation.setUpdatedAt(updated_at);
+					
 					ListIterator<Annotation> it;
 					it = fbreader.Annotations.getAnnotations().listIterator();
 					while(it.hasNext()) {
@@ -129,10 +144,18 @@ public class RefreshAnnotationsAction extends ZLAction {
 				}
 			}
 			
-			if (saAnnotations.size() < fbreader.Annotations.getAnnotations().size()) {
+			if (annotationsToRemove.size() > 0) {
 				// TODO entferne weggefallene annotationen
+				for (Annotation a : annotationsToRemove) {
+					id = a.getUPBId();
+					fbreader.Annotations.removeAnnotation(a);
+					Uri uri = DBAnnotations.CONTENT_URI;
+					String selection = DBAnnotations.UPB_ID + "=\"" + id + "\"";
+					baseActivity.getContentResolver().delete(uri, selection, null);
+				}
 			}
 			
+			fbreader.loadAnnotationHighlighting();
 		}
 	}
 }

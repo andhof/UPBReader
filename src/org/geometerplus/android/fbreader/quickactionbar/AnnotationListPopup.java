@@ -1,4 +1,4 @@
-package org.geometerplus.android.fbreader.annotation;
+package org.geometerplus.android.fbreader.quickactionbar;
 
 import java.util.ArrayList;
 import java.util.List;

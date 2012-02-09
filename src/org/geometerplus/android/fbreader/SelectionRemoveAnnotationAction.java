@@ -18,6 +18,8 @@ import org.geometerplus.fbreader.fbreader.FBReaderApp;
 
 import de.upb.android.reader.R;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -27,7 +29,6 @@ import android.widget.Toast;
 
 public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 	private FBReaderApp fbreader;
-	private AnnotationsDbAdapter dbHelper;
 	private Cursor cursor;
 	private HttpEntity resEntityPost;
 	private Object[] connectionResult;
@@ -46,141 +47,156 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 	}
 
 	@Override
-	protected void run(Object... params) {
-		final Annotation annotation = (Annotation) params[0];
-		BaseActivity.hideAnnotationSelectionPanel();
-		waitingJobs = false;
-		
-		settings = BaseActivity.getSharedPreferences("upblogin", 0);
-		username = settings.getString("user", "Localuser");
-		password = settings.getString("password", null);
-		
-		// Only delete if the user has the rights to do it
-//		if (!annotation.getAuthor().getName().equals(username)) {
-//			UIUtil.createDialog(BaseActivity, "Error", BaseActivity.getString(R.string.not_allowed));
-//			return;
-//		}
-		
-		annotationsToRemove = new ArrayList<Annotation>();
-		annotationsToRemove.add(annotation);
-		annotationsToRemove.addAll(
-				fbreader.Annotations.getAnnotationsByTargetAnnotationId(annotation.getUPBId()));
-		
-		new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				Set<String> urlset = new HashSet<String>();
-				
-				Log.v("SelectionRemoveAnnotationAction", "remove count: "+annotationsToRemove.size());
-				
-				conn = ConnectionManager.getInstance();
-				conn.authenticate(username, password);
-				
-				if (annotation.getUPBId() != null && !annotation.getUPBId().isEmpty()) {
-					String epub_id = annotation.getEPubId();
-					String semapp_id = fbreader.EPubs.getEPubById(epub_id).getSemAppId();
-					for (Annotation a : annotationsToRemove) {
-						url = "http://epubdummy.provideal.net/api/semapps/"+ 
-							semapp_id + "/epubs/" + epub_id + "/annotations/" + a.getUPBId();
-						
-						if (!fbreader.isNetworkAvailable()) {
-							waitingJobs = true;
-							settings = BaseActivity.getSharedPreferences("annotation_stack", 0);
-							urlset = settings.getStringSet("delete", new HashSet<String>());
-							urlset.add(url);
-							continue;
-						}
-						
-						connectionResult = conn.postStuffDelete(url);
-						resEntityPost = (HttpEntity) connectionResult[0];
-						myStatusCode = ((Integer) connectionResult[1]).intValue();
-						
-						if (resEntityPost != null) {
-							try {
-								resEntityPost.consumeContent();
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						}
-						
-						if (myStatusCode == conn.AUTHENTICATION_FAILED) {
-							Log.v("SelectionRemoveAnnotationAction", "Authentication failed. Return.");
-							return;
-						}
-						
-						if (myStatusCode == conn.OK) {
-							Log.v("SelectionRemoveAnnotationAction", "Berechtigung zum Entfernen einer Annotation gegeben");
-							Uri uri = DBAnnotations.CONTENT_URI;
-							String selection = DBAnnotations.ANNOTATION_ID + "=\"" + a.getId() + "\"";
-							BaseActivity.getContentResolver().delete(uri, selection, null);
-							fbreader.Annotations.getAnnotations().remove(a);
-						} else {
-							if (myStatusCode == conn.FORBIDDEN) {
-//								UIUtil.createDialog(BaseActivity, "Error", BaseActivity.getString(R.string.not_allowed));
-								continue;
-							}
-						}
-					}
-					settings = BaseActivity.getSharedPreferences("annotation_stack", 0);
-					SharedPreferences.Editor e = settings.edit();
-					e.putStringSet("delete", urlset);
-					e.commit();
-					fbreader.BookTextView.removeAnnotationHighlight(annotation);
-				} else {
-					fbreader.BookTextView.removeAnnotationHighlight(annotation);
-					for (Annotation a : annotationsToRemove) {
-						Uri uri = DBAnnotations.CONTENT_URI;
-						String selection = DBAnnotations.ANNOTATION_ID + "=\"" + a.getId() + "\"";
-						BaseActivity.getContentResolver().delete(uri, selection, null);
-						fbreader.Annotations.getAnnotations().remove(a);
-					}
-				}
-				
-				if (waitingJobs) {
-					Handler h = new Handler(BaseActivity.getMainLooper());
-
-				    h.post(new Runnable() {
-				        @Override
-				        public void run() {
-				        	Log.v("AnnotationService", "Toast wird angezeigt. Fertig.");
-				            Toast.makeText(BaseActivity, BaseActivity.getString(R.string.toast_remove_noconnection), Toast.LENGTH_LONG).show();
-				        }
-				    });
-					return;
-				}
-				
-				// TODO hier entfernen
-				// alles andere auskommentieren, dann kann man selber bestimmte annotationen löschen
-				
-//				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
-//						"4f2bc93bd0434c0f04000038");
-//				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
-//						"4f2bc94dd0434c0f04000039");
-//				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
-//						"4f3059fad0434c6fa0000002");
-//				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
-//						"4f305abfd0434c6fa0000003");
-//				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
-//						"4f305af9d0434c6fa0000004");
-			}
-			
-			private void deleteByHand(String url) {
-				username = "admin";
-				password = "123456";
-				
-				conn = ConnectionManager.getInstance();
-				conn.authenticate(username, password);
-				connectionResult = conn.postStuffDelete(url);
-				resEntityPost = (HttpEntity) connectionResult[0];
-				if (resEntityPost != null) {
-					try {
-						resEntityPost.consumeContent();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}).start();
+	protected void run(final Object... params) {
+		AlertDialog confirmationDialog = new AlertDialog.Builder(BaseActivity)
+        .setCancelable(false)
+        .setTitle(R.string.confirmation_title)
+        .setMessage(R.string.confirmation_message)
+        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+           public void onClick(DialogInterface dialog, int id) {
+        	   final Annotation annotation = (Annotation) params[0];
+	       		BaseActivity.hideAnnotationSelectionPanel();
+	       		waitingJobs = false;
+	       		
+	       		settings = BaseActivity.getSharedPreferences("upblogin", 0);
+	       		username = settings.getString("user", "Localuser");
+	       		password = settings.getString("password", null);
+	       		
+	       		// Only delete if the user has the rights to do it
+	//       		if (!annotation.getAuthor().getName().equals(username)) {
+	//       			UIUtil.createDialog(BaseActivity, "Error", BaseActivity.getString(R.string.not_allowed));
+	//       			return;
+	//       		}
+	       		
+	       		annotationsToRemove = new ArrayList<Annotation>();
+	       		annotationsToRemove.add(annotation);
+	       		annotationsToRemove.addAll(
+	       				fbreader.Annotations.getAnnotationsByTargetAnnotationId(annotation.getUPBId()));
+	       		
+	       		new Thread(new Runnable() {
+	       			
+	       			@Override
+	       			public void run() {
+	       				Set<String> urlset = new HashSet<String>();
+	       				
+	       				Log.v("SelectionRemoveAnnotationAction", "remove count: "+annotationsToRemove.size());
+	       				
+	       				conn = ConnectionManager.getInstance();
+	       				conn.authenticate(username, password);
+	       				
+	       				if (annotation.getUPBId() != null && !annotation.getUPBId().isEmpty()) {
+	       					String epub_id = annotation.getEPubId();
+	       					String semapp_id = fbreader.EPubs.getEPubById(epub_id).getSemAppId();
+	       					for (Annotation a : annotationsToRemove) {
+	       						url = "http://epubdummy.provideal.net/api/semapps/"+ 
+	       							semapp_id + "/epubs/" + epub_id + "/annotations/" + a.getUPBId();
+	       						
+	       						if (!fbreader.isNetworkAvailable()) {
+	       							waitingJobs = true;
+	       							settings = BaseActivity.getSharedPreferences("annotation_stack", 0);
+	       							urlset = settings.getStringSet("delete", new HashSet<String>());
+	       							urlset.add(url);
+	       							continue;
+	       						}
+	       						
+	       						connectionResult = conn.postStuffDelete(url);
+	       						resEntityPost = (HttpEntity) connectionResult[0];
+	       						myStatusCode = ((Integer) connectionResult[1]).intValue();
+	       						
+	       						if (resEntityPost != null) {
+	       							try {
+	       								resEntityPost.consumeContent();
+	       							} catch (IOException e) {
+	       								e.printStackTrace();
+	       							}
+	       						}
+	       						
+	       						if (myStatusCode == conn.AUTHENTICATION_FAILED) {
+	       							Log.v("SelectionRemoveAnnotationAction", "Authentication failed. Return.");
+	       							return;
+	       						}
+	       						
+	       						if (myStatusCode == conn.OK) {
+	       							Log.v("SelectionRemoveAnnotationAction", "Berechtigung zum Entfernen einer Annotation gegeben");
+	       							Uri uri = DBAnnotations.CONTENT_URI;
+	       							String selection = DBAnnotations.ANNOTATION_ID + "=\"" + a.getId() + "\"";
+	       							BaseActivity.getContentResolver().delete(uri, selection, null);
+	       							fbreader.Annotations.getAnnotations().remove(a);
+	       						} else {
+	       							if (myStatusCode == conn.FORBIDDEN) {
+	//       								UIUtil.createDialog(BaseActivity, "Error", BaseActivity.getString(R.string.not_allowed));
+	       								continue;
+	       							}
+	       						}
+	       					}
+	       					settings = BaseActivity.getSharedPreferences("annotation_stack", 0);
+	       					SharedPreferences.Editor e = settings.edit();
+	       					e.putStringSet("delete", urlset);
+	       					e.commit();
+	       					fbreader.BookTextView.removeAnnotationHighlight(annotation);
+	       				} else {
+	       					fbreader.BookTextView.removeAnnotationHighlight(annotation);
+	       					for (Annotation a : annotationsToRemove) {
+	       						Uri uri = DBAnnotations.CONTENT_URI;
+	       						String selection = DBAnnotations.ANNOTATION_ID + "=\"" + a.getId() + "\"";
+	       						BaseActivity.getContentResolver().delete(uri, selection, null);
+	       						fbreader.Annotations.getAnnotations().remove(a);
+	       					}
+	       				}
+	       				
+	       				if (waitingJobs) {
+	       					Handler h = new Handler(BaseActivity.getMainLooper());
+	
+	       				    h.post(new Runnable() {
+	       				        @Override
+	       				        public void run() {
+	       				        	Log.v("AnnotationService", "Toast wird angezeigt. Fertig.");
+	       				            Toast.makeText(BaseActivity, BaseActivity.getString(R.string.toast_remove_noconnection), Toast.LENGTH_LONG).show();
+	       				        }
+	       				    });
+	       					return;
+	       				}
+	       				
+	       				// TODO hier entfernen
+	       				// alles andere auskommentieren, dann kann man selber bestimmte annotationen löschen
+	       				
+	//       				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
+	//       						"4f2bc93bd0434c0f04000038");
+	//       				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
+	//       						"4f2bc94dd0434c0f04000039");
+	//       				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
+	//       						"4f3059fad0434c6fa0000002");
+	//       				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
+	//       						"4f305abfd0434c6fa0000003");
+	//       				deleteByHand("http://epubdummy.provideal.net/api/semapps/4eef5aadd0434c1fa6000001/epubs/4eef5aadd0434c1fa6000002/annotations/" +
+	//       						"4f305af9d0434c6fa0000004");
+	       			}
+	       			
+	       			private void deleteByHand(String url) {
+	    				username = "admin";
+	    				password = "123456";
+	    				
+	    				conn = ConnectionManager.getInstance();
+	    				conn.authenticate(username, password);
+	    				connectionResult = conn.postStuffDelete(url);
+	    				resEntityPost = (HttpEntity) connectionResult[0];
+	    				if (resEntityPost != null) {
+	    					try {
+	    						resEntityPost.consumeContent();
+	    					} catch (IOException e) {
+	    						e.printStackTrace();
+	    					}
+	    				}
+	    			}
+	    		}).start();
+           }
+        })
+       	.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+           public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+           }
+       	})
+       	.create();
+		confirmationDialog.show();
 	}
 }

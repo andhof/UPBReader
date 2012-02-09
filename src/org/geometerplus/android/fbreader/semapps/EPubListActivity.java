@@ -74,6 +74,8 @@ public class EPubListActivity extends ListActivity {
 		
 		Intent intent = getIntent();
 		semApp = intent.getParcelableExtra("semapp");
+		
+		setTitle(getString(R.string.epubslist_title) + " - " + semApp.getName());
 
 		ePubList = semApp.getEPubs().getEPubs();
 		for (EPub ePub : ePubList) {
@@ -280,6 +282,7 @@ public class EPubListActivity extends ListActivity {
 			} else {
 				fbreader.openFile(ZLFile.createFileByPath(result));
 			}
+			fbreader.loadAnnotationHighlighting();
 		}
 	}
 }

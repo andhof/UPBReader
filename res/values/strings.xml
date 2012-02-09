@@ -2,6 +2,12 @@
 <resources>
 	<string name="empty_string"></string>
 	
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    
+    <string name="confirmation_title">Delete element</string>
+    <string name="confirmation_message">Are you sure you want to remove this element permanently?</string>
+    
 	<string name="upblogin_title">Authentication</string>
     <string name="upblogin_unencryptedWarning">Your password will be sent unencrypted</string>
     <string name="upblogin_login">Username</string>
@@ -9,6 +15,9 @@
     <string name="upblogin_checkbox">Check to download a new book.</string>
     <string name="upblogin_loginIsEmpty">Username should be non-empty</string>
     <string name="upblogin_register">Sign up</string>
+    
+    <string name="semappslist_title">List of eSeminarapparate</string>
+    <string name="epubslist_title">List of ePubs</string>
     
     <string name="upbrefresh_label">Aktualisieren</string>
     

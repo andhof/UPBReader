@@ -1,4 +1,4 @@
-package org.geometerplus.android.fbreader.annotation;
+package org.geometerplus.android.fbreader.quickactionbar;
 
 public class AnnotationListItem {
 	
