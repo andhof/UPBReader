@@ -284,7 +284,8 @@ public class ZLAndroidWidget extends View implements ZLViewWidget, View.OnLongCl
         if (myPendingLongClickRunnable == null) {
             myPendingLongClickRunnable = new LongClickRunnable();
         }
-        postDelayed(myPendingLongClickRunnable, 2 * ViewConfiguration.getLongPressTimeout());
+//        postDelayed(myPendingLongClickRunnable, 2 * ViewConfiguration.getLongPressTimeout());
+        postDelayed(myPendingLongClickRunnable, ViewConfiguration.getLongPressTimeout() / 2);
     }
 
 	private class ShortClickRunnable implements Runnable {
@@ -305,7 +306,7 @@ public class ZLAndroidWidget extends View implements ZLViewWidget, View.OnLongCl
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		bewegung++;
-		Log.v("FBView", "onTouchEvent: wie of löst es aus: "+bewegung);
+		Log.v("ZLAndroidWidget", "onTouchEvent: wie of löst es aus: "+bewegung);
 		int x = (int)event.getX();
 		int y = (int)event.getY();
 
