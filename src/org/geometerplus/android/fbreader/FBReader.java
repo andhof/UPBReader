@@ -212,7 +212,7 @@ public final class FBReader extends ZLAndroidActivity {
 		fbReader.addAction(ActionCode.SELECTION_SHARE, new SelectionShareAction(this, fbReader));
 		fbReader.addAction(ActionCode.SELECTION_TRANSLATE, new SelectionTranslateAction(this, fbReader));
 		fbReader.addAction(ActionCode.SELECTION_BOOKMARK, new SelectionBookmarkAction(this, fbReader));
-		fbReader.addAction(ActionCode.SELECTION_HIGHLIGHT, new SelectionHighlightAction(this, fbReader));
+//		fbReader.addAction(ActionCode.SELECTION_HIGHLIGHT, new SelectionHighlightAction(this, fbReader));
 		fbReader.addAction(ActionCode.SELECTION_NOTE, new SelectionNoteAction(this, fbReader));
 		
 //		fbReader.addAction(ActionCode.SELECTION_EDIT_ANNOTATION, new SelectionNoteAction(this, fbReader));

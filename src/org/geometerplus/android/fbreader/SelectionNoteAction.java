@@ -12,9 +12,11 @@ import android.content.SharedPreferences;
 
 class SelectionNoteAction extends RunActivityAction {
 	protected Annotation myAnnotation;
+	private FBReaderApp fbreader;
 	
 	SelectionNoteAction(FBReader baseActivity, FBReaderApp fbreader) {
 		super(baseActivity, fbreader, SelectionNoteActivity.class);
+		this.fbreader = fbreader;
 	}
 	
 	@Override
@@ -35,5 +37,7 @@ class SelectionNoteAction extends RunActivityAction {
 		} else {
 			BaseActivity.startActivity(new Intent(BaseActivity.getApplicationContext(), SelectionNoteActivity.class));
 		}
+		fbreader.BookTextView.clearSelectionHighlight();
+		fbreader.BookTextView.repaintAll();
 	}
 }

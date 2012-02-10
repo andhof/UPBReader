@@ -923,8 +923,10 @@ public abstract class ZLTextView extends ZLTextViewBase {
 //					myContext.setBorderColor(new ZLColor(100, 100, 100), 0, 0);
 					myContext.setBorderColor(color, 0, 0);
 					if (mySelectedAnnotationIds.size() > 0 && mySelectedAnnotationIds.contains(annotation_id)) {
+						myContext.setBorderWidth(2);
 						myContext.drawRectangle(left, top+mySelectionPadding, right, bottom-mySelectionPadding);
 					} else {
+						myContext.setBorderWidth(1);
 						myContext.drawRectangle(left, top+2, right, bottom-2);
 					}
 					
@@ -1065,15 +1067,11 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	 */
 	private void drawTextLine(ZLTextPage page, ZLTextLineInfo info, int from, int to, int y) {
 		drawBackgroung(mySelection, getSelectedBackgroundColor(), page, info, from, to, y);
-		drawBackgroung(myHighlighting, getHighlightingColor(), page, info, from, to, y);
+//		drawBackgroung(myHighlighting, getHighlightingColor(), page, info, from, to, y);
 		for (String annotation_id : myAnnotationHighlightingMap.keySet()) {
 			drawAnnotationBackground(myAnnotationHighlightingMap.get(annotation_id), 
 					myAnnotationColorMap.get(annotation_id), page, info, from, to, y, annotation_id);
 		}
-//		for (int i = 0; i < myAnnotationHighlightings.size(); i++) {
-//			drawAnnotationBackground(myAnnotationHighlightings.get(i), 
-//					myAnnotationHighlightingColors.get(i), page, info, from, to, y);
-//		}
 
 		final ZLPaintContext context = myContext;
 		final ZLTextParagraphCursor paragraph = info.ParagraphCursor;
@@ -1129,6 +1127,9 @@ public abstract class ZLTextView extends ZLTextViewBase {
 			if (index+1 < page.TextElementMap.size()) {
 				area = page.TextElementMap.get(index++);
 			} 
+			if (area == null) {
+				System.out.println();
+			}
 			
 			if (area.ChangeStyle) {
 				setTextStyle(area.Style);

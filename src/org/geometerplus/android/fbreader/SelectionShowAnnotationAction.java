@@ -9,10 +9,12 @@ import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import android.content.Intent;
 
 class SelectionShowAnnotationAction extends RunActivityAction {
-	Annotation myAnnotation;
+	private Annotation myAnnotation;
+	private FBReaderApp fbreader;
 	
 	SelectionShowAnnotationAction(FBReader baseActivity, FBReaderApp fbreader) {
 		super(baseActivity, fbreader, SelectionShowNoteActivity.class);
+		this.fbreader = fbreader;
 	}
 	
 	@Override
@@ -26,5 +28,7 @@ class SelectionShowAnnotationAction extends RunActivityAction {
 		} else {
 			BaseActivity.startActivity(new Intent(BaseActivity.getApplicationContext(), SelectionShowNoteActivity.class));
 		}
+		fbreader.BookTextView.clearSelectionHighlight();
+		fbreader.BookTextView.repaintAll();
 	}
 }
