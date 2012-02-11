@@ -216,13 +216,12 @@ public final class FBView extends ZLTextView {
 
 	@Override
 	public boolean onFingerLongPress(int x, int y) {
-		
-		y = y + 20;
+		y = y + 25;
 		if (super.onFingerLongPress(x, y)) {
 			return true;
 		}
 
-		final ZLTextRegion region = findRegion(x, y-20, MAX_SELECTION_DISTANCE, ZLTextRegion.AnyRegionFilter);
+		final ZLTextRegion region = findRegion(x, y, MAX_SELECTION_DISTANCE, ZLTextRegion.AnyRegionFilter);
 		if (region != null) {
 			final ZLTextRegion.Soul soul = region.getSoul();
 			boolean doSelectRegion = false;
@@ -237,6 +236,10 @@ public final class FBView extends ZLTextView {
 						}
 						if (getCountOfSelectedWords() > 0) {
 							myReader.doAction(ActionCode.SELECTION_SHOW_PANEL);
+						}
+						if (cursor != ZLTextSelectionCursor.None) {
+							releaseSelectionCursor();
+							return true;
 						}
 						return true;
 					case selectSingleWord:
@@ -265,71 +268,71 @@ public final class FBView extends ZLTextView {
 
 	@Override
 	public boolean onFingerMoveAfterLongPress(int x, int y) {
-		if (super.onFingerMoveAfterLongPress(x, y)) {
-			return true;
-		}
-
-		final ZLTextSelectionCursor cursor = getSelectionCursorInMovement();
-		if (cursor != ZLTextSelectionCursor.None) {
-			moveSelectionCursorTo(cursor, x, y);
-			return true;
-		}
-
-		ZLTextRegion region = getSelectedRegion();
-		if (region != null) {
-			ZLTextRegion.Soul soul = region.getSoul();
-			if (soul instanceof ZLTextHyperlinkRegionSoul ||
-				soul instanceof ZLTextWordRegionSoul) {
-				if (myReader.WordTappingActionOption.getValue() !=
-					FBReaderApp.WordTappingAction.doNothing) {
-					region = findRegion(x, y, MAX_SELECTION_DISTANCE, ZLTextRegion.AnyRegionFilter);
-					if (region != null) {
-						soul = region.getSoul();
-						if (soul instanceof ZLTextHyperlinkRegionSoul
-							 || soul instanceof ZLTextWordRegionSoul) {
-							selectRegion(region);
-							myReader.getViewWidget().reset();
-							myReader.getViewWidget().repaint();
-						}
-					}
-				}
-			}
-		}
+//		if (super.onFingerMoveAfterLongPress(x, y)) {
+//			return true;
+//		}
+//
+//		final ZLTextSelectionCursor cursor = getSelectionCursorInMovement();
+//		if (cursor != ZLTextSelectionCursor.None) {
+//			moveSelectionCursorTo(cursor, x, y);
+//			return true;
+//		}
+//
+//		ZLTextRegion region = getSelectedRegion();
+//		if (region != null) {
+//			ZLTextRegion.Soul soul = region.getSoul();
+//			if (soul instanceof ZLTextHyperlinkRegionSoul ||
+//				soul instanceof ZLTextWordRegionSoul) {
+//				if (myReader.WordTappingActionOption.getValue() !=
+//					FBReaderApp.WordTappingAction.doNothing) {
+//					region = findRegion(x, y, MAX_SELECTION_DISTANCE, ZLTextRegion.AnyRegionFilter);
+//					if (region != null) {
+//						soul = region.getSoul();
+//						if (soul instanceof ZLTextHyperlinkRegionSoul
+//							 || soul instanceof ZLTextWordRegionSoul) {
+//							selectRegion(region);
+//							myReader.getViewWidget().reset();
+//							myReader.getViewWidget().repaint();
+//						}
+//					}
+//				}
+//			}
+//		}
 		return true;
 	}
 
 	@Override
 	public boolean onFingerReleaseAfterLongPress(int x, int y) {
-		if (super.onFingerReleaseAfterLongPress(x, y)) {
-			return true;
-		}
-
-		final ZLTextSelectionCursor cursor = getSelectionCursorInMovement();
-		if (cursor != ZLTextSelectionCursor.None) {
-			releaseSelectionCursor();
-			return true;
-		}
-
-		final ZLTextRegion region = getSelectedRegion();
-		if (region != null) {
-			final ZLTextRegion.Soul soul = region.getSoul();
-
-			boolean doRunAction = false;
-			if (soul instanceof ZLTextWordRegionSoul) {
-				doRunAction =
-					myReader.WordTappingActionOption.getValue() ==
-					FBReaderApp.WordTappingAction.openDictionary;
-			} else if (soul instanceof ZLTextImageRegionSoul) {
-				doRunAction =
-					myReader.ImageTappingActionOption.getValue() ==
-					FBReaderApp.ImageTappingAction.openImageView;
-			}
-
-			if (doRunAction) {
-				myReader.doAction(ActionCode.PROCESS_HYPERLINK);
-				return true;
-			}
-		}
+//		if (super.onFingerReleaseAfterLongPress(x, y)) {
+//			return true;
+//		}
+//
+//		final ZLTextSelectionCursor cursor = getSelectionCursorInMovement();
+//		if (cursor != ZLTextSelectionCursor.None) {
+//			releaseSelectionCursor();
+//			return true;
+//		}
+//
+//		final ZLTextRegion region = getSelectedRegion();
+//		if (region != null) {
+//			final ZLTextRegion.Soul soul = region.getSoul();
+//
+//			boolean doRunAction = false;
+//			if (soul instanceof ZLTextWordRegionSoul) {
+//				doRunAction =
+//					myReader.WordTappingActionOption.getValue() ==
+//					FBReaderApp.WordTappingAction.openDictionary;
+//			} else if (soul instanceof ZLTextImageRegionSoul) {
+//				doRunAction =
+//					myReader.ImageTappingActionOption.getValue() ==
+//					FBReaderApp.ImageTappingAction.openImageView;
+//			}
+//
+//			if (doRunAction) {
+//				myReader.doAction(ActionCode.PROCESS_HYPERLINK);
+//				return true;
+//			}
+//		}
 
 		return false;
 	}
