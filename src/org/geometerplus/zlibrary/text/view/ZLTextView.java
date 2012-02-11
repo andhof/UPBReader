@@ -502,6 +502,9 @@ public abstract class ZLTextView extends ZLTextViewBase {
 
 	@Override
 	public synchronized void paint(ZLPaintContext context, PageIndex pageIndex) {
+		long startTime = System.currentTimeMillis();
+		long endTime = 0;
+		
 		myContext = context;
 		final ZLFile wallpaper = getWallpaperFile();
 		if (wallpaper != null) {
@@ -554,7 +557,8 @@ public abstract class ZLTextView extends ZLTextViewBase {
 			y += info.Height + info.Descent + info.VSpaceAfter;
 			labels[++index] = page.TextElementMap.size();
 		}
-
+		endTime = System.currentTimeMillis();
+		Log.v("ZLTextView", "Dauer Zeichendurchgang vor drawTextLine: " + (endTime-startTime));
 		y = getTopMargin();
 		index = 0;
 		for (ZLTextLineInfo info : lineInfos) {
@@ -562,14 +566,18 @@ public abstract class ZLTextView extends ZLTextViewBase {
 			y += info.Height + info.Descent + info.VSpaceAfter;
 			++index;
 		}
-
+		// TODO Kann ja garnicht angehen. 6 fps maximal
+		endTime = System.currentTimeMillis();
+		Log.v("ZLTextView", "Dauer Zeichendurchgang nach drawTextLine: " + (endTime-startTime));
+		
 		final ZLTextRegion selectedElementRegion = getSelectedRegion(page);
 		if (selectedElementRegion != null && myHighlightSelectedRegion) {
 			selectedElementRegion.draw(context);
 		}
-
+		
 		drawSelectionCursor(context, getSelectionCursorPoint(page, ZLTextSelectionCursor.Left));
 		drawSelectionCursor(context, getSelectionCursorPoint(page, ZLTextSelectionCursor.Right));
+		
 	}
 
 	public ZLTextPage getPage(PageIndex pageIndex) {
@@ -1131,13 +1139,13 @@ public abstract class ZLTextView extends ZLTextViewBase {
 				System.out.println();
 			}
 			
-			if (area.ChangeStyle) {
+			if (area != null && area.ChangeStyle) {
 				setTextStyle(area.Style);
 			}
 			final int start = info.StartElementIndex == info.EndElementIndex
 				? info.StartCharIndex : 0;
 			final int len = info.EndCharIndex - start;
-			if (paragraph.getElement(info.EndElementIndex) instanceof ZLTextWord) {
+			if (area != null && paragraph.getElement(info.EndElementIndex) instanceof ZLTextWord) {
 				final ZLTextWord word = (ZLTextWord)paragraph.getElement(info.EndElementIndex);
 				drawWord(
 						area.XStart, area.YEnd - context.getDescent() - getTextStyle().getVerticalShift(),
