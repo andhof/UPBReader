@@ -175,6 +175,7 @@
 		<activity android:name="org.geometerplus.android.fbreader.semapps.UPBLibraryLoginActivity" android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
 		<activity android:name="org.geometerplus.android.fbreader.semapps.SemAppsListActivity" android:label="@string/semappslist_title" android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
 		<activity android:name="org.geometerplus.android.fbreader.semapps.EPubListActivity" android:label="@string/epubslist_title" android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
+		<activity android:name="org.geometerplus.android.fbreader.semapps.ScenarioListActivity" android:label="@string/scenarioslist_title" android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:theme="@android:style/Theme.Dialog"/>
 		<activity android:name="org.geometerplus.android.fbreader.annotation.SelectionShowNoteActivity"  android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:windowSoftInputMode="adjustResize|stateHidden" />
 		<activity android:name="org.geometerplus.android.fbreader.annotation.SelectionNoteActivity"  android:launchMode="singleTop" android:configChanges="orientation|keyboardHidden" android:windowSoftInputMode="adjustPan|stateHidden" android:theme="@android:style/Theme.Dialog"/>
 		<service android:name="org.geometerplus.android.fbreader.services.AnnotationService" />
@@ -233,6 +234,10 @@
         <provider
           android:name="org.geometerplus.android.fbreader.provider.AuthorsContentProvider"
           android:authorities="org.geometerplus.android.fbreader.provider.AuthorsContentProvider" >
+        </provider>
+        <provider
+          android:name="org.geometerplus.android.fbreader.provider.ScenariosContentProvider"
+          android:authorities="org.geometerplus.android.fbreader.provider.ScenariosContentProvider">
         </provider>
         <receiver android:name="org.geometerplus.android.fbreader.receiver.ConnectivityReceiver">
             <intent-filter>

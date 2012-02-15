@@ -8,7 +8,6 @@ import java.util.Set;
 import org.apache.http.HttpEntity;
 import org.apache.http.util.EntityUtils;
 import org.geometerplus.android.fbreader.annotation.SelectionNoteActivity;
-import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
 import org.geometerplus.android.fbreader.annotation.database.DBAnnotation.DBAnnotations;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
@@ -84,12 +83,9 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 	       				conn = ConnectionManager.getInstance();
 	       				conn.authenticate(username, password);
 	       				
-	       				if (annotation.getUPBId() != null && !annotation.getUPBId().isEmpty()) {
-	       					String epub_id = annotation.getEPubId();
-	       					String semapp_id = fbreader.EPubs.getEPubById(epub_id).getSemAppId();
+	       				if (annotation.getUPBId() > 0) {
 	       					for (Annotation a : annotationsToRemove) {
-	       						url = "http://epubdummy.provideal.net/api/semapps/"+ 
-	       							semapp_id + "/epubs/" + epub_id + "/annotations/" + a.getUPBId();
+	       						url = "http://epubdummy.provideal.net/api/annotations/" + a.getUPBId();
 	       						
 	       						if (!fbreader.isNetworkAvailable()) {
 	       							waitingJobs = true;

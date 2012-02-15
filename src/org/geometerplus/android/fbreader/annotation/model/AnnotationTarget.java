@@ -19,10 +19,10 @@ public class AnnotationTarget implements Parcelable {
 	@Element(required=false)
 	protected String markedText;
 	@Element(required=false)
-	protected String targetAnnotationId;
+	protected int targetAnnotationId;
 	
 	public AnnotationTarget(String bookId, DocumentIdentifier documentidentifier, 
-			Range range, String markedText, String targetAnnotationId) {
+			Range range, String markedText, int targetAnnotationId) {
 		this.bookId = bookId;
 		this.documentIdentifier = documentidentifier;
 		this.range = range;
@@ -34,7 +34,7 @@ public class AnnotationTarget implements Parcelable {
 		this.documentIdentifier = new DocumentIdentifier();
 		this.range = new Range();
 		this.markedText = "";
-		this.targetAnnotationId = "";
+		this.targetAnnotationId = -1;
 	}
 	
 	private AnnotationTarget(Parcel in) {
@@ -57,7 +57,7 @@ public class AnnotationTarget implements Parcelable {
 		this.markedText = markedText;
 	}
 	
-	public void setTargetAnnotationId(String annotation_id) {
+	public void setTargetAnnotationId(int annotation_id) {
 		this.targetAnnotationId = annotation_id;
 	}
 
@@ -77,7 +77,7 @@ public class AnnotationTarget implements Parcelable {
 		return markedText;
 	}
 	
-	public String getTargetAnnotationId() {
+	public int getTargetAnnotationId() {
 		return targetAnnotationId;
 	}
 	
@@ -92,7 +92,7 @@ public class AnnotationTarget implements Parcelable {
 		documentIdentifier = in.readParcelable(DocumentIdentifier.class.getClassLoader());
 		range = in.readParcelable(Range.class.getClassLoader());
 		markedText = in.readString();
-		targetAnnotationId = in.readString();
+		targetAnnotationId = in.readInt();
 	}
 
 	@Override
@@ -101,7 +101,7 @@ public class AnnotationTarget implements Parcelable {
 		dest.writeParcelable(documentIdentifier, flags);
 		dest.writeParcelable(range, flags);
 		dest.writeString(markedText);
-		dest.writeString(targetAnnotationId);
+		dest.writeInt(targetAnnotationId);
 	}
 	
 	public static final Parcelable.Creator<AnnotationTarget> CREATOR = new Parcelable.Creator<AnnotationTarget>() {

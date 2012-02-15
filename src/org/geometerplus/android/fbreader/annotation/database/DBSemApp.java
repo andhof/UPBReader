@@ -20,13 +20,17 @@ public class DBSemApp {
 		public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.upb.semapps";
 
 		public static final String SEMAPP_ID = "_id";
+		
+		public static final String USER_ID = "user_id";
 
 		public static final String NAME = "name";
+		
+		public static final String CREATED_AT = "created_at";
 
 		public static final String UPDATED_AT = "updated_at";
 		
 		public static final String[] Projection = new String[] {
-			SEMAPP_ID, NAME, UPDATED_AT};
+			SEMAPP_ID, USER_ID, NAME, CREATED_AT, UPDATED_AT};
 	}
 
 }

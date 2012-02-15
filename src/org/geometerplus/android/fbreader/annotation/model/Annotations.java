@@ -45,7 +45,7 @@ public class Annotations {
 	 * Add a new Annotation to the List of Annotations with all Information
 	 */
 	public void addAnnotation(
-			String id,
+			int id,
 			long created, 
     		long modified, 
     		String category, 
@@ -54,8 +54,8 @@ public class Annotations {
     		AnnotationTarget target, 
     		RenderingInfo renderingInfo, 
     		AnnotationContent content,
-    		String epub_id, 
-    		String upb_id,
+    		int epub_id, 
+    		int upb_id,
     		String updated_at) {
 		annotations.add(new Annotation(id, created, modified, category, tags, author, target, renderingInfo, content, epub_id, upb_id, updated_at));
 	}
@@ -64,7 +64,7 @@ public class Annotations {
 	 * Add a new Annotation to the List of Annotations with all Information
 	 */
 	public void addAnnotation(
-			String id,
+			int id,
 			long created, 
     		long modified, 
     		String category, 
@@ -72,7 +72,7 @@ public class Annotations {
     		String author_name, 
     		String bookid,
     		String markedText,
-    		String targetannotationid,
+    		int targetannotationid,
     		String isbn,
     		String title,
     		ArrayList<String> authors,
@@ -87,8 +87,8 @@ public class Annotations {
     		boolean underlined,
     		boolean crossout,
     		String content,
-    		String epub_id,
-    		String upb_id,
+    		int epub_id,
+    		int upb_id,
     		String updated_at) {
 		
 		Annotation annotation = new Annotation();
@@ -140,9 +140,9 @@ public class Annotations {
 	/**
 	 * get annotation by the given id 
 	 */
-	public Annotation getAnnotationByUPBId(String id) {
+	public Annotation getAnnotationByUPBId(int upb_id) {
 		for (Annotation a : annotations) {
-			if (a.getUPBId().equals(id)) {
+			if (a.getUPBId() == upb_id) {
 				return a;
 			}
 		}
@@ -152,9 +152,9 @@ public class Annotations {
 	/**
 	 * get annotation by the given id 
 	 */
-	public Annotation getAnnotationById(String id) {
+	public Annotation getAnnotationById(int id) {
 		for (Annotation a : annotations) {
-			if (a.getId().equals(id)) {
+			if (a.getId() == id) {
 				return a;
 			}
 		}
@@ -164,10 +164,10 @@ public class Annotations {
 	/**
 	 * get annotation by the given targetannotationid 
 	 */
-	public ArrayList<Annotation> getAnnotationsByTargetAnnotationId(String id) {
+	public ArrayList<Annotation> getAnnotationsByTargetAnnotationId(int targetannotation_id) {
 		ArrayList<Annotation> annotationList = new ArrayList<Annotation>();
 		for (Annotation a : annotations) {
-			if (a.annotationTarget.getTargetAnnotationId().equals(id)) {
+			if (a.annotationTarget.getTargetAnnotationId() == targetannotation_id) {
 				annotationList.add(a);
 			}
 		}

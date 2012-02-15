@@ -133,7 +133,9 @@ public class SemAppsContentProvider extends BaseProvider {
 
         semAppsProjectionMap = new HashMap<String, String>();
         semAppsProjectionMap.put(DBSemApps.SEMAPP_ID, DBSemApps.SEMAPP_ID);
+        semAppsProjectionMap.put(DBSemApps.USER_ID, DBSemApps.USER_ID);
         semAppsProjectionMap.put(DBSemApps.NAME, DBSemApps.NAME);
+        semAppsProjectionMap.put(DBSemApps.CREATED_AT, DBSemApps.CREATED_AT);
         semAppsProjectionMap.put(DBSemApps.UPDATED_AT, DBSemApps.UPDATED_AT);
 
     }

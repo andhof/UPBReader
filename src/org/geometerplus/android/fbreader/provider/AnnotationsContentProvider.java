@@ -155,6 +155,8 @@ public class AnnotationsContentProvider extends BaseProvider {
         annotationsProjectionMap.put(DBAnnotations.CROSSOUT, DBAnnotations.CROSSOUT);
         annotationsProjectionMap.put(DBAnnotations.CONTENT, DBAnnotations.CONTENT);
         annotationsProjectionMap.put(DBAnnotations.UPB_ID, DBAnnotations.UPB_ID);
+        annotationsProjectionMap.put(DBAnnotations.USER_ID, DBAnnotations.USER_ID);
+        annotationsProjectionMap.put(DBAnnotations.CREATED_AT, DBAnnotations.CREATED_AT);
         annotationsProjectionMap.put(DBAnnotations.UPDATED_AT, DBAnnotations.UPDATED_AT);
         annotationsProjectionMap.put(DBAnnotations.EPUB_ID, DBAnnotations.EPUB_ID);
         

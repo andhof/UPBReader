@@ -16,9 +16,9 @@ import org.geometerplus.android.fbreader.fragments.AnnotationShowNoteFragment1;
 import org.geometerplus.android.fbreader.fragments.AnnotationShowNoteFragment2;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
-import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
 import org.geometerplus.android.util.SQLiteUtil;
+import org.geometerplus.android.util.StorageUtil;
 import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.android.util.XMLUtil;
 import org.geometerplus.fbreader.fbreader.ActionCode;
@@ -78,12 +78,12 @@ public class SelectionShowNoteActivity extends Activity {
 		username = settings.getString("user", "Localuser");
 		password = settings.getString("password", null);
 		
-		String semapp_id = null;
+		int semapp_id = -1;
 		if (annotation != null && fbreader.EPubs.getEPubById(annotation.getEPubId()) != null) {
 			semapp_id = fbreader.EPubs.getEPubById(annotation.getEPubId()).getSemAppId();
 		}
 		if (bundle == null) {
-			if (semapp_id.isEmpty()) {
+			if (semapp_id <= 0) {
 				setContentView(R.layout.annotation_show_note_fragment1);
 			} else {
 				setContentView(R.layout.annotation_show_note);
@@ -109,7 +109,7 @@ public class SelectionShowNoteActivity extends Activity {
 				annotation.getAnnotationContent().getAnnotationText());
 		
 		// Comment fragment
-		if (!semapp_id.isEmpty()){
+		if (semapp_id > 0){
 			findTextView(R.id.comment_title).setText(getString(R.string.shownote_comments_title));
 			
 			listOfComments = fbreader.getAnnotationsByCategory(
@@ -152,8 +152,13 @@ public class SelectionShowNoteActivity extends Activity {
 					newAnnotation.setCreated(new Date().getTime());
 					newAnnotation.setModified(new Date().getTime());
 					newAnnotation.setCategory(getString(R.string.selectionnote_category4));
-					if (annotation.getUPBId().isEmpty()) {
-						newAnnotation.getAnnotationTarget().setTargetAnnotationId(annotation.getId());
+					if (annotation.getUPBId() <= 0) {
+						SharedPreferences settings = getSharedPreferences("upbreader", 0);
+						int annotation_id = settings.getInt("annotation_id_counter", 0);
+	   					SharedPreferences.Editor e = settings.edit();
+	   					e.putInt("annotation_id_counter", annotation_id++);
+	   					e.commit();
+						newAnnotation.getAnnotationTarget().setTargetAnnotationId(annotation_id);
 					} else {
 						newAnnotation.getAnnotationTarget().setTargetAnnotationId(annotation.getUPBId());
 					}
@@ -162,19 +167,18 @@ public class SelectionShowNoteActivity extends Activity {
 					newAnnotation.getAnnotationContent().setAnnotationText(content);
 					
 					newAnnotation.setEPubId(annotation.getEPubId());
-					newAnnotation.setId(fbreader.md5(book.getContentHashCode() + newAnnotation.toString()));
-					
-					String epub_id = newAnnotation.getEPubId();
-					EPub epub = fbreader.EPubs.getEPubById(epub_id);
-					String semapp_id = epub.getSemAppId();
+					int annotation_id = StorageUtil.getCurrentCounterAndIncrement(SelectionShowNoteActivity.this, "annotation_id_counter");
+					newAnnotation.setId(annotation_id);
 					
 					// Start asynctask for uploading annotation
 					asyncTask = new HttpHelper();
 				    String xml = XMLUtil.saveAnnotationToString(newAnnotation);
 					
-					asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+ 
-			    			semapp_id + "/epubs/" + epub_id + "/annotations", xml);
+				    int scenario_id = fbreader.Scenario.getId();
+					asyncTask.execute("http://epubdummy.provideal.net/api/scenarios/"+ 
+			    			scenario_id + "/annotations", xml);
 					
+					int epub_id = newAnnotation.getEPubId();
 					SQLiteUtil.writeAnnotationToDatabase(SelectionShowNoteActivity.this, newAnnotation, epub_id);
 					
 					reload();
@@ -220,8 +224,8 @@ public class SelectionShowNoteActivity extends Activity {
 		@Override
 		protected String doInBackground(String... params) {
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
-			String annotation_id = "";
-			String upb_id = "";
+			int annotation_id = -1;
+			int upb_id = -1;
 			String updated_at = "";
 			
 			url = params[0];
@@ -254,7 +258,7 @@ public class SelectionShowNoteActivity extends Activity {
 				} 
 			}
 			
-			if (annotation_id.isEmpty()) {
+			if (annotation_id <= 0) {
 				annotation_id = newAnnotation.getId();
 			}
 			

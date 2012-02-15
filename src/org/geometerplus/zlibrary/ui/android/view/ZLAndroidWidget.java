@@ -73,6 +73,10 @@ public class ZLAndroidWidget extends View implements ZLViewWidget, View.OnLongCl
 
 	@Override
 	protected void onDraw(final Canvas canvas) {
+		// TODO entfernen
+		long startTime = System.currentTimeMillis();
+		long endTime = 0;
+		
 		final Context context = getContext();
 		if (context instanceof ZLAndroidActivity) {
 			((ZLAndroidActivity)context).createWakeLock();
@@ -90,6 +94,8 @@ public class ZLAndroidWidget extends View implements ZLViewWidget, View.OnLongCl
 			onDrawStatic(canvas);
 			ZLApplication.Instance().onRepaintFinished();
 		}
+		endTime = System.currentTimeMillis();
+		Log.v("ZLTextView", "Dauer onDraw: " + (endTime-startTime));
 	}
 
 	private AnimationProvider myAnimationProvider;

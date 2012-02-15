@@ -44,7 +44,6 @@ import org.geometerplus.zlibrary.text.view.ZLTextWord;
 import org.geometerplus.zlibrary.text.view.ZLTextWordCursor;
 
 import org.geometerplus.android.fbreader.FBReader;
-import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
 import org.geometerplus.android.fbreader.annotation.database.DBAnnotation.DBAnnotations;
 import org.geometerplus.android.fbreader.annotation.database.DBAuthor.DBAuthors;
 import org.geometerplus.android.fbreader.annotation.database.DBEPub.DBEPubs;
@@ -56,6 +55,8 @@ import org.geometerplus.android.fbreader.provider.AnnotationsContentProvider;
 import org.geometerplus.android.fbreader.provider.SemAppsContentProvider;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.EPubs;
+import org.geometerplus.android.fbreader.semapps.model.Scenario;
+import org.geometerplus.android.fbreader.semapps.model.Scenarios;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
 import org.geometerplus.android.util.SQLiteUtil;
@@ -146,8 +147,9 @@ public final class FBReaderApp extends ZLApplication {
 	public final FBView BookTextView;
 	public final FBView FootnoteView;
 	public Annotations Annotations;
-	public EPubs EPubs;
 	public SemApps SemApps;
+	public EPubs EPubs;
+	public Scenario Scenario;
 	
 	public ArrayList<String> CategoriesEN;
 	public ArrayList<String> CategoriesDE;
@@ -195,8 +197,9 @@ public final class FBReaderApp extends ZLApplication {
 		BookTextView = new FBView(this);
 		FootnoteView = new FBView(this);
 		Annotations = new Annotations();
-		EPubs = new EPubs();
 		SemApps = new SemApps();
+		EPubs = new EPubs();
+		Scenario = new Scenario();
 		
 		CategoriesEN = new ArrayList<String> ();
 		CategoriesEN.add("Note");
@@ -235,6 +238,7 @@ public final class FBReaderApp extends ZLApplication {
 				// load the annotations of the book
 				String path = book.File.getPath();
 				SQLiteUtil.loadEPubsFromDatabase(context);
+				SQLiteUtil.loadScenarioFromDatabase(context);
 				for (EPub epub : EPubs.getEPubs()) {
 					SQLiteUtil.loadAnnotationsFromDatabase(context, path);
 				}
@@ -268,6 +272,7 @@ public final class FBReaderApp extends ZLApplication {
 				// load the annotations of the book
 				String path = book.File.getPath();
 				SQLiteUtil.loadEPubsFromDatabase(context);
+				SQLiteUtil.loadScenarioFromDatabase(context);
 				for (EPub epub : EPubs.getEPubs()) {
 					SQLiteUtil.loadAnnotationsFromDatabase(context, path);
 				}
@@ -319,7 +324,7 @@ public final class FBReaderApp extends ZLApplication {
 	/**
 	 * Return all annotations by the given category and an annotation upb_id
 	 */
-	public LinkedList<Annotation> getAnnotationsByCategory(String category, String id) {
+	public LinkedList<Annotation> getAnnotationsByCategory(String category, int upb_id) {
 		LinkedList<Annotation> annotationList = new LinkedList<Annotation>();
 		
 		String de = CategoriesDE.indexOf(category) != -1 ? 
@@ -329,7 +334,7 @@ public final class FBReaderApp extends ZLApplication {
 		
 		for (Annotation annotation : Annotations.getAnnotations()) {
 			if ((annotation.getCategory().equals(de) || annotation.getCategory().equals(en)) &&
-					annotation.getAnnotationTarget().getTargetAnnotationId().equals(id)) {
+					annotation.getAnnotationTarget().getTargetAnnotationId() == upb_id) {
 				annotationList.add(annotation);
 			}
 		}
@@ -521,6 +526,7 @@ public final class FBReaderApp extends ZLApplication {
 	public void loadAnnotationHighlighting() {
 		ZLTextModel textModel = BookTextView.getModel();
 		LinkedList<Annotation> annotations = Annotations.getAnnotations();
+		BookTextView.removeAnnotationHighlights();
 		
 		String startPart;
 		String startXPath;

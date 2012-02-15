@@ -65,6 +65,10 @@ public class DBAnnotation {
 		
 		public static final String UPB_ID = "upb_id";
 		
+		public static final String USER_ID = "user_id";
+		
+		public static final String CREATED_AT = "created_at";
+		
 		public static final String UPDATED_AT = "updated_at";
 	
 		public static final String EPUB_ID = "epub_id";
@@ -74,7 +78,7 @@ public class DBAnnotation {
 			MARKED_TEXT, TARGET_ANNOTATION_ID, ISBN, TITLE, PUBLICATIONDATE, START_PART, 
 			START_PATH_XPATH, START_PATH_CHAROFFSET, END_PART, END_PATH_XPATH, 
 			END_PATH_CHAROFFSET, HIGHLIGHTCOLOR, UNDERLINED, CROSSOUT, CONTENT, 
-			UPB_ID, UPDATED_AT, EPUB_ID};
+			UPB_ID, USER_ID, CREATED_AT, UPDATED_AT, EPUB_ID};
 	}
 
 }

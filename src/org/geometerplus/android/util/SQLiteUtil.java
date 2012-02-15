@@ -25,12 +25,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
+import org.geometerplus.android.fbreader.annotation.database.DBScenario;
 import org.geometerplus.android.fbreader.annotation.database.DBAnnotation.DBAnnotations;
 import org.geometerplus.android.fbreader.annotation.database.DBAuthor.DBAuthors;
 import org.geometerplus.android.fbreader.annotation.database.DBEPub.DBEPubs;
+import org.geometerplus.android.fbreader.annotation.database.DBScenario.DBScenarios;
+import org.geometerplus.android.fbreader.annotation.database.DBSemApp.DBSemApps;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.annotation.model.TargetAuthor;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
+import org.geometerplus.android.fbreader.semapps.model.Scenario;
+import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 
@@ -82,22 +87,65 @@ public abstract class SQLiteUtil {
 			}
 			cursor.moveToFirst();
 			do {
-				String id = cursor.getString(cursor.getColumnIndex(DBEPubs.EPUB_ID));
+				int epub_id = cursor.getInt(cursor.getColumnIndex(DBEPubs.EPUB_ID));
 				String name = cursor.getString(cursor.getColumnIndex(DBEPubs.NAME));
+				String created_at = cursor.getString(cursor.getColumnIndex(DBEPubs.CREATED_AT));
 				String updated_at = cursor.getString(cursor.getColumnIndex(DBEPubs.UPDATED_AT));
 				String file_name = cursor.getString(cursor.getColumnIndex(DBEPubs.FILENAME));
 				String file_path = cursor.getString(cursor.getColumnIndex(DBEPubs.FILEPATH));
 				String local_path = cursor.getString(cursor.getColumnIndex(DBEPubs.LOCALPATH));
-				String semapp_id = cursor.getString(cursor.getColumnIndex(DBEPubs.SEMAPP_ID));
+				int semapp_id = cursor.getInt(cursor.getColumnIndex(DBEPubs.SEMAPP_ID));
 				
 				if (fbreader.EPubs.getEPubs() != null) {
 					fbreader.EPubs.removeAllEPubs();						
 				}
-				fbreader.EPubs.addEPub(id, name, updated_at, file_name, file_path, local_path, semapp_id);
+				fbreader.EPubs.addEPub(epub_id, name, updated_at, file_name, file_path, local_path, semapp_id);
 			} while (cursor.moveToNext());
 		} catch (Exception e) {
 			e.printStackTrace();
-		    Log.e("FBReaderApp", e.toString());
+			Log.e("SQLiteUtil", e.toString());
+		} finally {
+			cursor.close();
+		}
+	}
+	
+	/**
+	 * load all epubs information
+	 */
+	public static void loadScenarioFromDatabase(Context context) {
+		final Cursor cursor;
+		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+		
+		String[] projection = DBScenarios.Projection;
+		Uri uri = DBScenarios.CONTENT_URI;
+		cursor = context.getContentResolver().query(uri, projection, null, null, null);
+		try {
+			if (cursor.getCount() == 0) {
+				return;
+			}
+			cursor.moveToFirst();
+			do {
+				int scenario_id = cursor.getInt(cursor.getColumnIndex(DBScenarios.SCENARIO_ID));
+				int semapp_id = cursor.getInt(cursor.getColumnIndex(DBScenarios.SEMAPP_ID));
+				int epub_id = cursor.getInt(cursor.getColumnIndex(DBScenarios.EPUB_ID));
+				String name = cursor.getString(cursor.getColumnIndex(DBScenarios.NAME));
+				int version = cursor.getInt(cursor.getColumnIndex(DBScenarios.VERSION));
+				boolean active = cursor.getInt(cursor.getColumnIndex(DBScenarios.ACTIVE)) == 1;
+				String created_at = cursor.getString(cursor.getColumnIndex(DBScenarios.CREATED_AT));
+				String updated_at = cursor.getString(cursor.getColumnIndex(DBScenarios.UPDATED_AT));
+				
+				fbreader.Scenario.setId(scenario_id);
+				fbreader.Scenario.setSemAppId(semapp_id);
+				fbreader.Scenario.setEPubId(epub_id);
+				fbreader.Scenario.setName(name);
+				fbreader.Scenario.setVersion(version);
+				fbreader.Scenario.setActive(active);
+				fbreader.Scenario.setCreated_at(created_at);
+				fbreader.Scenario.setUpdated_at(updated_at);
+			} while (cursor.moveToNext());
+		} catch (Exception e) {
+			e.printStackTrace();
+		    Log.e("SQLiteUtil", e.toString());
 		} finally {
 			cursor.close();
 		}
@@ -105,7 +153,6 @@ public abstract class SQLiteUtil {
 	
 	/**
 	 * load the annotations of one book
-	 * @param path
 	 */
 	public static void loadAnnotationsFromDatabase(Context context, final String local_path) {
 		final Cursor cursor_epub;
@@ -144,7 +191,7 @@ public abstract class SQLiteUtil {
 			
 			cursor_annotation.moveToFirst();
 			do {
-				String annotation_id = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.ANNOTATION_ID));
+				int annotation_id = cursor_annotation.getInt(cursor_annotation.getColumnIndex(DBAnnotations.ANNOTATION_ID));
 				long created = cursor_annotation.getLong(cursor_annotation.getColumnIndex(DBAnnotations.CREATED));
 				long modified = cursor_annotation.getLong(cursor_annotation.getColumnIndex(DBAnnotations.MODIFIED));
 				String category = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.CATEGORY));
@@ -153,7 +200,7 @@ public abstract class SQLiteUtil {
 				String author_name = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.AUTHOR_NAME));
 				String bookid = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.BOOKID));
 				String markedText = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.MARKED_TEXT));
-				String targetannotationid = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.TARGET_ANNOTATION_ID));
+				int targetannotationid = cursor_annotation.getInt(cursor_annotation.getColumnIndex(DBAnnotations.TARGET_ANNOTATION_ID));
 				String isbn = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.ISBN));
 				String title = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.TITLE));
 				String publicationdate = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.PUBLICATIONDATE));
@@ -167,9 +214,9 @@ public abstract class SQLiteUtil {
 				boolean underlined = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.UNDERLINED)).equals("true") ?	 true : false;
 				boolean crossout = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.CROSSOUT)).equals("true") ? true : false;
 				String content = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.CONTENT));
-				String upb_id = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.UPB_ID));
+				int upb_id = cursor_annotation.getInt(cursor_annotation.getColumnIndex(DBAnnotations.UPB_ID));
 				String updated_at = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.UPDATED_AT));
-				String epub_id = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.EPUB_ID));
+				int epub_id = cursor_annotation.getInt(cursor_annotation.getColumnIndex(DBAnnotations.EPUB_ID));
 				
 				uri = DBAuthors.CONTENT_URI;
 				projection = DBAuthors.Projection;
@@ -202,16 +249,49 @@ public abstract class SQLiteUtil {
 	}
 	
 	/**
-	 * Insert the ePub information into the database or update it 
+	 * Insert a SemApp into the database 
 	 * @param semApp
 	 */
-	public static void writeEPubToDatabase(final Context context, EPub ePub, final String local_path, String sid) {
-		final String epub_id = ePub.getId();
+	public static void writeSemAppToDatabase(final Context context, SemApp semApp) {
+		final int id = semApp.getId();
+		final String name = semApp.getName();
+		final String updated_at = semApp.getUpdated_at();
+		
+		// working on database in a different thread
+		new Thread(new Runnable() {
+			Cursor cursor;
+			
+			@Override
+			public void run() {
+				String[] projection = DBSemApps.Projection;
+				Uri uri = DBSemApps.CONTENT_URI;
+				cursor = context.getContentResolver().query(uri, projection, null, null, null);
+				
+				ContentValues values = new ContentValues();
+				values.put(DBSemApps.SEMAPP_ID, id);
+				values.put(DBSemApps.NAME, name);
+				values.put(DBSemApps.UPDATED_AT, updated_at);
+				if (cursor.getCount() == 0) {
+					context.getContentResolver().insert(uri, values);
+				} else {
+					context.getContentResolver().update(uri, values, null, null);
+				}
+				cursor.close();
+			}
+		}).start();
+	}
+	
+	/**
+	 * Insert the ePub information into the database or update it 
+	 */
+	public static void writeEPubToDatabase(final Context context, EPub ePub, final String local_path) {
+		final int epub_id = ePub.getId();
 		final String name = ePub.getName();
+		final String created_at = ePub.getCreated_at();
 		final String updated_at = ePub.getUpdated_at();
-		final String file_name = ePub.getFile().getName();
-		final String file_path = ePub.getFile().getPath();
-		final String semapp_id = sid;
+		final String file_name = ePub.getFileName();
+		final String file_path = ePub.getFilePath();
+		final int semapp_id = ePub.getSemAppId();
 		
 		// working on database in a different thread
 		new Thread(new Runnable() {
@@ -228,6 +308,7 @@ public abstract class SQLiteUtil {
 					ContentValues values = new ContentValues();
 					values.put(DBEPubs.EPUB_ID, epub_id);
 					values.put(DBEPubs.NAME, name);
+					values.put(DBEPubs.CREATED_AT, created_at);
 					values.put(DBEPubs.UPDATED_AT, updated_at);
 					values.put(DBEPubs.FILENAME, file_name);
 					values.put(DBEPubs.FILEPATH, file_path);
@@ -248,21 +329,69 @@ public abstract class SQLiteUtil {
 	}
 	
 	/**
+	 * Insert the scenario information into the database or update it 
+	 */
+	public static void writeScenarioToDatabase(final Context context, Scenario scenario) {
+		final int scenario_id = scenario.getId();
+		final int semapp_id = scenario.getSemAppId();
+		final int epub_id = scenario.getEPubId();
+		final String name = scenario.getName();
+		final int version = scenario.getVersion();
+		final boolean active = scenario.isActive();
+		final String created_at = scenario.getCreated_at();
+		final String updated_at = scenario.getUpdated_at();
+		
+		// working on database in a different thread
+		new Thread(new Runnable() {
+			Cursor cursor;
+			
+			@Override
+			public void run() {
+				Uri uri = DBScenarios.CONTENT_URI;
+				String[] projection = DBScenarios.Projection;
+				String selection = DBScenarios.SCENARIO_ID + "=\"" + scenario_id + "\"";
+				try {
+					cursor = context.getContentResolver().query(uri, projection, selection, null, null);
+
+					ContentValues values = new ContentValues();
+					values.put(DBScenarios.SCENARIO_ID, scenario_id);
+					values.put(DBScenarios.SEMAPP_ID, semapp_id);
+					values.put(DBScenarios.EPUB_ID, epub_id);
+					values.put(DBScenarios.NAME, name);
+					values.put(DBScenarios.VERSION, version);
+					values.put(DBScenarios.ACTIVE, active);
+					values.put(DBScenarios.CREATED_AT, created_at);
+					values.put(DBScenarios.UPDATED_AT, updated_at);
+					if (cursor.getCount() == 0) {
+						context.getContentResolver().insert(uri, values);
+					} else {
+						context.getContentResolver().update(uri, values, selection, null);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				} finally {
+					cursor.close();
+				}
+			}
+		}).start();
+	}
+	
+	/**
 	 * Insert the ePub and annotation information into the database or update it 
 	 * @param semApp
 	 */
-	public static void writeEPubAndAnnotationToDatabase(final Context context, EPub ePub, 
-			final String local_path, String sid, Annotation annotation, final String eid) {
+	public static void writeEPubAndAnnotationToDatabase(final Context context, EPub epub, 
+			final String local_path, Annotation annotation) {
 		// epub data
-		final String epub_id = ePub.getId();
-		final String name = ePub.getName();
-		final String updated_at = ePub.getUpdated_at();
-		final String file_name = ePub.getFile().getName();
-		final String file_path = ePub.getFile().getPath();
-		final String semapp_id = sid;
+		final int epub_id = epub.getId();
+		final String name = epub.getName();
+		final String updated_at = epub.getUpdated_at();
+		final String file_name = epub.getFileName();
+		final String file_path = epub.getFilePath();
+		final int semapp_id = epub.getSemAppId();
 		
 		// annotation data
-		final String annotation_id = annotation.getId();
+		final int annotation_id = annotation.getId();
 		final long created = annotation.getCreated();
 		final long modified = annotation.getModified();
 		final String category = annotation.getCategory();
@@ -270,7 +399,7 @@ public abstract class SQLiteUtil {
 		final String author_name = annotation.getAuthor().getName();
 		final String bookid = annotation.getAnnotationTarget().getBookId();
 		final String markedtext = annotation.getAnnotationTarget().getMarkedText();
-		final String targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();
+		final int targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();
 		final String isbn = annotation.getAnnotationTarget().getDocumentIdentifier().getISBN();
 		final String title = annotation.getAnnotationTarget().getDocumentIdentifier().getTitle();
 		final ArrayList<TargetAuthor> authors = annotation.getAnnotationTarget().getDocumentIdentifier().getAuthors();
@@ -285,7 +414,7 @@ public abstract class SQLiteUtil {
 		final String underlined = annotation.getRenderingInfo().isUnderlined() ? "true" : "false";
 		final String crossout = annotation.getRenderingInfo().isCrossedOut() ? "true" : "false";
 		final String content = annotation.getAnnotationContent().getAnnotationText();
-		final String upb_id = annotation.getUPBId();
+		final int upb_id = annotation.getUPBId();
 		final String updated_at2 = annotation.getUpdatedAt();
 		
 		// working on database in a different thread
@@ -316,7 +445,11 @@ public abstract class SQLiteUtil {
 				
 				uri = DBAnnotations.CONTENT_URI;
 				projection = DBAnnotations.Projection;
-				selection = DBAnnotations.ANNOTATION_ID + "=\"" + annotation_id + "\"";
+				if (upb_id > 0) {
+					selection = DBAnnotations.UPB_ID + "=\"" + upb_id + "\"";
+				} else {
+					selection = DBAnnotations.ANNOTATION_ID + "=\"" + annotation_id + "\"";
+				}
 				cursor = context.getContentResolver().query(uri, projection, selection, null, null);
 				values.clear();
 				values.put(DBAnnotations.ANNOTATION_ID, annotation_id);
@@ -398,8 +531,8 @@ public abstract class SQLiteUtil {
 	/**
 	 * Insert one Annotation of the book into the database or update it 
 	 */
-	public static void writeAnnotationToDatabase(final Context context, Annotation annotation, final String eid) {
-		final String annotation_id = annotation.getId();
+	public static void writeAnnotationToDatabase(final Context context, Annotation annotation, final int eid) {
+		final int annotation_id = annotation.getId();
 		final long created = annotation.getCreated();
 		final long modified = annotation.getModified();
 		final String category = annotation.getCategory();
@@ -407,7 +540,7 @@ public abstract class SQLiteUtil {
 		final String author_name = annotation.getAuthor().getName();
 		final String bookid = annotation.getAnnotationTarget().getBookId();
 		final String markedtext = annotation.getAnnotationTarget().getMarkedText();
-		final String targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();
+		final int targetannotationid = annotation.getAnnotationTarget().getTargetAnnotationId();
 		final String isbn = annotation.getAnnotationTarget().getDocumentIdentifier().getISBN();
 		final String title = annotation.getAnnotationTarget().getDocumentIdentifier().getTitle();
 		final ArrayList<TargetAuthor> authors = annotation.getAnnotationTarget().getDocumentIdentifier().getAuthors();
@@ -422,7 +555,7 @@ public abstract class SQLiteUtil {
 		final String underlined = annotation.getRenderingInfo().isUnderlined() ? "true" : "false";
 		final String crossout = annotation.getRenderingInfo().isCrossedOut() ? "true" : "false";
 		final String content = annotation.getAnnotationContent().getAnnotationText();
-		final String upb_id = annotation.getUPBId();
+		final int upb_id = annotation.getUPBId();
 		final String updated_at2 = annotation.getUpdatedAt();
 		
 		// working on database in a different thread
@@ -431,7 +564,7 @@ public abstract class SQLiteUtil {
 			
 			@Override
 			public void run() {
-				String epub_id;
+				int epub_id;
 				
 				Uri uri = DBEPubs.CONTENT_URI;
 				String[] projection = DBEPubs.Projection;
@@ -442,12 +575,16 @@ public abstract class SQLiteUtil {
 					if (cursor.getCount() == 0) {
 						epub_id = eid;
 					} else {
-						epub_id = cursor.getString(cursor.getColumnIndex(DBEPubs.EPUB_ID));
+						epub_id = cursor.getInt(cursor.getColumnIndex(DBEPubs.EPUB_ID));
 					}
 					
 					uri = DBAnnotations.CONTENT_URI;
 					projection = DBAnnotations.Projection;
-					selection = DBAnnotations.ANNOTATION_ID + "=\"" + annotation_id + "\"";
+					if (upb_id > 0) {
+						selection = DBAnnotations.UPB_ID + "=\"" + upb_id + "\"";
+					} else {
+						selection = DBAnnotations.ANNOTATION_ID + "=\"" + annotation_id + "\"";
+					}
 					cursor = context.getContentResolver().query(uri, projection, selection, null, null);
 					ContentValues values = new ContentValues();
 					values.put(DBAnnotations.ANNOTATION_ID, annotation_id);

@@ -39,7 +39,7 @@ abstract class ZLTextViewBase extends ZLView {
 		resetTextStyle();
 	}
 
-	final int getWordHeight() {
+	protected final int getWordHeight() {
 		if (myWordHeight == -1) {
 			final ZLTextStyle textStyle = myTextStyle;
 			myWordHeight = (myContext.getStringHeight() * textStyle.getLineSpacePercent() / 100) + textStyle.getVerticalShift();

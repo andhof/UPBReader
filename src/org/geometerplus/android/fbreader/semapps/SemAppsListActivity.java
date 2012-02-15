@@ -8,13 +8,14 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
 import org.geometerplus.android.fbreader.annotation.database.DBEPub.DBEPubs;
 import org.geometerplus.android.fbreader.annotation.database.DBSemApp.DBSemApps;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
+import org.geometerplus.android.fbreader.semapps.model.EPub;
+import org.geometerplus.android.fbreader.semapps.model.EPubs;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
-import org.geometerplus.android.fbreader.semapps.model.SemAppDummy;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
+import org.geometerplus.android.util.SQLiteUtil;
 import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.android.util.XMLUtil;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
@@ -38,24 +39,23 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class SemAppsListActivity extends ListActivity {
-	private Cursor cursor;
-	
 	private HttpHelper asyncTask;
 	ArrayList<String> semAppNamesList = new ArrayList<String>();
-	ArrayList<String> semAppIDsList = new ArrayList<String>();
+	ArrayList<Integer> semAppIdsList = new ArrayList<Integer>();
 	private ProgressDialog progressDialog;
+	private SemApps semApps;
+	private int semapp_id;
 	
 	@Override
 	public void onCreate(Bundle bundle) {
 		super.onCreate(bundle);
 		
 		Intent intent = getIntent();
-		SemApps semApps = intent.getParcelableExtra("semapps");
+		semApps = intent.getParcelableExtra("semapps");
 
-		ArrayList<SemAppDummy> semAppsList = semApps.getSemApps();
-		for (SemAppDummy semApp : semAppsList) {
+		for (SemApp semApp : semApps.getSemApps()) {
 			semAppNamesList.add(semApp.getName());
-			semAppIDsList.add(semApp.getId());
+			semAppIdsList.add(semApp.getId());
 		}
 		
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, 
@@ -106,7 +106,8 @@ public class SemAppsListActivity extends ListActivity {
 		progressDialog = new ProgressDialog(SemAppsListActivity.this);
 		progressDialog.setMessage(this.getText(R.string.loadingepublist));
 
-		asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+semAppIDsList.get(position));
+		semapp_id = semAppIdsList.get(position);
+		asyncTask.execute("http://epubdummy.provideal.net/api/semapps/" + semapp_id + "/epubs");
 	}
 	
 	private class HttpHelper extends AsyncTask<String, Void, String> {
@@ -152,7 +153,7 @@ public class SemAppsListActivity extends ListActivity {
 		}
 		
 		@Override
-		protected void onPostExecute(String result) {
+		protected void onPostExecute(String epubs_xml) {
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
 			}
@@ -169,56 +170,24 @@ public class SemAppsListActivity extends ListActivity {
 			
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 			
-			Log.v("UPBLibraryLoginActivity.HttpHelper", result);
-			SemApp semApp = XMLUtil.loadSemAppFromXMLString(result);
-			SemAppDummy semAppDummy = new SemAppDummy();
-			semAppDummy.setId(semApp.getId());
-			semAppDummy.setName(semApp.getName());
-			semAppDummy.setUpdatedAt(semApp.getUpdated_at());
-			if (!fbreader.SemApps.getSemApps().contains(semAppDummy)) {
-		    	fbreader.SemApps.getSemApps().add(new SemAppDummy());
+			Log.v("UPBLibraryLoginActivity.HttpHelper", epubs_xml);
+//			SemApp semApp = XMLUtil.loadSemAppFromXMLString(result);
+			
+			SemApp semApp = semApps.getSemAppById(semapp_id);
+			if (!fbreader.SemApps.getSemApps().contains(semApp)) {
+		    	fbreader.SemApps.getSemApps().add(semApp);
 		    }
+			SQLiteUtil.writeSemAppToDatabase(SemAppsListActivity.this, semApp);
 			
-			writeSemAppToDatabase(semApp);
-			
+			EPubs epubs = XMLUtil.loadEPubsFromXMLString(epubs_xml);
+			for (EPub epub : epubs.getEPubs()) {
+				epub.setSemAppId(semapp_id);
+			}
 			SemAppsListActivity.this.startActivityForResult(
 				new Intent(SemAppsListActivity.this.getApplicationContext(), EPubListActivity.class)
-					.putExtra("semapp", semApp), 
+					.putExtra("epubs", epubs), 
 				4
 			);
-		}
-		
-		/**
-		 * Insert a SemApp into the database 
-		 * @param semApp
-		 */
-		private void writeSemAppToDatabase(SemApp semApp) {
-			final String id = semApp.getId();
-			final String name = semApp.getName();
-			final String updated_at = semApp.getUpdated_at();
-			
-			// working on database in a different thread
-			new Thread(new Runnable() {
-				
-				@Override
-				public void run() {
-					String[] projection = DBSemApps.Projection;
-					Uri uri = DBSemApps.CONTENT_URI;
-					cursor = getContentResolver().query(uri, projection, null, null, null);
-					
-					ContentValues values = new ContentValues();
-					values.put(DBSemApps.SEMAPP_ID, id);
-					values.put(DBSemApps.NAME, name);
-					values.put(DBSemApps.UPDATED_AT, updated_at);
-					if (cursor.getCount() == 0) {
-						getContentResolver().insert(uri, values);
-					} else {
-						getContentResolver().update(uri, values, null, null);
-					}
-					cursor.close();
-				}
-			}).start();
-			
 		}
 	}
 }

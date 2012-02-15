@@ -2,6 +2,7 @@ package org.geometerplus.android.fbreader.semapps.model;
 
 import java.util.ArrayList;
 
+import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.Element;
 import org.simpleframework.xml.ElementList;
 import android.os.Parcel;
@@ -10,7 +11,9 @@ import android.os.Parcelable;
 @Element
 public class EPubs implements Parcelable{
 	
-	@ElementList(inline=true, entry="epub")
+	@Attribute
+	protected String type;
+	@ElementList(required=false, inline=true, name="epubs", entry="epub")
 	protected ArrayList<EPub> epubs;
 	
 	/**
@@ -25,21 +28,21 @@ public class EPubs implements Parcelable{
 	}
 	
 	public EPub addEPub(
-			String id,
+			int id,
 			String name,
 			String updated_at,
 			String file_name, 
 			String file_path,
 			String local_path,
-			String semapp_id) {
+			int semapp_id) {
 
 		EPub epub = new EPub();
 		
 		epub.setId(id);
 		epub.setName(name);
 		epub.setUpdated_at(updated_at);
-		epub.getFile().setName(file_name);
-		epub.getFile().setPath(file_path);
+		epub.setFileName(file_name);
+		epub.setFilePath(file_path);
 		epub.setLocalPath(local_path);
 		epub.setSemAppId(semapp_id);
 		
@@ -52,9 +55,9 @@ public class EPubs implements Parcelable{
 		return epubs;
 	}
 	
-	public EPub getEPubById(String id) {
+	public EPub getEPubById(int id) {
 		for (EPub epub : epubs) {
-			if (epub.getId().equals(id)) {
+			if (epub.getId() == id) {
 				return epub;
 			}
 		}

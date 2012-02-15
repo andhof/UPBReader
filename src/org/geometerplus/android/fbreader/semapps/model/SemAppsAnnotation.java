@@ -12,35 +12,47 @@ import android.os.Parcelable;
 public class SemAppsAnnotation implements Parcelable{
 	
 	@Element(required=false, name="id")
-	protected String id;
-	@Element(required=false, name="updated_at")
-	protected String updated_at;
-	@Element(required=false, name="created_at")
-	protected String created_at;
-	@Element(required=false, name="user_id")
-	protected String user_id;
+	protected int id;
+	@Element(required=false, name="user-id")
+	protected int user_id;
+	@Element(required=false, name="scenario-id")
+	protected int scenario_id;
 	@Element(required=false)
 	protected String data;
-	@Attribute(required=false)
-    protected String type;
+	@Element(required=false, name="created-at")
+	protected String created_at;
+	@Element(required=false, name="updated-at")
+	protected String updated_at;
 	
 	/**
 	 * Standard empty constructor
 	 */
 	public SemAppsAnnotation() {
-		id = "";
-		updated_at = "";
-		created_at = "";
-		user_id = "";
+		id = -1;
+		scenario_id = -1;
 		data = "";
+		created_at = "";
+		updated_at = "";
     }
 	
 	public SemAppsAnnotation(Parcel in) {
 		readFromParcel(in);
 	}
 
-	public String getId() {
+	public int getId() {
 		return id;
+	}
+	
+	public int getUserId() {
+		return user_id;
+	}
+	
+	public int getScenarioId() {
+		return scenario_id;
+	}
+	
+	public String getData() {
+		return data;
 	}
 	
 	public String getUpdated_at() {
@@ -51,14 +63,6 @@ public class SemAppsAnnotation implements Parcelable{
 		return created_at;
 	}
 	
-	public String getUserID() {
-		return user_id;
-	}
-	
-	public String getData() {
-		return data;
-	}
-
 	@Override
 	public int describeContents() {
 		// TODO Auto-generated method stub
@@ -66,20 +70,23 @@ public class SemAppsAnnotation implements Parcelable{
 	}
 	
 	public void readFromParcel(Parcel in) {
-		id = in.readString();
-		updated_at = in.readString();
-		created_at = in.readString();
-		user_id = in.readString();
+		id = in.readInt();
+		user_id = in.readInt();
+		scenario_id = in.readInt();
 		data = in.readString();
+		created_at = in.readString();
+		updated_at = in.readString();
 	}
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeString(id);
-		dest.writeString(updated_at);
-		dest.writeString(created_at);
-		dest.writeString(user_id);
+		dest.writeInt(id);
+		dest.writeInt(user_id);
+		dest.writeInt(scenario_id);
 		dest.writeString(data);
+		dest.writeString(created_at);
+		dest.writeString(updated_at);
+		
 	}
 	
 	public static final Parcelable.Creator<SemAppsAnnotation> CREATOR = new Parcelable.Creator<SemAppsAnnotation>() {

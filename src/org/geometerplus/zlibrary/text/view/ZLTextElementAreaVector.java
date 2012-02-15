@@ -40,6 +40,9 @@ final class ZLTextElementAreaVector {
 
 	// TODO: remove this unsafe method
 	public ZLTextElementArea get(int index) {
+		if (myAreas == null) {
+			return null;
+		}
 		return myAreas.get(index);
 	}
 

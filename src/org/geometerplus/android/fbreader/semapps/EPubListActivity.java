@@ -10,12 +10,14 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.util.EntityUtils;
 import org.geometerplus.android.fbreader.FBReader;
-import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.annotation.model.Annotations;
 import org.geometerplus.android.fbreader.annotation.model.TargetAuthor;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
+import org.geometerplus.android.fbreader.semapps.model.EPubs;
+import org.geometerplus.android.fbreader.semapps.model.Scenarios;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
@@ -47,19 +49,15 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class EPubListActivity extends ListActivity {
-	private AnnotationsDbAdapter dbHelper;
-	private Cursor cursor;
-	
 	private HttpHelper asyncTask;
-	SemApp semApp;
+	EPubs epubs;
 	EPub ePub;
 	ArrayList<EPub> ePubList;
 	ArrayList<String> ePubNamesList = new ArrayList<String>();
-	ArrayList<String> ePubIDsList = new ArrayList<String>();
+	ArrayList<Integer> ePubIDsList = new ArrayList<Integer>();
 	ArrayList<String> ePubFileNamesList = new ArrayList<String>();
 	ArrayList<String> ePubFilePathsList = new ArrayList<String>();
 	ArrayList<SemAppsAnnotations> ePubAnnotationsList = new ArrayList<SemAppsAnnotations>();
-	ArrayList<SemAppsAnnotation> semAppsAnnotations = new ArrayList<SemAppsAnnotation>();
 	
 	String annotationsXMLString;
 	String local_path;
@@ -70,20 +68,21 @@ public class EPubListActivity extends ListActivity {
 	public void onCreate(Bundle bundle) {
 		super.onCreate(bundle);
 		
-		dbHelper = new AnnotationsDbAdapter(this);
+		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 		
 		Intent intent = getIntent();
-		semApp = intent.getParcelableExtra("semapp");
+		epubs = intent.getParcelableExtra("epubs");
+		int semapp_id = epubs.getEPubs().get(0).getSemAppId();
+		String semapp_name = fbreader.SemApps.getSemAppById(semapp_id).getName();
 		
-		setTitle(getString(R.string.epubslist_title) + " - " + semApp.getName());
+		setTitle(getString(R.string.epubslist_title) + " - " + semapp_name);
 
-		ePubList = semApp.getEPubs().getEPubs();
+		ePubList = epubs.getEPubs();
 		for (EPub ePub : ePubList) {
 			ePubNamesList.add(ePub.getName());
 			ePubIDsList.add(ePub.getId());
-			ePubFileNamesList.add(ePub.getFile().getName());
-			ePubFilePathsList.add(ePub.getFile().getPath());
-			ePubAnnotationsList.add(ePub.getAnnotations());
+			ePubFileNamesList.add(ePub.getFileName());
+			ePubFilePathsList.add(ePub.getFilePath());
 		}
 		
 		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
@@ -119,15 +118,13 @@ public class EPubListActivity extends ListActivity {
 		String item = (String) getListAdapter().getItem(position);
 //		Toast.makeText(this, item + " selected", Toast.LENGTH_LONG).show();
 		
-		semAppsAnnotations = ePubAnnotationsList.get(position).getAnnotations();
-		
 	    // save book information in database
 	    ePub = ePubList.get(position);
 	    if (!fbreader.EPubs.getEPubs().contains(ePub)) {
 	    	fbreader.EPubs.getEPubs().add(ePub);
 	    }
 	    local_path = Paths.BooksDirectoryOption().getValue()+"/"+ePubIDsList.get(position)+"/"+ePubFileNamesList.get(position);
-	    SQLiteUtil.writeEPubToDatabase(EPubListActivity.this, ePub, local_path, semApp.getId());
+	    SQLiteUtil.writeEPubToDatabase(EPubListActivity.this, ePub, local_path);
 	    
 		progressDialog = new ProgressDialog(EPubListActivity.this);
 		progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -135,8 +132,11 @@ public class EPubListActivity extends ListActivity {
 		progressDialog.setMessage(progressText);
 	    
         
-        asyncTask.execute("http://epubdummy.provideal.net" + ePubFilePathsList.get(position)
-	    		, ePubFileNamesList.get(position), ePubIDsList.get(position));
+        asyncTask.execute("http://epubdummy.provideal.net/api/epubs/" + ePubIDsList.get(position) + "/scenarios", 
+        		"http://epubdummy.provideal.net" + ePubFilePathsList.get(position), 
+        		ePubFileNamesList.get(position), 
+        		ePubIDsList.get(position)
+        );
 	}
 	
 	private void openBook(Book book) {
@@ -148,12 +148,13 @@ public class EPubListActivity extends ListActivity {
 		);
 	}
 	
-	private class HttpHelper extends AsyncTask<String, Integer, String> {
+	private class HttpHelper extends AsyncTask<Object, Integer, String[]> {
 
 		EPubListActivity mActivity;
 
 		private ConnectionManager conn;
 		private HttpEntity resEntityGet;
+		private String resEntityGetResult;
 		private Object[] connectionResult;
 		private int myStatusCode;
 		private String filePath;
@@ -168,16 +169,29 @@ public class EPubListActivity extends ListActivity {
         }
 		
 		@Override
-		protected String doInBackground(String ... params) {
+		protected String[] doInBackground(Object ... params) {
 			String path = null;
+			String[] returnArray = new String[2];
+			conn = ConnectionManager.getInstance();
 			
 			try {
-				String getURL = params[0];
-				String fileName = params[1];
-				String ePubID = params[2];
+				String getURL1 = (String) params[0];
+				String getURL2 = (String) params[1];
+				String fileName = (String) params[2];
+				int ePubID = (Integer) params[3];
 				
-				conn = ConnectionManager.getInstance();
-				connectionResult = conn.postStuffGet(getURL);
+				connectionResult = conn.postStuffGet(getURL1);
+				resEntityGet = (HttpEntity) connectionResult[0];
+				myStatusCode = ((Integer) connectionResult[1]).intValue();
+				if (myStatusCode == conn.AUTHENTICATION_FAILED ||
+						myStatusCode == conn.NO_INTERNET_CONNECTION) {
+					return null;
+				}
+		        resEntityGetResult = EntityUtils.toString(resEntityGet);
+		        returnArray[0] = resEntityGetResult;
+				
+				
+				connectionResult = conn.postStuffGet(getURL2);
 				resEntityGet = (HttpEntity) connectionResult[0];
 				myStatusCode = ((Integer) connectionResult[1]).intValue();
 				if (myStatusCode == conn.AUTHENTICATION_FAILED ||
@@ -199,7 +213,8 @@ public class EPubListActivity extends ListActivity {
 							e.printStackTrace();
 						}
 					}
-					return null;
+					returnArray[1] = null;
+					return returnArray;
 				}
 				
 				FileOutputStream fileOutput = new FileOutputStream(file);
@@ -219,6 +234,7 @@ public class EPubListActivity extends ListActivity {
 					publishProgress((int) (((double) downloadedSize / totalSize)*100));
 				}
 				path = file.getPath();
+				returnArray[1] = path;
 				
 				fileOutput.close();
 			} catch (MalformedURLException e) {
@@ -226,7 +242,7 @@ public class EPubListActivity extends ListActivity {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			return path;
+			return returnArray;
 		}
 		
 		@Override
@@ -235,7 +251,14 @@ public class EPubListActivity extends ListActivity {
 	    }
 		
 		@Override
-		protected void onPostExecute(String result) {
+		protected void onPostExecute(String[] result) {
+			String scenarios_xml = null;
+			String path = null;
+			if (result != null) {
+				scenarios_xml = result[0];
+				path = result[1];
+			}
+			
 			if (progressDialog.isShowing()) {
                 progressDialog.dismiss();
 			}
@@ -257,32 +280,22 @@ public class EPubListActivity extends ListActivity {
 			
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 			
-			// add the missing annotations to local structure
-			Annotation annotation;
-			String upb_id = "";
-			String updated_at = "";
-			for (SemAppsAnnotation a : semAppsAnnotations) {
-				String data = a.getData();
-				if (data.isEmpty()) {
-					continue;
-				}
-				annotation = XMLUtil.loadAnnotationFromXMLString(data);
-				upb_id = a.getId();
-				updated_at = a.getUpdated_at();
-				if (!fbreader.Annotations.getAnnotations().contains(annotation)) {
-					annotation.setUPBId(upb_id);
-					annotation.setUpdatedAt(updated_at);
-					fbreader.Annotations.addAnnotation(annotation);
-					SQLiteUtil.writeAnnotationToDatabase(EPubListActivity.this, annotation, ePub.getId());
-				}
-			}
-			
-			if (result == null) {
+			if (path == null) {
 				fbreader.openFile(ZLFile.createFileByPath(filePath));
 			} else {
-				fbreader.openFile(ZLFile.createFileByPath(result));
+				fbreader.openFile(ZLFile.createFileByPath(path));
 			}
-			fbreader.loadAnnotationHighlighting();
+			
+			Scenarios scenarios = null;
+			if (scenarios_xml != null) {
+				scenarios = XMLUtil.loadScenariosFromXMLString(scenarios_xml);
+			}
+			
+			EPubListActivity.this.startActivityForResult(
+				new Intent(EPubListActivity.this.getApplicationContext(), ScenarioListActivity.class)
+					.putExtra("scenarios", scenarios),
+					5
+			);
 		}
 	}
 }

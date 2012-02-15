@@ -3,6 +3,7 @@ package org.geometerplus.android.fbreader.provider;
 import java.util.HashMap;
 
 import org.geometerplus.android.fbreader.annotation.database.DBEPub.DBEPubs;
+import org.geometerplus.android.fbreader.annotation.database.DBScenario.DBScenarios;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -21,15 +22,15 @@ import android.util.Log;
  * @author Andreas Hoffmann
  * 
  */
-public class EPubsContentProvider extends BaseProvider {
+public class ScenariosContentProvider extends BaseProvider {
 
-    private static final String EPUBS_TABLE_NAME = "EPubs";
+    private static final String SCENARIOS_TABLE_NAME = "Scenarios";
 
-    public static final String AUTHORITY = "org.geometerplus.android.fbreader.provider.EPubsContentProvider";
+    public static final String AUTHORITY = "org.geometerplus.android.fbreader.provider.ScenariosContentProvider";
 
     private static final UriMatcher sUriMatcher;
 
-    private static final int EPUBS = 1;
+    private static final int SCENARIOS = 1;
 
     private static HashMap<String, String> ePubsProjectionMap;
 
@@ -38,8 +39,8 @@ public class EPubsContentProvider extends BaseProvider {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int count;
         switch (sUriMatcher.match(uri)) {
-            case EPUBS:
-                count = db.delete(EPUBS_TABLE_NAME, where, whereArgs);
+            case SCENARIOS:
+                count = db.delete(SCENARIOS_TABLE_NAME, where, whereArgs);
                 break;
 
             default:
@@ -53,7 +54,7 @@ public class EPubsContentProvider extends BaseProvider {
     @Override
     public String getType(Uri uri) {
         switch (sUriMatcher.match(uri)) {
-            case EPUBS:
+            case SCENARIOS:
                 return DBEPubs.CONTENT_TYPE;
 
             default:
@@ -63,7 +64,7 @@ public class EPubsContentProvider extends BaseProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues initialValues) {
-        if (sUriMatcher.match(uri) != EPUBS) { throw new IllegalArgumentException("Unknown URI " + uri); }
+        if (sUriMatcher.match(uri) != SCENARIOS) { throw new IllegalArgumentException("Unknown URI " + uri); }
 
         ContentValues values;
         if (initialValues != null) {
@@ -73,7 +74,7 @@ public class EPubsContentProvider extends BaseProvider {
         }
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        long rowId = db.insert(EPUBS_TABLE_NAME, null, values);
+        long rowId = db.insert(SCENARIOS_TABLE_NAME, null, values);
         if (rowId > 0) {
             Uri noteUri = ContentUris.withAppendedId(DBEPubs.CONTENT_URI, rowId);
             getContext().getContentResolver().notifyChange(noteUri, null);
@@ -94,8 +95,8 @@ public class EPubsContentProvider extends BaseProvider {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 
         switch (sUriMatcher.match(uri)) {
-            case EPUBS:
-                qb.setTables(EPUBS_TABLE_NAME);
+            case SCENARIOS:
+                qb.setTables(SCENARIOS_TABLE_NAME);
                 qb.setProjectionMap(ePubsProjectionMap);
                 break;
 
@@ -115,8 +116,8 @@ public class EPubsContentProvider extends BaseProvider {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         int count;
         switch (sUriMatcher.match(uri)) {
-            case EPUBS:
-                count = db.update(EPUBS_TABLE_NAME, values, where, whereArgs);
+            case SCENARIOS:
+                count = db.update(SCENARIOS_TABLE_NAME, values, where, whereArgs);
                 break;
 
             default:
@@ -129,17 +130,17 @@ public class EPubsContentProvider extends BaseProvider {
 
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        sUriMatcher.addURI(AUTHORITY, EPUBS_TABLE_NAME, EPUBS);
+        sUriMatcher.addURI(AUTHORITY, SCENARIOS_TABLE_NAME, SCENARIOS);
 
         ePubsProjectionMap = new HashMap<String, String>();
-        ePubsProjectionMap.put(DBEPubs.EPUB_ID, DBEPubs.EPUB_ID);
-        ePubsProjectionMap.put(DBEPubs.NAME, DBEPubs.NAME);
-        ePubsProjectionMap.put(DBEPubs.CREATED_AT, DBEPubs.CREATED_AT);
-        ePubsProjectionMap.put(DBEPubs.UPDATED_AT, DBEPubs.UPDATED_AT);
-        ePubsProjectionMap.put(DBEPubs.FILENAME, DBEPubs.FILENAME);
-        ePubsProjectionMap.put(DBEPubs.FILEPATH, DBEPubs.FILEPATH);
-        ePubsProjectionMap.put(DBEPubs.LOCALPATH, DBEPubs.LOCALPATH);
-        ePubsProjectionMap.put(DBEPubs.SEMAPP_ID, DBEPubs.SEMAPP_ID);
+        ePubsProjectionMap.put(DBScenarios.SCENARIO_ID, DBScenarios.SCENARIO_ID);
+        ePubsProjectionMap.put(DBScenarios.SEMAPP_ID, DBScenarios.SEMAPP_ID);
+        ePubsProjectionMap.put(DBScenarios.EPUB_ID, DBScenarios.EPUB_ID);
+        ePubsProjectionMap.put(DBScenarios.NAME, DBScenarios.NAME);
+        ePubsProjectionMap.put(DBScenarios.VERSION, DBScenarios.VERSION);
+        ePubsProjectionMap.put(DBScenarios.ACTIVE, DBScenarios.ACTIVE);
+        ePubsProjectionMap.put(DBScenarios.CREATED_AT, DBScenarios.CREATED_AT);
+        ePubsProjectionMap.put(DBScenarios.UPDATED_AT, DBScenarios.UPDATED_AT);
 
     }
 }

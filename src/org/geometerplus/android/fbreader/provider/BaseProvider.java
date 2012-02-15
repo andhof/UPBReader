@@ -1,7 +1,5 @@
 package org.geometerplus.android.fbreader.provider;
 
-import org.geometerplus.android.fbreader.annotation.database.AnnotationsTables;
-
 import android.content.ContentProvider;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -14,27 +12,43 @@ public abstract class BaseProvider extends ContentProvider {
 
 	private static final String DATABASE_NAME = "annotations.db";
 	
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 3;
 
 	static class DatabaseHelper extends SQLiteOpenHelper {
 
 		// Database creation SQL statement
 		private static final String SEMAPPS_CREATE = 
 			"CREATE TABLE SemApps(" +
-				"_id TEXT PRIMARY KEY," +
+				"_id INTEGER PRIMARY KEY," +
+				"user_id INTEGER," +
 				"name TEXT," +
+				"created_at TEXT," +
 				"updated_at TEXT)";
 		
 		private static final String EPUBS_CREATE = 
 			"CREATE TABLE EPubs(" +
-				"_id TEXT PRIMARY KEY," +
+				"_id INTEGER PRIMARY KEY," +
 				"name TEXT NOT NULL," +
+				"created_at TEXT," +
 				"updated_at TEXT NOT NULL," +
 				"file_name TEXT NOT NULL," +
 				"file_path TEXT UNIQUE NOT NULL," +
 				"local_path TEXT UNIQUE," +
-				"semapp_id TEXT," +
+				"semapp_id INTEGER," +
 				"FOREIGN KEY(semapp_id) REFERENCES SemApps(_id))";
+		
+		private static final String SCENARIOS_CREATE =
+			"CREATE TABLE Scenarios(" +
+				"_id INTEGER PRIMARY KEY," +
+				"semapp_id INTEGER," +
+				"epub_id INTEGER," +
+				"name TEXT," +
+				"version INTEGER," +
+				"active INTEGER," +
+				"created_at TEXT," +
+				"updated_at TEXT," +
+				"FOREIGN KEY(epub_id) REFERENCES EPubs(_id))";
+				
 		
 		private static final String ANNOTATIONS_CREATE = 
 			"CREATE TABLE Annotations(" +
@@ -60,16 +74,18 @@ public abstract class BaseProvider extends ContentProvider {
 				"underlined TEXT," +
 				"crossout TEXT," +
 				"content TEXT," +
-				"upb_id TEXT," +
+				"upb_id INTEGER," +
+				"user_id INTEGER," +
+				"created_at TEXT," +
 				"updated_at TEXT," +
-				"epub_id TEXT," +
+				"epub_id INTEGER," +
 				"FOREIGN KEY(epub_id) REFERENCES EPubs(_id))";
 		
 		private static final String AUTHORS_CREATE = 
 			"CREATE TABLE Authors(" +
 				"_id INTEGER PRIMARY KEY AUTOINCREMENT," +
 				"name TEXT," +
-				"epub_id TEXT," +
+				"epub_id INTEGER," +
 				"FOREIGN KEY(epub_id) REFERENCES Annotations(epub_id))";
 		
 		DatabaseHelper(Context context) {
@@ -80,6 +96,7 @@ public abstract class BaseProvider extends ContentProvider {
 		public void onCreate(SQLiteDatabase db) {
 			db.execSQL(SEMAPPS_CREATE);
 			db.execSQL(EPUBS_CREATE);
+			db.execSQL(SCENARIOS_CREATE);
 			db.execSQL(ANNOTATIONS_CREATE);
 			db.execSQL(AUTHORS_CREATE);
 		}
@@ -90,6 +107,7 @@ public abstract class BaseProvider extends ContentProvider {
 					+ oldVersion + " to " + newVersion);
 			db.execSQL("DROP TABLE IF EXISTS SemApps");
 			db.execSQL("DROP TABLE IF EXISTS EPubs");
+			db.execSQL("DROP TABLE IF EXISTS Scenarios");
 			db.execSQL("DROP TABLE IF EXISTS Annotations");
 			db.execSQL("DROP TABLE IF EXISTS Authors");
 			onCreate(db);
@@ -97,10 +115,11 @@ public abstract class BaseProvider extends ContentProvider {
 		
 		@Override
         public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			Log.w(AnnotationsTables.class.getName(), "Downgrading database from version "
+			Log.w("BaseProvider", "Downgrading database from version "
 					+ oldVersion + " to " + newVersion);
 			db.execSQL("DROP TABLE IF EXISTS SemApps");
 			db.execSQL("DROP TABLE IF EXISTS EPubs");
+			db.execSQL("DROP TABLE IF EXISTS Scenarios");
 			db.execSQL("DROP TABLE IF EXISTS Annotations");
 			db.execSQL("DROP TABLE IF EXISTS Authors");
 			onCreate(db);

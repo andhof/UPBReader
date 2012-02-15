@@ -23,6 +23,8 @@ public class DBEPub {
 
 		public static final String NAME = "name";
 		
+		public static final String CREATED_AT = "created_at";
+		
 		public static final String UPDATED_AT = "updated_at";
 		
 		public static final String FILENAME = "file_name";
@@ -34,7 +36,7 @@ public class DBEPub {
 		public static final String SEMAPP_ID = "semapp_id";
 		
 		public static final String[] Projection = new String[] {
-			EPUB_ID, NAME, UPDATED_AT, FILENAME,FILEPATH, LOCALPATH, SEMAPP_ID};
+			EPUB_ID, NAME, CREATED_AT, UPDATED_AT, FILENAME,FILEPATH, LOCALPATH, SEMAPP_ID};
 	}
 
 }

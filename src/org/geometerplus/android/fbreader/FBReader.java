@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.api.PluginApi;
 import org.geometerplus.android.fbreader.library.KillerCallback;
@@ -93,9 +92,6 @@ public final class FBReader extends ZLAndroidActivity {
 	final static int ANNOTATION_CODE = 3;
 	final static int CLOSE_CODE = 4;
 
-	private AnnotationsDbAdapter dbHelper;
-	private Cursor cursor;
-	
 	private QuickActionBar quickSelectionActionBar;
 	private QuickActionBar quickAnnotationActionBar;
 	private AnnotationListPopup annotationListPopup;
@@ -445,7 +441,7 @@ public final class FBReader extends ZLAndroidActivity {
 		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 		myAnnotation = annotation;
 		
-		ArrayList<String> annotation_ids = new ArrayList<String>();
+		ArrayList<Integer> annotation_ids = new ArrayList<Integer>();
 		annotation_ids.add(annotation.getId());
 		
 		fbreader.BookTextView.clearSelectionHighlight();
@@ -485,7 +481,7 @@ public final class FBReader extends ZLAndroidActivity {
 	 */
 	public void showAnnotationListPanel(int x, int y, ArrayList<Annotation> annotationsOnPosition) {
 		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
-		ArrayList<String> annotation_ids = new ArrayList<String>();
+		ArrayList<Integer> annotation_ids = new ArrayList<Integer>();
 		annotationListPopup.dismiss();
 //		quickSelectionActionBar.dismiss();
 		quickAnnotationActionBar.dismiss();

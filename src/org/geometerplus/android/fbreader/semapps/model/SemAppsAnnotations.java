@@ -14,10 +14,10 @@ import android.os.Parcelable;
 @Root
 public class SemAppsAnnotations implements Parcelable{
 	
+	@Attribute
+	protected String type;
 	@ElementList(required=false, inline=true, name="annotations", entry="annotation")
 	protected ArrayList<SemAppsAnnotation> annotations;
-	@Attribute(required=false)
-    protected String type;
 	
 	/**
 	 * Standard empty constructor

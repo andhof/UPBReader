@@ -14,6 +14,7 @@ import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.SemAppsListActivity;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
+import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotations;
 import org.geometerplus.android.util.SQLiteUtil;
 import org.geometerplus.android.util.XMLUtil;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
@@ -33,6 +34,7 @@ public class RefreshAnnotationsAction extends ZLAction {
 	private FBReaderApp fbreader;
 	private FBReader baseActivity;
 	private Cursor cursor;
+	private int epub_id;
 	
 	RefreshAnnotationsAction(FBReader baseActivity, FBReaderApp fbreader) {
 		this.baseActivity = baseActivity;
@@ -47,10 +49,10 @@ public class RefreshAnnotationsAction extends ZLAction {
 		if (epub == null) {
 			return;
 		}
-		String semapp_id = epub.getSemAppId();
-		String epub_id = epub.getId();
+		epub_id = epub.getId();
+		int scenario_id = fbreader.Scenario.getId();
 		asyncTask = new HttpHelper(baseActivity);
-		asyncTask.execute("http://epubdummy.provideal.net/api/semapps/"+semapp_id+"/epubs/"+epub_id);
+		asyncTask.execute("http://epubdummy.provideal.net/api/scenarios/"+scenario_id+"/annotations");
 	}
 	
 	private class HttpHelper extends AsyncTask<String, Void, String> {
@@ -96,23 +98,25 @@ public class RefreshAnnotationsAction extends ZLAction {
 		}
 		
 		@Override
-		protected void onPostExecute(String result) {
-			String id;
+		protected void onPostExecute(String annotations_xml) {
+			int upb_id;
 			String updated_at;
 			Annotation annotation;
 			
-			LinkedList<Annotation> annotationsToRemove = fbreader.Annotations.getAnnotations();
-			EPub epub = XMLUtil.loadEPubFromXMLString(result);
-			ArrayList<SemAppsAnnotation> saAnnotations = epub.getAnnotations().getAnnotations();
-			for (SemAppsAnnotation a : saAnnotations) {
+			LinkedList<Annotation> annotationsToRemove = 
+				new LinkedList<Annotation>(fbreader.Annotations.getAnnotations());
+			SemAppsAnnotations saAnnotations = 
+				XMLUtil.loadSemAppsAnnotationsFromXMLString(annotations_xml);
+			ArrayList<SemAppsAnnotation> saAnnotationsList = saAnnotations.getAnnotations();
+			for (SemAppsAnnotation a : saAnnotationsList) {
 				
 				if (a.getData().isEmpty()) {
 					continue;
 				}
-				id = a.getId();
+				upb_id = a.getId();
 				updated_at = a.getUpdated_at();
 				
-				annotation = fbreader.Annotations.getAnnotationByUPBId(id);
+				annotation = fbreader.Annotations.getAnnotationByUPBId(upb_id);
 				if (annotation != null) {
 					annotationsToRemove.remove(annotation);
 				}
@@ -120,16 +124,17 @@ public class RefreshAnnotationsAction extends ZLAction {
 				// annotation on server is newer
 				if (annotation != null && !annotation.getUpdatedAt().equals(updated_at)) {
 					Annotation updatedAnnotation = XMLUtil.loadAnnotationFromXMLString(a.getData());
-					updatedAnnotation.setUPBId(id);
+					updatedAnnotation.setUPBId(upb_id);
+					annotation.setEPubId(epub_id);
 					updatedAnnotation.setUpdatedAt(updated_at);
 					
 					ListIterator<Annotation> it;
 					it = fbreader.Annotations.getAnnotations().listIterator();
 					while(it.hasNext()) {
 						Annotation current = it.next();
-						if (current.getUPBId().equals(id)) {
+						if (current.getUPBId() == upb_id) {
 							it.set(updatedAnnotation);
-							SQLiteUtil.writeAnnotationToDatabase(baseActivity, current, epub.getId());
+							SQLiteUtil.writeAnnotationToDatabase(baseActivity, current, epub_id);
 							break;
 						}
 					}
@@ -137,20 +142,21 @@ public class RefreshAnnotationsAction extends ZLAction {
 				// annotation on server but is missing locally
 				if (annotation == null) {
 					annotation = XMLUtil.loadAnnotationFromXMLString(a.getData());
-					annotation.setUPBId(id);
+					annotation.setUPBId(upb_id);
+					annotation.setEPubId(epub_id);
 					annotation.setUpdatedAt(updated_at);
 					fbreader.Annotations.addAnnotation(annotation);
-					SQLiteUtil.writeAnnotationToDatabase(baseActivity, annotation, epub.getId());
+					SQLiteUtil.writeAnnotationToDatabase(baseActivity, annotation, epub_id);
 				}
 			}
 			
 			if (annotationsToRemove.size() > 0) {
-				// TODO entferne weggefallene annotationen
+				// entferne weggefallene annotationen
 				for (Annotation a : annotationsToRemove) {
-					id = a.getUPBId();
+					upb_id = a.getUPBId();
 					fbreader.Annotations.removeAnnotation(a);
 					Uri uri = DBAnnotations.CONTENT_URI;
-					String selection = DBAnnotations.UPB_ID + "=\"" + id + "\"";
+					String selection = DBAnnotations.UPB_ID + "=\"" + upb_id + "\"";
 					baseActivity.getContentResolver().delete(uri, selection, null);
 				}
 			}

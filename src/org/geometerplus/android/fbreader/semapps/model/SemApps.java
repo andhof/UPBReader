@@ -14,26 +14,35 @@ public class SemApps implements Parcelable {
 	
 	@Attribute
 	protected String type;
-	@ElementList(inline=true, entry="semapp")
-	protected ArrayList<SemAppDummy> semApps;
+	@ElementList(required=false, inline=true, name="semapps", entry="semapp")
+	protected ArrayList<SemApp> semApps;
 	
 	/**
 	 * Standard empty constructor
 	 */
 	public SemApps() {
 		type = "";
-		semApps = new ArrayList<SemAppDummy>();
+		semApps = new ArrayList<SemApp>();
     }
 	
 	public SemApps(Parcel in) {
 		readFromParcel(in);
 	}
 
-	public ArrayList<SemAppDummy> getSemApps() {
+	public ArrayList<SemApp> getSemApps() {
 		if (semApps == null) {
-			semApps = new ArrayList<SemAppDummy>();
+			semApps = new ArrayList<SemApp>();
         }
 		return this.semApps;
+	}
+	
+	public SemApp getSemAppById(int semapp_id) {
+		for (SemApp semApp : semApps) {
+			if (semApp.getId() == semapp_id) {
+				return semApp;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -47,7 +56,7 @@ public class SemApps implements Parcelable {
 		if (semApps == null) {
 			semApps = new ArrayList();
 		}
-		in.readTypedList(semApps, SemAppDummy.CREATOR);
+		in.readTypedList(semApps, SemApp.CREATOR);
 	}
 
 	@Override

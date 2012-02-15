@@ -18,8 +18,7 @@
     
     <string name="semappslist_title">Liste der eSeminarapparate</string>
     <string name="epubslist_title">Liste der ePubs</string>  
-    
-    
+    <string name="scenarioslist_title">Liste der Aufgabenstellungen</string>
     
     <string name="upbrefresh_label">Aktualisieren</string>
     
@@ -27,6 +26,7 @@
     <string name="loadingsemlist">Liste der SeminarApparate wird geladen. Bitte warten...</string>
     <string name="loadingepublist">Buchliste wird geladen. Bitte warten...</string>
     <string name="downloadingFile">Buch wird geladen: %s</string>
+    <string name="loadingscenariolist">Aufgaben werden geladen: %s</string>
     
     <string name="authentication_failed">Benutzername oder Passwort falsch</string>
     <string name="no_internet_connection">Keine Verbindung zum Server möglich</string>

@@ -12,17 +12,6 @@ import org.simpleframework.xml.Root;
 import android.os.Parcel;
 import android.os.Parcelable;
  
- 
-//@XmlAccessorType(XmlAccessType.FIELD)
-//@XmlType(name = "annotation", propOrder = {
-//    "author",
-//    "created",
-//    "modified",
-//    "category",
-//    "tags",
-//    "annotationtargets",
-//    "annotationcontent"
-//})
 /**
  * Annotation Object
  */
@@ -31,7 +20,7 @@ import android.os.Parcelable;
 public class Annotation implements Parcelable {
  
 	@Element(required=false)
-	protected String id;
+	protected int id;
 	@Element(required=false)
     protected long created;
 	@Element(required=false)
@@ -49,15 +38,15 @@ public class Annotation implements Parcelable {
     @Element(required=false)
     protected AnnotationContent annotationContent;
     
-    protected String epub_id;
-    protected String upb_id;
+    protected int epub_id;
+    protected int upb_id;
     protected String updated_at;
     
     /**
      * Full constructor with all Information
      */
     public Annotation(
-    		String id,
+    		int id,
     		long created, 
     		long modified, 
     		String category, 
@@ -66,8 +55,8 @@ public class Annotation implements Parcelable {
     		AnnotationTarget target, 
     		RenderingInfo renderingInfo, 
     		AnnotationContent annotationContent,
-    		String epub_id,
-    		String upb_id,
+    		int epub_id,
+    		int upb_id,
     		String updated_at) {
     	this.id = id;
         this.created = created;
@@ -89,7 +78,7 @@ public class Annotation implements Parcelable {
     }
     
     public Annotation(){
-    	id = "";
+    	id = -1;
     	created = 0;
     	modified = 0;
     	category = "";
@@ -98,8 +87,8 @@ public class Annotation implements Parcelable {
     	annotationTarget = new AnnotationTarget();
         renderingInfo = new RenderingInfo();
         annotationContent = new AnnotationContent();
-        epub_id = "";
-        upb_id = "";
+        epub_id = -1;
+        upb_id = -1;
         updated_at = "";
     }
     
@@ -112,7 +101,7 @@ public class Annotation implements Parcelable {
     	readFromParcel(in);
     }
     
-    public void setId(String id) {
+    public void setId(int id) {
     	this.id = id;
     }
     
@@ -148,11 +137,11 @@ public class Annotation implements Parcelable {
     	this.renderingInfo = renderingInfo;
     }
     
-    public void setEPubId(String epub_id) {
+    public void setEPubId(int epub_id) {
     	this.epub_id = epub_id;
     }
     
-    public void setUPBId(String upb_id) {
+    public void setUPBId(int upb_id) {
     	this.upb_id = upb_id;
     }
     
@@ -160,7 +149,7 @@ public class Annotation implements Parcelable {
     	this.updated_at = updated_at;
     }
     
-    public String getId() {
+    public int getId() {
     	return id;
     }
     
@@ -216,11 +205,11 @@ public class Annotation implements Parcelable {
     	return renderingInfo;
     }
     
-    public String getEPubId() {
+    public int getEPubId() {
     	return epub_id;
     }
     
-    public String getUPBId() {
+    public int getUPBId() {
     	return upb_id;
     }
     
@@ -235,7 +224,7 @@ public class Annotation implements Parcelable {
 	}
 	
 	public void readFromParcel(Parcel in) {
-		id = in.readString();
+		id = in.readInt();
 		created = in.readLong();
 		modified = in.readLong();
 		category = in.readString();
@@ -247,14 +236,14 @@ public class Annotation implements Parcelable {
 		annotationTarget = in.readParcelable(AnnotationTarget.class.getClassLoader());
 		renderingInfo = in.readParcelable(RenderingInfo.class.getClassLoader());
 		annotationContent = in.readParcelable(AnnotationContent.class.getClassLoader());
-		epub_id = in.readString();
-		upb_id = in.readString();
+		epub_id = in.readInt();
+		upb_id = in.readInt();
 		updated_at = in.readString();
 	}
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeString(id);
+		dest.writeInt(id);
 		dest.writeLong(created);
 		dest.writeLong(modified);
 		dest.writeString(category);
@@ -263,8 +252,8 @@ public class Annotation implements Parcelable {
 		dest.writeParcelable(annotationTarget, flags);
 		dest.writeParcelable(renderingInfo, flags);
 		dest.writeParcelable(annotationContent, flags);
-		dest.writeString(epub_id);
-		dest.writeString(upb_id);
+		dest.writeInt(epub_id);
+		dest.writeInt(upb_id);
 		dest.writeString(updated_at);
 	}
 	

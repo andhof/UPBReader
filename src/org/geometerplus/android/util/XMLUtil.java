@@ -4,6 +4,8 @@ import java.io.StringWriter;
 
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
+import org.geometerplus.android.fbreader.semapps.model.EPubs;
+import org.geometerplus.android.fbreader.semapps.model.Scenarios;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
@@ -19,7 +21,7 @@ public abstract class XMLUtil {
 	 * load an XML String of semapps into the semapps object structure
 	 * @param xml
 	 */
-	public static SemApps loadSemAppsListFromXMLString(String xml) {
+	public static SemApps loadSemAppsFromXMLString(String xml) {
 		SemApps semApps = null;
 		try {
 			Serializer serializer = new Persister();
@@ -47,6 +49,21 @@ public abstract class XMLUtil {
 	}
 	
 	/**
+	 * load an XML String of epubs into the epubs object structure
+	 * @param xml
+	 */
+	public static EPubs loadEPubsFromXMLString(String xml) {
+		EPubs epubs = null;
+		try {
+			Serializer serializer = new Persister();
+    		epubs = serializer.read(EPubs.class, xml);
+    	} catch (Exception e) {
+    		Log.e("loadFromXMLString", e.toString());
+    	}
+    	return epubs;
+	}
+	
+	/**
 	 * load an XML String of epub into the epub object structure
 	 * @param xml
 	 */
@@ -59,6 +76,21 @@ public abstract class XMLUtil {
     		Log.e("loadFromXMLString", e.toString());
     	}
     	return epub;
+	}
+	
+	/**
+	 * load an XML String of scenarios into the scenarios object structure
+	 * @param xml
+	 */
+	public static Scenarios loadScenariosFromXMLString(String xml) {
+		Scenarios scenarios = null;
+		try {
+			Serializer serializer = new Persister();
+    		scenarios = serializer.read(Scenarios.class, xml);
+    	} catch (Exception e) {
+    		Log.e("loadFromXMLString", e.toString());
+    	}
+    	return scenarios;
 	}
 	
 	/**
@@ -80,7 +112,7 @@ public abstract class XMLUtil {
 	 * load an XML String of annotations into the annotations object structure
 	 * @param xml
 	 */
-	public static SemAppsAnnotations loadSemAppsAnnotationsListFromXMLString(String xml) {
+	public static SemAppsAnnotations loadSemAppsAnnotationsFromXMLString(String xml) {
 		SemAppsAnnotations saAnnotations = null;
 		try {
 			Serializer serializer = new Persister();

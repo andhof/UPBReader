@@ -22,7 +22,6 @@ import org.geometerplus.zlibrary.core.resources.ZLResource;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
 import de.upb.android.reader.R;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
-import org.geometerplus.android.fbreader.annotation.database.AnnotationsDbAdapter;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.SemApp;
 import org.geometerplus.android.fbreader.semapps.model.SemApps;
@@ -207,7 +206,7 @@ public class UPBLibraryLoginActivity extends Activity {
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 			
 			Log.v("UPBLibraryLoginActivity.HttpHelper", result);
-			SemApps semApps = XMLUtil.loadSemAppsListFromXMLString(result);
+			SemApps semApps = XMLUtil.loadSemAppsFromXMLString(result);
 			
 			UPBLibraryLoginActivity.this.startActivityForResult(
 				new Intent(UPBLibraryLoginActivity.this.getApplicationContext(), SemAppsListActivity.class)
