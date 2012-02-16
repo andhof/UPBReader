@@ -69,4 +69,6 @@
     
     <string name="toast_add_noconnection">Couldn\'t upload the note. Will try it later.</string>
     <string name="toast_remove_noconnection">Couldn\'t delete the note from Server. Will try it later.</string>
+    <string name="toast_download_failed">Annotations download failed!</string>
+    <string name="toast_refresh_ok">Annotations are now up to date.</string>
 </resources>

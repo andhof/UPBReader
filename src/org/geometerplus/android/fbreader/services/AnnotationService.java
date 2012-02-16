@@ -65,7 +65,7 @@ public class AnnotationService extends Service {
 
 			@Override
 			public void run() {
-				int annotation_id = -1;
+				String annotation_id = "";
 				int upb_id = -1;
 				String updated_at = "";
 				SharedPreferences.Editor edit = settings.edit();
@@ -84,7 +84,7 @@ public class AnnotationService extends Service {
 					String current = it.next();
 					
 					Log.v("AnnotationService", "add: "+ current);
-					annotation_id = Integer.parseInt(current.substring(current.lastIndexOf("/")+1));
+					annotation_id = current.substring(current.lastIndexOf("/")+1);
 					current = current.substring(0, current.lastIndexOf("/"));
 					Annotation annotation = fbreader.Annotations.getAnnotationById(annotation_id);
 					if (annotation == null) {

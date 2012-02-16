@@ -191,7 +191,7 @@ public abstract class SQLiteUtil {
 			
 			cursor_annotation.moveToFirst();
 			do {
-				int annotation_id = cursor_annotation.getInt(cursor_annotation.getColumnIndex(DBAnnotations.ANNOTATION_ID));
+				String annotation_id = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.ANNOTATION_ID));
 				long created = cursor_annotation.getLong(cursor_annotation.getColumnIndex(DBAnnotations.CREATED));
 				long modified = cursor_annotation.getLong(cursor_annotation.getColumnIndex(DBAnnotations.MODIFIED));
 				String category = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.CATEGORY));
@@ -215,6 +215,8 @@ public abstract class SQLiteUtil {
 				boolean crossout = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.CROSSOUT)).equals("true") ? true : false;
 				String content = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.CONTENT));
 				int upb_id = cursor_annotation.getInt(cursor_annotation.getColumnIndex(DBAnnotations.UPB_ID));
+				int user_id = cursor_annotation.getInt(cursor_annotation.getColumnIndex(DBAnnotations.USER_ID));
+				String created_at = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.CREATED_AT));
 				String updated_at = cursor_annotation.getString(cursor_annotation.getColumnIndex(DBAnnotations.UPDATED_AT));
 				int epub_id = cursor_annotation.getInt(cursor_annotation.getColumnIndex(DBAnnotations.EPUB_ID));
 				
@@ -237,9 +239,9 @@ public abstract class SQLiteUtil {
 				}
 				
 				fbreader.Annotations.addAnnotation(annotation_id, created, modified, category, tags, 
-						author_name, bookid, markedText, targetannotationid, isbn, title, authors, publicationdate, start_part, 
-						start_xpath, start_charoffset, end_part, end_xpath, end_charoffset, 
-						highlightcolor, underlined, crossout, content, epub_id, upb_id, updated_at);
+						author_name, bookid, markedText, targetannotationid, isbn, title, authors, 
+						publicationdate, start_part, start_xpath, start_charoffset, end_part, end_xpath, end_charoffset, 
+						highlightcolor, underlined, crossout, content, epub_id, upb_id, user_id, created_at, updated_at);
 		    } while (cursor_annotation.moveToNext());
 		} catch(Exception e) {
 			e.printStackTrace();
@@ -391,7 +393,7 @@ public abstract class SQLiteUtil {
 		final int semapp_id = epub.getSemAppId();
 		
 		// annotation data
-		final int annotation_id = annotation.getId();
+		final String annotation_id = annotation.getId();
 		final long created = annotation.getCreated();
 		final long modified = annotation.getModified();
 		final String category = annotation.getCategory();
@@ -532,7 +534,7 @@ public abstract class SQLiteUtil {
 	 * Insert one Annotation of the book into the database or update it 
 	 */
 	public static void writeAnnotationToDatabase(final Context context, Annotation annotation, final int eid) {
-		final int annotation_id = annotation.getId();
+		final String annotation_id = annotation.getId();
 		final long created = annotation.getCreated();
 		final long modified = annotation.getModified();
 		final String category = annotation.getCategory();
@@ -556,6 +558,8 @@ public abstract class SQLiteUtil {
 		final String crossout = annotation.getRenderingInfo().isCrossedOut() ? "true" : "false";
 		final String content = annotation.getAnnotationContent().getAnnotationText();
 		final int upb_id = annotation.getUPBId();
+		final int user_id = annotation.getUserId();
+		final String created_at = annotation.getCreatedAt();
 		final String updated_at2 = annotation.getUpdatedAt();
 		
 		// working on database in a different thread
@@ -577,14 +581,11 @@ public abstract class SQLiteUtil {
 					} else {
 						epub_id = cursor.getInt(cursor.getColumnIndex(DBEPubs.EPUB_ID));
 					}
+					cursor.close();
 					
 					uri = DBAnnotations.CONTENT_URI;
 					projection = DBAnnotations.Projection;
-					if (upb_id > 0) {
-						selection = DBAnnotations.UPB_ID + "=\"" + upb_id + "\"";
-					} else {
-						selection = DBAnnotations.ANNOTATION_ID + "=\"" + annotation_id + "\"";
-					}
+					selection = DBAnnotations.ANNOTATION_ID + "=\"" + annotation_id + "\"";
 					cursor = context.getContentResolver().query(uri, projection, selection, null, null);
 					ContentValues values = new ContentValues();
 					values.put(DBAnnotations.ANNOTATION_ID, annotation_id);
@@ -610,6 +611,8 @@ public abstract class SQLiteUtil {
 					values.put(DBAnnotations.CROSSOUT, crossout);
 					values.put(DBAnnotations.CONTENT, content);
 					values.put(DBAnnotations.UPB_ID, upb_id);
+					values.put(DBAnnotations.USER_ID, user_id);
+					values.put(DBAnnotations.CREATED_AT, created_at);
 					values.put(DBAnnotations.UPDATED_AT, updated_at2);
 					values.put(DBAnnotations.EPUB_ID, epub_id);
 					

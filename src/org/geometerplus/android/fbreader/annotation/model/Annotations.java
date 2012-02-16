@@ -45,7 +45,7 @@ public class Annotations {
 	 * Add a new Annotation to the List of Annotations with all Information
 	 */
 	public void addAnnotation(
-			int id,
+			String id,
 			long created, 
     		long modified, 
     		String category, 
@@ -56,15 +56,18 @@ public class Annotations {
     		AnnotationContent content,
     		int epub_id, 
     		int upb_id,
+    		int user_id,
+    		String created_at,
     		String updated_at) {
-		annotations.add(new Annotation(id, created, modified, category, tags, author, target, renderingInfo, content, epub_id, upb_id, updated_at));
+		annotations.add(new Annotation(id, created, modified, category, tags, author, target, 
+				renderingInfo, content, epub_id, upb_id, user_id, created_at, updated_at));
 	}
 	
 	/**
 	 * Add a new Annotation to the List of Annotations with all Information
 	 */
 	public void addAnnotation(
-			int id,
+			String id,
 			long created, 
     		long modified, 
     		String category, 
@@ -89,6 +92,8 @@ public class Annotations {
     		String content,
     		int epub_id,
     		int upb_id,
+    		int user_id,
+    		String created_at,
     		String updated_at) {
 		
 		Annotation annotation = new Annotation();
@@ -120,6 +125,8 @@ public class Annotations {
 		annotation.getAnnotationContent().setAnnotationText(content);
 		annotation.setEPubId(epub_id);
 		annotation.setUPBId(upb_id);
+		annotation.setUserId(user_id);
+		annotation.setCreatedAt(created_at);
 		annotation.setUpdatedAt(updated_at);
 		
 		annotations.add(annotation);
@@ -152,9 +159,9 @@ public class Annotations {
 	/**
 	 * get annotation by the given id 
 	 */
-	public Annotation getAnnotationById(int id) {
+	public Annotation getAnnotationById(String id) {
 		for (Annotation a : annotations) {
-			if (a.getId() == id) {
+			if (a.getId().equals(id)) {
 				return a;
 			}
 		}

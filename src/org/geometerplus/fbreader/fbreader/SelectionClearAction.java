@@ -35,7 +35,7 @@ public class SelectionClearAction extends FBAction {
 	protected void run(Object ... params) {
 		if (params.length > 0) {
 			Annotation annotation = (Annotation) params[0];
-			ArrayList<Integer> annotation_ids = new ArrayList<Integer>(); 
+			ArrayList<String> annotation_ids = new ArrayList<String>(); 
 			annotation_ids.add(annotation.getId());
 			fbreader.BookTextView.clearSelectionHighlight();
 			fbreader.BookTextView.repaintAll();

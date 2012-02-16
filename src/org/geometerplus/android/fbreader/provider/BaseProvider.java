@@ -12,7 +12,7 @@ public abstract class BaseProvider extends ContentProvider {
 
 	private static final String DATABASE_NAME = "annotations.db";
 	
-	private static final int DATABASE_VERSION = 3;
+	private static final int DATABASE_VERSION = 2;
 
 	static class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -58,7 +58,7 @@ public abstract class BaseProvider extends ContentProvider {
 				"category TEXT," +
 				"tags TEXT," +
 				"author_name TEXT," +
-				"target_bookid INTEGER," +
+				"target_bookid TEXT," +
 				"target_markedtext TEXT," +
 				"target_annotationid TEXT," +
 				"target_documentidentifier_isbn TEXT," +

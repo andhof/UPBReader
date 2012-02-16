@@ -115,12 +115,17 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 	       						if (myStatusCode == conn.OK) {
 	       							Log.v("SelectionRemoveAnnotationAction", "Berechtigung zum Entfernen einer Annotation gegeben");
 	       							Uri uri = DBAnnotations.CONTENT_URI;
-	       							String selection = DBAnnotations.ANNOTATION_ID + "=\"" + a.getId() + "\"";
+	       							String selection = DBAnnotations.UPB_ID + "=\"" + a.getUPBId() + "\"";
 	       							BaseActivity.getContentResolver().delete(uri, selection, null);
 	       							fbreader.Annotations.getAnnotations().remove(a);
+	       							fbreader.BookTextView.removeAnnotationHighlight(annotation);
 	       						} else {
 	       							if (myStatusCode == conn.FORBIDDEN) {
-	//       								UIUtil.createDialog(BaseActivity, "Error", BaseActivity.getString(R.string.not_allowed));
+	       								if (a.equals(annotation)) {
+	       									UIUtil.createDialog(BaseActivity, "Error", BaseActivity.getString(R.string.not_allowed));
+	       									fbreader.BookTextView.clearSelectionHighlight();
+		       								fbreader.BookTextView.repaintAll();
+	       								}
 	       								continue;
 	       							}
 	       						}
@@ -129,7 +134,6 @@ public class SelectionRemoveAnnotationAction extends FBAndroidAction {
 	       					SharedPreferences.Editor e = settings.edit();
 	       					e.putStringSet("delete", urlset);
 	       					e.commit();
-	       					fbreader.BookTextView.removeAnnotationHighlight(annotation);
 	       				} else {
 	       					fbreader.BookTextView.removeAnnotationHighlight(annotation);
 	       					for (Annotation a : annotationsToRemove) {

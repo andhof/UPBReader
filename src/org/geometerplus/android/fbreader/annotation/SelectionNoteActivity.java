@@ -224,7 +224,7 @@ public class SelectionNoteActivity extends Activity {
 					annotation.getAnnotationContent().setAnnotationText(content);
 					
 					int annotation_id = StorageUtil.getCurrentCounterAndIncrement(SelectionNoteActivity.this, "annotation_id_counter");
-			    	annotation.setId(annotation_id);
+					annotation.setId(Secure.getString(getContentResolver(), Secure.ANDROID_ID) + annotation_id);
 					
 					ZLTextFixedPosition newEndPos = new ZLTextFixedPosition(selectionEndPos.getParagraphIndex(), selectionEndPos.getElementIndex()+1, selectionEndPos.getCharIndex());
 					fbreader.BookTextView.addAnnotationHighlight(selectionStartPos, newEndPos, highlightColor, true, annotation);
@@ -398,7 +398,7 @@ public class SelectionNoteActivity extends Activity {
 		protected String doInBackground(String... params) {
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 			
-			int annotation_id = -1;
+			String annotation_id = "";
 			int upb_id = -1;
 			String updated_at = "";
 			
@@ -450,7 +450,7 @@ public class SelectionNoteActivity extends Activity {
 				} 
 			}
 			
-			if (annotation_id <= 0) {
+			if (annotation_id.isEmpty()) {
 				annotation_id = annotation.getId();
 			}
 			

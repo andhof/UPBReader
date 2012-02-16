@@ -28,9 +28,12 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.geometerplus.zlibrary.core.resources.ZLResource;
+
+import de.upb.android.reader.R;
 
 public abstract class UIUtil {
 	private static final Object ourMonitor = new Object();
@@ -135,12 +138,19 @@ public abstract class UIUtil {
 	/**
 	 * Alert dialog for connection messages or similar 
 	 */
-	public static void createDialog(Context context, String title, String text) {
-        AlertDialog ad = new AlertDialog.Builder(context)
-        .setPositiveButton("Ok", null)
-        .setTitle(title)
-        .setMessage(text)
-        .create();
-        ad.show();
+	public static void createDialog(final Context context, final String title, final String text) {
+		Handler h = new Handler(context.getMainLooper());
+		
+	    h.post(new Runnable() {
+	        @Override
+	        public void run() {
+	        	AlertDialog ad = new AlertDialog.Builder(context)
+	            .setPositiveButton("Ok", null)
+	            .setTitle(title)
+	            .setMessage(text)
+	            .create();
+	            ad.show();
+	        }
+	    });
     }
 }

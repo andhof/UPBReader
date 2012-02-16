@@ -441,7 +441,7 @@ public final class FBReader extends ZLAndroidActivity {
 		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 		myAnnotation = annotation;
 		
-		ArrayList<Integer> annotation_ids = new ArrayList<Integer>();
+		ArrayList<String> annotation_ids = new ArrayList<String>();
 		annotation_ids.add(annotation.getId());
 		
 		fbreader.BookTextView.clearSelectionHighlight();
@@ -481,7 +481,7 @@ public final class FBReader extends ZLAndroidActivity {
 	 */
 	public void showAnnotationListPanel(int x, int y, ArrayList<Annotation> annotationsOnPosition) {
 		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
-		ArrayList<Integer> annotation_ids = new ArrayList<Integer>();
+		ArrayList<String> annotation_ids = new ArrayList<String>();
 		annotationListPopup.dismiss();
 //		quickSelectionActionBar.dismiss();
 		quickAnnotationActionBar.dismiss();

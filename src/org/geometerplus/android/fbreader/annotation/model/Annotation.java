@@ -20,7 +20,7 @@ import android.os.Parcelable;
 public class Annotation implements Parcelable {
  
 	@Element(required=false)
-	protected int id;
+	protected String id;
 	@Element(required=false)
     protected long created;
 	@Element(required=false)
@@ -40,13 +40,15 @@ public class Annotation implements Parcelable {
     
     protected int epub_id;
     protected int upb_id;
+    protected int user_id;
+    protected String created_at;
     protected String updated_at;
     
     /**
      * Full constructor with all Information
      */
     public Annotation(
-    		int id,
+    		String id,
     		long created, 
     		long modified, 
     		String category, 
@@ -57,6 +59,8 @@ public class Annotation implements Parcelable {
     		AnnotationContent annotationContent,
     		int epub_id,
     		int upb_id,
+    	    int user_id,
+    	    String created_at,
     		String updated_at) {
     	this.id = id;
         this.created = created;
@@ -69,6 +73,8 @@ public class Annotation implements Parcelable {
         this.annotationContent = annotationContent;
         this.epub_id = epub_id;
         this.upb_id = upb_id;
+        this.user_id = user_id;
+        this.created_at = created_at;
         this.updated_at = updated_at;
         
 //        author = new Author();
@@ -78,7 +84,7 @@ public class Annotation implements Parcelable {
     }
     
     public Annotation(){
-    	id = -1;
+    	id = "";
     	created = 0;
     	modified = 0;
     	category = "";
@@ -89,6 +95,8 @@ public class Annotation implements Parcelable {
         annotationContent = new AnnotationContent();
         epub_id = -1;
         upb_id = -1;
+        user_id = -1;
+        created_at = "";
         updated_at = "";
     }
     
@@ -101,7 +109,7 @@ public class Annotation implements Parcelable {
     	readFromParcel(in);
     }
     
-    public void setId(int id) {
+    public void setId(String id) {
     	this.id = id;
     }
     
@@ -145,11 +153,19 @@ public class Annotation implements Parcelable {
     	this.upb_id = upb_id;
     }
     
+    public void setUserId(int user_id) {
+    	this.user_id = user_id;
+    }
+    
+    public void setCreatedAt(String created_at) {
+    	this.created_at = created_at;
+    }
+    
     public void setUpdatedAt(String updated_at) {
     	this.updated_at = updated_at;
     }
     
-    public int getId() {
+    public String getId() {
     	return id;
     }
     
@@ -213,6 +229,14 @@ public class Annotation implements Parcelable {
     	return upb_id;
     }
     
+    public int getUserId() {
+    	return user_id;
+    }
+    
+    public String getCreatedAt() {
+    	return created_at;
+    }
+    
     public String getUpdatedAt() {
     	return updated_at;
     }
@@ -224,7 +248,7 @@ public class Annotation implements Parcelable {
 	}
 	
 	public void readFromParcel(Parcel in) {
-		id = in.readInt();
+		id = in.readString();
 		created = in.readLong();
 		modified = in.readLong();
 		category = in.readString();
@@ -238,12 +262,14 @@ public class Annotation implements Parcelable {
 		annotationContent = in.readParcelable(AnnotationContent.class.getClassLoader());
 		epub_id = in.readInt();
 		upb_id = in.readInt();
+		user_id = in.readInt();
+		created_at = in.readString();
 		updated_at = in.readString();
 	}
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeInt(id);
+		dest.writeString(id);
 		dest.writeLong(created);
 		dest.writeLong(modified);
 		dest.writeString(category);
@@ -254,6 +280,8 @@ public class Annotation implements Parcelable {
 		dest.writeParcelable(annotationContent, flags);
 		dest.writeInt(epub_id);
 		dest.writeInt(upb_id);
+		dest.writeInt(user_id);
+		dest.writeString(created_at);
 		dest.writeString(updated_at);
 	}
 	

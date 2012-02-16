@@ -27,6 +27,7 @@ import org.geometerplus.android.util.SQLiteUtil;
 import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.android.util.XMLUtil;
 import org.geometerplus.fbreader.Paths;
+import org.geometerplus.fbreader.fbreader.ActionCode;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
 import org.geometerplus.fbreader.library.Book;
 import org.geometerplus.zlibrary.core.application.ZLApplication;
@@ -123,8 +124,11 @@ public class ScenarioListActivity extends ListActivity {
 	    progressDialog = new ProgressDialog(ScenarioListActivity.this);
 		progressDialog.setMessage(this.getText(R.string.loadingscenariolist));
         
-        asyncTask.execute(
-        		"http://epubdummy.provideal.net/api/scenarios/" + scenarioIdsList.get(position) + "/annotations");
+		int scenario_id = scenarioIdsList.get(position);
+		fbreader.doAction(ActionCode.REFRESH_ANNOTATIONS);
+		
+//        asyncTask.execute(
+//        		"http://epubdummy.provideal.net/api/scenarios/" + scenarioIdsList.get(position) + "/annotations");
 	}
 	
 	private void openBook(Book book) {
@@ -178,11 +182,6 @@ public class ScenarioListActivity extends ListActivity {
 			}
 			return resEntityGetResult;
 		}
-		
-		@Override
-		protected void onProgressUpdate(Integer... progress) {
-			progressDialog.setProgress(progress[0]);
-	    }
 		
 		@Override
 		protected void onPostExecute(String result) {

@@ -1,5 +1,7 @@
 package org.geometerplus.android.fbreader.annotation;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -78,6 +80,8 @@ public class SelectionShowNoteActivity extends Activity {
 		username = settings.getString("user", "Localuser");
 		password = settings.getString("password", null);
 		
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		
 		int semapp_id = -1;
 		if (annotation != null && fbreader.EPubs.getEPubById(annotation.getEPubId()) != null) {
 			semapp_id = fbreader.EPubs.getEPubById(annotation.getEPubId()).getSemAppId();
@@ -104,7 +108,13 @@ public class SelectionShowNoteActivity extends Activity {
 		findTextView(R.id.show_note_author_text).setText(annotation.getAuthor().getName());
 		findTextView(R.id.show_note_category_text).setText(annotation.getCategory());
 		findTextView(R.id.show_note_tags_text).setText(annotation.getTagsAsString());
-		findTextView(R.id.show_note_modified_text).setText(annotation.getUpdatedAt());
+		try {
+			findTextView(R.id.show_note_modified_text).setText(
+					format.parse(annotation.getUpdatedAt()).toString());
+		} catch (ParseException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		findTextView(R.id.show_note_content_text).setText(
 				annotation.getAnnotationContent().getAnnotationText());
 		
@@ -168,7 +178,7 @@ public class SelectionShowNoteActivity extends Activity {
 					
 					newAnnotation.setEPubId(annotation.getEPubId());
 					int annotation_id = StorageUtil.getCurrentCounterAndIncrement(SelectionShowNoteActivity.this, "annotation_id_counter");
-					newAnnotation.setId(annotation_id);
+					newAnnotation.setId(Secure.getString(getContentResolver(), Secure.ANDROID_ID) + annotation_id);
 					
 					// Start asynctask for uploading annotation
 					asyncTask = new HttpHelper();
@@ -224,7 +234,7 @@ public class SelectionShowNoteActivity extends Activity {
 		@Override
 		protected String doInBackground(String... params) {
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
-			int annotation_id = -1;
+			String annotation_id = "";
 			int upb_id = -1;
 			String updated_at = "";
 			
@@ -258,7 +268,7 @@ public class SelectionShowNoteActivity extends Activity {
 				} 
 			}
 			
-			if (annotation_id <= 0) {
+			if (annotation_id.isEmpty()) {
 				annotation_id = newAnnotation.getId();
 			}
 			
