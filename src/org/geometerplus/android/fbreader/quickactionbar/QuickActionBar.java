@@ -9,6 +9,7 @@ import org.geometerplus.zlibrary.core.application.ZLApplication;
 import org.geometerplus.zlibrary.text.view.ZLTextView;
 import de.upb.android.reader.R;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -52,13 +53,15 @@ public class QuickActionBar extends PopupWindow {
     private int animStyle;
     private int orientation;
     private int rootWidth=0;
+    private int x = 0;
+    private int y = 0;
 	
     /**
      * Constructor for horizontal layout
      * 
      * @param context  Context
      */
-	public QuickActionBar(Context context, FBReaderApp application) {
+	public QuickActionBar(final Context context, FBReaderApp application) {
 		super(context);
 		this.view = application.getTextView();
 		this.application = application;
@@ -88,6 +91,10 @@ public class QuickActionBar extends PopupWindow {
 		rootView.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 		
 		setContentView(rootView);
+	}
+	
+	public void showTest(View anchor) {
+		show(rootView, x, y);
 	}
 	
 	 /**
@@ -315,6 +322,9 @@ public class QuickActionBar extends PopupWindow {
 	}
 	
 	public void show (View anchor, int x, int y) {
+		this.x = x;
+		this.y = y;
+		
 		//#################################
 		if (rootView == null) 
 			throw new IllegalStateException("setContentView was not called with a view to display.");

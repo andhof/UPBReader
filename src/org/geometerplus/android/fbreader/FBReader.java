@@ -49,6 +49,7 @@ import org.geometerplus.zlibrary.ui.android.library.ZLAndroidApplication;
 import android.app.ActionBar;
 import android.app.SearchManager;
 import android.content.*;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -467,6 +468,12 @@ public final class FBReader extends ZLAndroidActivity {
 		quickAnnotationActionBar.addQuickActionItemWithAnnotation(cancel, annotation);
 		
         quickAnnotationActionBar.show(this.findViewById(R.id.root_view), x, y);
+	}
+	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		quickAnnotationActionBar.showTest(this.findViewById(R.id.root_view));
 	}
 	
 	/**
