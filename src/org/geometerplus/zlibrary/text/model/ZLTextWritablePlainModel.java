@@ -205,7 +205,7 @@ public final class ZLTextWritablePlainModel extends ZLTextPlainModel implements 
 			if (tagStack[i].contains("html")) {
 				tagStack[i] = "html";
 			}
-			xPath += "/*[[local-name()='" + tagStack[i] + "']";
+			xPath += "/*[local-name()='" + tagStack[i] + "']";
 		}
 		return xPath;
 	}
