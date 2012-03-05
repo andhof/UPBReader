@@ -111,6 +111,13 @@ public class EPubListActivity extends ListActivity {
         }
     }
 	
+//	@Override
+//	public void onBackPressed() {
+//		// do something on back.
+//		Log.v("EPubListActivity", "Back Button gedrückt");
+//		return;
+//	}
+	
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
@@ -137,15 +144,6 @@ public class EPubListActivity extends ListActivity {
         		ePubFileNamesList.get(position), 
         		ePubIDsList.get(position)
         );
-	}
-	
-	private void openBook(Book book) {
-		startActivity(
-			new Intent(getApplicationContext(), FBReader.class)
-				.setAction(Intent.ACTION_VIEW)
-				.putExtra(FBReader.BOOK_PATH_KEY, book.File.getPath())
-				.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-		);
 	}
 	
 	private class HttpHelper extends AsyncTask<Object, Integer, String[]> {

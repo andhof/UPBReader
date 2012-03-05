@@ -129,6 +129,9 @@ public class ScenarioListActivity extends ListActivity {
 		
 //        asyncTask.execute(
 //        		"http://epubdummy.provideal.net/api/scenarios/" + scenarioIdsList.get(position) + "/annotations");
+		
+		setResult(4);
+		finish();
 	}
 	
 	private void openBook(Book book) {
@@ -201,7 +204,7 @@ public class ScenarioListActivity extends ListActivity {
 //			if (result == null) {
 //				UIUtil.createDialog(EPubListActivity.this, "Error", getString(R.string.complete_file_exists));
 //			}
-			setResult(5);
+			setResult(4);
 			finish();
 			
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
@@ -227,8 +230,6 @@ public class ScenarioListActivity extends ListActivity {
 					SQLiteUtil.writeAnnotationToDatabase(ScenarioListActivity.this, annotation, scenario.getEPubId());
 				}
 			}
-			
-			fbreader.loadAnnotationHighlighting();
 		}
 	}
 }

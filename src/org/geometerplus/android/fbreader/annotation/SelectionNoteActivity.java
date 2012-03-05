@@ -113,8 +113,9 @@ public class SelectionNoteActivity extends Activity {
 		final EditText contentEditText = (EditText) findViewById(R.id.note_text_input);
 		contentEditText.setText(annotation.getAnnotationContent().getAnnotationText());
 		
+		findTextView(R.id.note_tags_label).setText(R.string.selectionnote_tags);
+		
 		final EditText tagEditText = (EditText)findViewById(R.id.note_tags_input);
-		tagEditText.setText(R.string.selectionnote_tags);
 		
 		String tagsString = "";
 		StringBuffer result = new StringBuffer();
@@ -126,7 +127,7 @@ public class SelectionNoteActivity extends Activity {
 	        }
 	    }
 	    tagsString = result.toString();
-		((EditText) findViewById(R.id.note_tags_input)).setText(tagsString);
+		tagEditText.setText(tagsString);
 		
 		findTextView(R.id.note_categories_label).setText(R.string.selectionnote_categories);
 		

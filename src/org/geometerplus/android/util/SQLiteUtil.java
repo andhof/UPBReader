@@ -387,6 +387,7 @@ public abstract class SQLiteUtil {
 		// epub data
 		final int epub_id = epub.getId();
 		final String name = epub.getName();
+		final String created_at = epub.getCreated_at();
 		final String updated_at = epub.getUpdated_at();
 		final String file_name = epub.getFileName();
 		final String file_path = epub.getFilePath();
@@ -433,6 +434,7 @@ public abstract class SQLiteUtil {
 				ContentValues values = new ContentValues();
 				values.put(DBEPubs.EPUB_ID, epub_id);
 				values.put(DBEPubs.NAME, name);
+				values.put(DBEPubs.CREATED_AT, created_at);
 				values.put(DBEPubs.UPDATED_AT, updated_at);
 				values.put(DBEPubs.FILENAME, file_name);
 				values.put(DBEPubs.FILEPATH, file_path);

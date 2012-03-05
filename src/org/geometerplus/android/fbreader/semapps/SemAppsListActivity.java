@@ -34,6 +34,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -90,6 +91,13 @@ public class SemAppsListActivity extends ListActivity {
     public Object onRetainNonConfigurationInstance() {
         return asyncTask;
     }
+	
+	@Override
+	public void onBackPressed() {
+		// do something on back.
+		Log.v("SemAppsListActivity", "Back Button gedrückt");
+		return;
+	}
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -167,6 +175,7 @@ public class SemAppsListActivity extends ListActivity {
 				asyncTask = new HttpHelper(SemAppsListActivity.this);
 				return;
 			}
+			finish();
 			
 			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 			
