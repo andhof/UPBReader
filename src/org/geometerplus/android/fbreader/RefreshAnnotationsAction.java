@@ -165,68 +165,6 @@ public class RefreshAnnotationsAction extends ZLAction {
 		        }
 		    });
 			
-			// This was with removing and adding, but clearing all and then fill the annotations is better i think.
-			/*
-			LinkedList<Annotation> annotationsToRemove = 
-				new LinkedList<Annotation>(fbreader.Annotations.getAnnotations());
-			SemAppsAnnotations saAnnotations = 
-				XMLUtil.loadSemAppsAnnotationsFromXMLString(annotations_xml);
-			ArrayList<SemAppsAnnotation> saAnnotationsList = saAnnotations.getAnnotations();
-			for (SemAppsAnnotation a : saAnnotationsList) {
-				
-				if (a.getData().isEmpty()) {
-					continue;
-				}
-				upb_id = a.getId();
-				updated_at = a.getUpdated_at();
-				
-				annotation = fbreader.Annotations.getAnnotationByUPBId(upb_id);
-				if (annotation != null) {
-					annotationsToRemove.remove(annotation);
-				}
-				
-				// annotation on server is newer
-				if (annotation != null && !annotation.getUpdatedAt().equals(updated_at)) {
-					Annotation updatedAnnotation = XMLUtil.loadAnnotationFromXMLString(a.getData());
-					updatedAnnotation.setUPBId(upb_id);
-					annotation.setEPubId(epub_id);
-					updatedAnnotation.setUpdatedAt(updated_at);
-					
-					ListIterator<Annotation> it;
-					it = fbreader.Annotations.getAnnotations().listIterator();
-					while(it.hasNext()) {
-						Annotation current = it.next();
-						if (current.getUPBId() == upb_id) {
-							it.set(updatedAnnotation);
-							SQLiteUtil.writeAnnotationToDatabase(baseActivity, current, epub_id);
-							break;
-						}
-					}
-				}
-				// annotation on server but is missing locally
-				if (annotation == null) {
-					annotation = XMLUtil.loadAnnotationFromXMLString(a.getData());
-					annotation.setUPBId(upb_id);
-					annotation.setEPubId(epub_id);
-					annotation.setUpdatedAt(updated_at);
-					fbreader.Annotations.addAnnotation(annotation);
-					SQLiteUtil.writeAnnotationToDatabase(baseActivity, annotation, epub_id);
-				}
-			}
-			
-			if (annotationsToRemove.size() > 0) {
-				// entferne weggefallene annotationen
-				for (Annotation a : annotationsToRemove) {
-					upb_id = a.getUPBId();
-					fbreader.Annotations.removeAnnotation(a);
-					Uri uri = DBAnnotations.CONTENT_URI;
-					String selection = DBAnnotations.UPB_ID + "=\"" + upb_id + "\"";
-					baseActivity.getContentResolver().delete(uri, selection, null);
-				}
-			}
-			
-			fbreader.loadAnnotationHighlighting();
-			*/
 		}
 	}
 }

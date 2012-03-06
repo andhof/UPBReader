@@ -114,7 +114,7 @@ public class ScenarioListActivity extends ListActivity {
 		String item = (String) getListAdapter().getItem(position);
 //		Toast.makeText(this, item + " selected", Toast.LENGTH_LONG).show();
 		
-	    // save book information in database
+	    // save book information to database
 	    scenario = scenarioList.get(position);
 	    if (!fbreader.Scenario.equals(scenario)) {
 	    	fbreader.Scenario = scenario;
@@ -125,22 +125,13 @@ public class ScenarioListActivity extends ListActivity {
 		progressDialog.setMessage(this.getText(R.string.loadingscenariolist));
         
 		int scenario_id = scenarioIdsList.get(position);
-		fbreader.doAction(ActionCode.REFRESH_ANNOTATIONS);
+//		fbreader.doAction(ActionCode.REFRESH_ANNOTATIONS);
 		
 //        asyncTask.execute(
 //        		"http://epubdummy.provideal.net/api/scenarios/" + scenarioIdsList.get(position) + "/annotations");
 		
 		setResult(4);
 		finish();
-	}
-	
-	private void openBook(Book book) {
-		startActivity(
-			new Intent(getApplicationContext(), FBReader.class)
-				.setAction(Intent.ACTION_VIEW)
-				.putExtra(FBReader.BOOK_PATH_KEY, book.File.getPath())
-				.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-		);
 	}
 	
 	private class HttpHelper extends AsyncTask<String, Integer, String> {

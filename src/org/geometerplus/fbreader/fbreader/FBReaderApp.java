@@ -515,6 +515,8 @@ public final class FBReaderApp extends ZLApplication {
 				setTitle(title.toString());
 				
 				loadAnnotationHighlighting();
+				doAction(ActionCode.REFRESH_ANNOTATIONS);
+				
 			}
 		}
 		getViewWidget().repaint();
