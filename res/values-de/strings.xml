@@ -20,7 +20,7 @@
     <string name="epubslist_title">Liste der ePubs</string>  
     <string name="scenarioslist_title">Liste der Aufgabenstellungen</string>
     
-    <string name="upbrefresh_label">Aktualisieren</string>
+    <string name="upbrefresh_label">Annotationen aktualisieren</string>
     
     <string name="loggingin">Login wird durchgeführt. Bitte warten...</string>
     <string name="loadingsemlist">Liste der SeminarApparate wird geladen. Bitte warten...</string>
