@@ -164,7 +164,8 @@ public class SelectionHighlightActivity extends Activity {
 					renderingInfo.setCrossOut(crossedout);
 					
 					ZLTextFixedPosition newEndPos = new ZLTextFixedPosition(selectionEndPos.getParagraphIndex(), selectionEndPos.getElementIndex()+1, selectionEndPos.getCharIndex());
-					fbreader.BookTextView.addAnnotationHighlight(selectionStartPos, newEndPos, new ZLColor(highlightColor), false, annotation);
+					boolean isMyAnnotation = fbreader.isThisMyNote(annotation);
+					fbreader.BookTextView.addAnnotationHighlight(selectionStartPos, newEndPos, new ZLColor(highlightColor), false, isMyAnnotation, annotation);
 										
 					saveToXML(fbreader.Annotations);
 				} 

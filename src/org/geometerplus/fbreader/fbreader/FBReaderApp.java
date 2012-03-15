@@ -523,6 +523,21 @@ public final class FBReaderApp extends ZLApplication {
 	}
 	
 	/**
+	 * check if note is from the logged in user
+	 * @param annotation
+	 * @return
+	 */
+	public boolean isThisMyNote(Annotation annotation) {
+		SharedPreferences settings = context.getSharedPreferences("upblogin", 0);
+		String username = settings.getString("user", "Localuser");
+		if (username.equals(annotation.getAuthor().getName())) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	/**
 	 * reads the xpath and the charoffset of each annotation and convert it to fbreader positions
 	 */
 	public void loadAnnotationHighlighting() {
@@ -559,7 +574,8 @@ public final class FBReaderApp extends ZLApplication {
 			ZLTextPosition start = new ZLTextFixedPosition(startData[0], startData[1], 0);
 			ZLTextPosition end = new ZLTextFixedPosition(endData[0], endData[1]+1, 0);
 			ZLColor color = new ZLColor(a.getRenderingInfo().getHighlightColor());
-			BookTextView.addAnnotationHighlight(start, end, color, true, a);
+			boolean isMyAnnotation = isThisMyNote(a);
+			BookTextView.addAnnotationHighlight(start, end, color, true, isMyAnnotation, a);
 		}
 		BookTextView.repaintAll();
 	}

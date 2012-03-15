@@ -228,7 +228,8 @@ public class SelectionNoteActivity extends Activity {
 					annotation.setId(Secure.getString(getContentResolver(), Secure.ANDROID_ID) + annotation_id);
 					
 					ZLTextFixedPosition newEndPos = new ZLTextFixedPosition(selectionEndPos.getParagraphIndex(), selectionEndPos.getElementIndex()+1, selectionEndPos.getCharIndex());
-					fbreader.BookTextView.addAnnotationHighlight(selectionStartPos, newEndPos, highlightColor, true, annotation);
+					boolean isMyAnnotation = fbreader.isThisMyNote(annotation);
+					fbreader.BookTextView.addAnnotationHighlight(selectionStartPos, newEndPos, highlightColor, true, isMyAnnotation, annotation);
 					
 //					saveToXML(fbreader.Annotations);
 				} else {

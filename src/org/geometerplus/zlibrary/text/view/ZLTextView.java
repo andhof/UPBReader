@@ -34,6 +34,7 @@ import org.geometerplus.zlibrary.text.model.*;
 import org.geometerplus.zlibrary.text.hyphenation.*;
 import org.geometerplus.zlibrary.text.view.style.ZLTextStyleCollection;
 
+import android.content.SharedPreferences;
 import android.util.Log;
 
 public abstract class ZLTextView extends ZLTextViewBase {
@@ -71,9 +72,11 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	private ZLTextSelection mySelection;
 	private ZLTextHighlighting myHighlighting;
 	private ZLColor myHighlightColor;
+	private ZLColor othersHighlightColor;
 	private ZLColor mySelectedHighlightColor;
 	private HashMap<String, ZLTextAnnotationHighlighting> myAnnotationHighlightingMap;
 	private HashMap<String, ZLColor> myAnnotationColorMap;
+	private HashMap<String, ZLColor> myAnnotationColorBackupMap;
 
 	public ZLTextView(ZLApplication application) {
 		super(application);
@@ -81,9 +84,11 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		mySelection = new ZLTextSelection(this);
 		myHighlighting = new ZLTextHighlighting();
 		myHighlightColor = new ZLColor(110, 110, 110);
+		othersHighlightColor = new ZLColor(0, 138, 255);
 		mySelectedHighlightColor = new ZLColor(255, 138, 0);
 		myAnnotationHighlightingMap = new HashMap<String, ZLTextAnnotationHighlighting>();
 		myAnnotationColorMap = new HashMap<String, ZLColor>();
+		myAnnotationColorBackupMap = new HashMap<String, ZLColor>();
 		mySelectedAnnotationIds = new ArrayList<String>();
 		mySelectionPadding = 2;
 	}
@@ -296,11 +301,17 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	 * @param start
 	 * @param end
 	 */
-	public void addAnnotationHighlight(ZLTextPosition start, ZLTextPosition end, ZLColor color, boolean isNote, Annotation annotation) {
+	public void addAnnotationHighlight(ZLTextPosition start, ZLTextPosition end, ZLColor color, boolean isNote, boolean isMyNote, Annotation annotation) {
 		ZLTextAnnotationHighlighting newAnnotationHighlight = new ZLTextAnnotationHighlighting(isNote, annotation);
 		newAnnotationHighlight.setup(start, end);
 		myAnnotationHighlightingMap.put(annotation.getId(), newAnnotationHighlight);
-		myAnnotationColorMap.put(annotation.getId(), myHighlightColor);
+		if (isMyNote) {
+			myAnnotationColorMap.put(annotation.getId(), myHighlightColor);
+			myAnnotationColorBackupMap.put(annotation.getId(), myHighlightColor);
+		} else {
+			myAnnotationColorMap.put(annotation.getId(), othersHighlightColor);
+			myAnnotationColorBackupMap.put(annotation.getId(), othersHighlightColor);
+		}
 		computeAnnotationHighlightPosition(newAnnotationHighlight);
 	}
 	
@@ -325,13 +336,13 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	 */
 	public void setAnnotationHighlightColors(ArrayList<String> annotation_ids, boolean isSelected) {
 		for (String annotation_id : annotation_ids) {
-			myAnnotationColorMap.remove(annotation_id);
+//			myAnnotationColorMap.remove(annotation_id);
 			if (isSelected) {
 				mySelectedAnnotationIds.add(annotation_id);
 				myAnnotationColorMap.put(annotation_id, mySelectedHighlightColor);
 			} else {
 				mySelectedAnnotationIds.add(null);
-				myAnnotationColorMap.put(annotation_id, myHighlightColor);
+//				myAnnotationColorMap.put(annotation_id, myHighlightColor);
 			}
 		}
 	}
@@ -347,9 +358,9 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		Iterator it = myAnnotationColorMap.keySet().iterator();
 		while(it.hasNext()) {
 		    String key = (String) it.next();
-		    ZLColor value = (ZLColor) myAnnotationColorMap.get(key);
+		    ZLColor value = (ZLColor) myAnnotationColorBackupMap.get(key);
 //		    myAnnotationColorMap.remove(key);
-		    myAnnotationColorMap.put(key, myHighlightColor);
+		    myAnnotationColorMap.put(key, value);
 		}
 	}
 	
@@ -366,6 +377,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
 			highlight = (ZLTextAnnotationHighlighting) myAnnotationHighlightingMap.get(annotation_id);
 			if (highlight.getAnnotation().equals(annotation)) {
 				myAnnotationColorMap.remove(annotation.getId());
+				myAnnotationColorBackupMap.remove(annotation.getId());
 				it.remove();
 			}
 		}
@@ -388,6 +400,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	public void removeAnnotationHighlights() {
 		myAnnotationHighlightingMap.clear();
 		myAnnotationColorMap.clear();
+		myAnnotationColorBackupMap.clear();
 	}
 
 	protected void moveSelectionCursorTo(ZLTextSelectionCursor cursor, int x, int y) {

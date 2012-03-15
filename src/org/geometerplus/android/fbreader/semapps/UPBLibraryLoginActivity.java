@@ -199,11 +199,12 @@ public class UPBLibraryLoginActivity extends Activity {
 				return;
 			}
 			finish();
+			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
+			
 			if (!checked) {
+				fbreader.loadAnnotationHighlighting();
 				return;
 			}
-			
-			final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 			
 			Log.v("UPBLibraryLoginActivity.HttpHelper", result);
 			SemApps semApps = XMLUtil.loadSemAppsFromXMLString(result);
