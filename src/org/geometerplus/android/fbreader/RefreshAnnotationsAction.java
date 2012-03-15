@@ -109,7 +109,7 @@ public class RefreshAnnotationsAction extends ZLAction {
 		}
 		
 		@Override
-		protected void onPostExecute(String annotations_xml) {
+		protected void onPostExecute(final String annotations_xml) {
 			if (annotations_xml == null) {
 				Handler h = new Handler(baseActivity.getMainLooper());
 				
@@ -122,49 +122,56 @@ public class RefreshAnnotationsAction extends ZLAction {
 			    });
 				return; 
 			}
-			int upb_id;
-			String updated_at;
-			Annotation annotation;
 			
-			epub_id = fbreader.Scenario.getEPubId();
-			
-			// remove all annotations from object structure
-			fbreader.Annotations.getAnnotations().clear();
-			// remove all annotations from database belonging to the epub
-			Uri uri = DBAnnotations.CONTENT_URI;
-			String selection = DBAnnotations.EPUB_ID + "=\"" + epub_id + "\"";
-			baseActivity.getContentResolver().delete(uri, selection, null);
-			
-			SemAppsAnnotations saAnnotations = 
-				XMLUtil.loadSemAppsAnnotationsFromXMLString(annotations_xml);
-			ArrayList<SemAppsAnnotation> saAnnotationsList = saAnnotations.getAnnotations();
-			for (SemAppsAnnotation a : saAnnotationsList) {
-				
-				if (a.getData().isEmpty()) {
-					continue;
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					int upb_id;
+					String updated_at;
+					Annotation annotation;
+					
+					epub_id = fbreader.Scenario.getEPubId();
+					
+					// remove all annotations from object structure
+					fbreader.Annotations.getAnnotations().clear();
+					// remove all annotations from database belonging to the epub
+					Uri uri = DBAnnotations.CONTENT_URI;
+					String selection = DBAnnotations.EPUB_ID + "=\"" + epub_id + "\"";
+					baseActivity.getContentResolver().delete(uri, selection, null);
+					
+					SemAppsAnnotations saAnnotations = 
+						XMLUtil.loadSemAppsAnnotationsFromXMLString(annotations_xml);
+					ArrayList<SemAppsAnnotation> saAnnotationsList = saAnnotations.getAnnotations();
+					for (SemAppsAnnotation a : saAnnotationsList) {
+						
+						if (a.getData().isEmpty()) {
+							continue;
+						}
+						
+						upb_id = a.getId();
+						updated_at = a.getUpdated_at();
+						
+						annotation = XMLUtil.loadAnnotationFromXMLString(a.getData());
+						annotation.setUPBId(upb_id);
+						annotation.setEPubId(epub_id);
+						annotation.setUpdatedAt(updated_at);
+						fbreader.Annotations.addAnnotation(annotation);
+						SQLiteUtil.writeAnnotationToDatabase(baseActivity, annotation, epub_id);
+					}
+					
+					fbreader.loadAnnotationHighlighting();
+					
+					Handler h = new Handler(baseActivity.getMainLooper());
+				    h.post(new Runnable() {
+				        @Override
+				        public void run() {
+				            Toast.makeText(baseActivity, baseActivity.getString(R.string.toast_refresh_ok), Toast.LENGTH_LONG).show();
+				        }
+				    });
 				}
 				
-				upb_id = a.getId();
-				updated_at = a.getUpdated_at();
-				
-				annotation = XMLUtil.loadAnnotationFromXMLString(a.getData());
-				annotation.setUPBId(upb_id);
-				annotation.setEPubId(epub_id);
-				annotation.setUpdatedAt(updated_at);
-				fbreader.Annotations.addAnnotation(annotation);
-				SQLiteUtil.writeAnnotationToDatabase(baseActivity, annotation, epub_id);
-			}
-			
-			fbreader.loadAnnotationHighlighting();
-			
-			Handler h = new Handler(baseActivity.getMainLooper());
-		    h.post(new Runnable() {
-		        @Override
-		        public void run() {
-		            Toast.makeText(baseActivity, baseActivity.getString(R.string.toast_refresh_ok), Toast.LENGTH_LONG).show();
-		        }
-		    });
-			
+			}).start();
 		}
 	}
 }
