@@ -312,7 +312,6 @@ public abstract class ZLTextView extends ZLTextViewBase {
 			myAnnotationColorMap.put(annotation.getId(), othersHighlightColor);
 			myAnnotationColorBackupMap.put(annotation.getId(), othersHighlightColor);
 		}
-		computeAnnotationHighlightPosition(newAnnotationHighlight);
 	}
 	
 	public void repaintAll() {
@@ -974,8 +973,6 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	private void computeAnnotationHighlightPosition(ZLTextAnnotationHighlighting newAnnotationHighlight) {
 //		myCurrentPage.TextElementMap.clear();
 //
-		preparePaintInfo(myCurrentPage);
-		
 		final ArrayList<ZLTextLineInfo> lineInfos = myCurrentPage.LineInfos;
 		
 		if (lineInfos.size() <= 1) {
@@ -993,6 +990,10 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		
 		y = getTopMargin();
 		index = 0;
+		
+		long startTime = System.currentTimeMillis();
+		long endTime = 0;
+		
 		for (ZLTextLineInfo info : lineInfos) {
 			if (!newAnnotationHighlight.isEmpty() && labels[index] != labels[index + 1]) {
 				final ZLTextElementArea fromArea = myCurrentPage.TextElementMap.get(labels[index]);
@@ -1024,6 +1025,8 @@ public abstract class ZLTextView extends ZLTextViewBase {
 			y += info.Height + info.Descent + info.VSpaceAfter;
 			++index;
 		}
+		endTime = System.currentTimeMillis();
+		Log.v("ZLTextWidget", "Dauer onFingerSingleTab: " + (endTime-startTime));
 	}
 
 	/**
@@ -1035,24 +1038,44 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		final FBReaderApp fbreader = (FBReaderApp)FBReaderApp.Instance();
 		ArrayList<Annotation> annotationsOnPosition = new ArrayList<Annotation>(); 
 		
+		preparePaintInfo(myCurrentPage);
+		
 		for(ZLTextAnnotationHighlighting highlight : myAnnotationHighlightingMap.values()) {
+			
 			boolean onCurrentPage = testForCorrectPage(highlight);
+			
 			if (onCurrentPage) {
 				highlight.clearPositionsArray();
-				computeAnnotationHighlightPosition(highlight);
-				ArrayList<int[]> positions = highlight.getPositions();
 				
-				for ( int[] position : positions) {
-					int left = position[0];
-					int top = position[1];
-					int right = position[2];
-					int bottom = position[3];
-					
-					if (left <= x && x <= right && top <= y && y <= bottom) {
-						Log.v("ZLTextView", "x und y liegt drin");
+				ZLTextElementArea startArea = highlight.getStartArea(myCurrentPage);
+				ZLTextElementArea endArea= highlight.getEndArea(myCurrentPage);
+				
+				int xStartLeft = startArea.XStart;
+				int xStartRight = startArea.XEnd;
+				int yStartTop = startArea.YStart;
+				int yStartBottom = startArea.YEnd;
+				int xEndLeft = endArea.XStart;
+				int xEndRight = endArea.XEnd;
+				int yEndTop = endArea.YStart;
+				int yEndBottom = endArea.YEnd;
+				int left = getLeftMargin();
+				int right = getRightLine();
+				Log.v("ZLTextView", "xStartLeft: "+xStartLeft+" - xEndLeft: "+xEndLeft);
+				
+				if ( xStartLeft == xEndLeft) {
+					if (xStartLeft <= x && x <= xStartRight && yStartTop <= y && y <= yStartBottom ) {
+						Log.v("ZLTextView", "x und y liegt im einzelnen wort drin");
 						annotationsOnPosition.add(highlight.getAnnotation());
-						
 					}
+				} else if ( xStartLeft <= x && x <= right && yStartTop <= y && y <= yStartBottom ) {
+					Log.v("ZLTextView", "x und y liegt oben drin");
+					annotationsOnPosition.add(highlight.getAnnotation());
+				} else if( left <= x && x <= right && yStartBottom <= y && y <= yEndTop ) {
+					Log.v("ZLTextView", "x und y liegt mittig drin");
+					annotationsOnPosition.add(highlight.getAnnotation());
+				} else if( left <= x && x <= xEndRight && yEndTop <= y && y <= yEndBottom ) {
+					Log.v("ZLTextView", "x und y liegt unten drin");
+					annotationsOnPosition.add(highlight.getAnnotation());
 				}
 			}
 		}
@@ -1078,12 +1101,13 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		int pageEndParagraph = myCurrentPage.EndCursor.getParagraphIndex();
 		int highlightStartParagraph = highlight.getStartPosition().getParagraphIndex();
 		int highlightEndParagraph = highlight.getEndPosition().getParagraphIndex();
-		if (highlightEndParagraph > pageEndParagraph) {
-			highlightEndParagraph = pageEndParagraph;
-		}
-		if (highlightStartParagraph < pageStartParagraph) {
-			highlightStartParagraph = pageStartParagraph;
-		}
+//		if (highlightEndParagraph > pageEndParagraph) {
+//			highlightEndParagraph = pageEndParagraph;
+//		}
+//		if (highlightStartParagraph < pageStartParagraph) {
+//			highlightStartParagraph = pageStartParagraph;
+//		}
+		// TODO
 		
 		if (pageStartParagraph <= highlightStartParagraph && highlightEndParagraph <= pageEndParagraph) {
 			return true;
