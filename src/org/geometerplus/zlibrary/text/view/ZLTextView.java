@@ -76,8 +76,8 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	private ZLColor othersHighlightColor;
 	private ZLColor mySelectedHighlightColor;
 	private ConcurrentHashMap<String, ZLTextAnnotationHighlighting> myAnnotationHighlightingMap;
-	private HashMap<String, ZLColor> myAnnotationColorMap;
-	private HashMap<String, ZLColor> myAnnotationColorBackupMap;
+	private ConcurrentHashMap<String, ZLColor> myAnnotationColorMap;
+	private ConcurrentHashMap<String, ZLColor> myAnnotationColorBackupMap;
 
 	public ZLTextView(ZLApplication application) {
 		super(application);
@@ -88,8 +88,8 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		othersHighlightColor = new ZLColor(0, 138, 255);
 		mySelectedHighlightColor = new ZLColor(255, 138, 0);
 		myAnnotationHighlightingMap = new ConcurrentHashMap<String, ZLTextAnnotationHighlighting>();
-		myAnnotationColorMap = new HashMap<String, ZLColor>();
-		myAnnotationColorBackupMap = new HashMap<String, ZLColor>();
+		myAnnotationColorMap = new ConcurrentHashMap<String, ZLColor>();
+		myAnnotationColorBackupMap = new ConcurrentHashMap<String, ZLColor>();
 		mySelectedAnnotationIds = new ArrayList<String>();
 		mySelectionPadding = 2;
 	}

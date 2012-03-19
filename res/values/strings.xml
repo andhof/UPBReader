@@ -20,6 +20,7 @@
     <string name="epubslist_title">List of ePubs</string>
     <string name="scenarioslist_title">List of tasks</string>
     
+    <string name="upblogin_label">UPB Login</string>
     <string name="upbrefresh_label">Refresh Annotations</string>
     
     <string name="loggingin">Logging in. Please, wait&#8230;</string>

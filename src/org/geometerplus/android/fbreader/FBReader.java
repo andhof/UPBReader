@@ -582,6 +582,11 @@ public final class FBReader extends ZLAndroidActivity {
 		final ZLAndroidApplication application = (ZLAndroidApplication)getApplication();
 		application.myMainWindow.addMenuItem(menu, actionId, iconId, null);
 	}
+	
+	private void addMenuItem(Menu menu, String actionId, int iconId, String name) {
+		final ZLAndroidApplication application = (ZLAndroidApplication)getApplication();
+		application.myMainWindow.addMenuItem(menu, actionId, iconId, name);
+	}
 
 	private void addMenuItem(Menu menu, String actionId) {
 		final ZLAndroidApplication application = (ZLAndroidApplication)getApplication();
@@ -593,7 +598,7 @@ public final class FBReader extends ZLAndroidActivity {
 		super.onCreateOptionsMenu(menu);
 		addMenuItem(menu, ActionCode.SHOW_LIBRARY, R.drawable.ic_menu_library);
 		addMenuItem(menu, ActionCode.SHOW_NETWORK_LIBRARY, R.drawable.ic_menu_networklibrary);
-		addMenuItem(menu, ActionCode.SHOW_UPB_LOGIN_SCREEN, R.drawable.ic_menu_upblibrary);
+		addMenuItem(menu, ActionCode.SHOW_UPB_LOGIN_SCREEN, R.drawable.ic_menu_upblibrary, getString(R.string.upblogin_label));
 		addMenuItem(menu, ActionCode.SHOW_TOC, R.drawable.ic_menu_toc);
 		addMenuItem(menu, ActionCode.SHOW_BOOKMARKS, R.drawable.ic_menu_bookmarks);
 		addMenuItem(menu, ActionCode.REFRESH_ANNOTATIONS, getString(R.string.upbrefresh_label));
