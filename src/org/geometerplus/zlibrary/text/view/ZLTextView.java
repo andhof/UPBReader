@@ -20,6 +20,7 @@
 package org.geometerplus.zlibrary.text.view;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.fbreader.fbreader.ActionCode;
@@ -74,7 +75,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	private ZLColor myHighlightColor;
 	private ZLColor othersHighlightColor;
 	private ZLColor mySelectedHighlightColor;
-	private HashMap<String, ZLTextAnnotationHighlighting> myAnnotationHighlightingMap;
+	private ConcurrentHashMap<String, ZLTextAnnotationHighlighting> myAnnotationHighlightingMap;
 	private HashMap<String, ZLColor> myAnnotationColorMap;
 	private HashMap<String, ZLColor> myAnnotationColorBackupMap;
 
@@ -86,7 +87,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
 		myHighlightColor = new ZLColor(110, 110, 110);
 		othersHighlightColor = new ZLColor(0, 138, 255);
 		mySelectedHighlightColor = new ZLColor(255, 138, 0);
-		myAnnotationHighlightingMap = new HashMap<String, ZLTextAnnotationHighlighting>();
+		myAnnotationHighlightingMap = new ConcurrentHashMap<String, ZLTextAnnotationHighlighting>();
 		myAnnotationColorMap = new HashMap<String, ZLColor>();
 		myAnnotationColorBackupMap = new HashMap<String, ZLColor>();
 		mySelectedAnnotationIds = new ArrayList<String>();
@@ -324,7 +325,7 @@ public abstract class ZLTextView extends ZLTextViewBase {
 	 * 
 	 * @return
 	 */
-	public HashMap<String,ZLTextAnnotationHighlighting> getAnnotationHighlights() {
+	public ConcurrentHashMap<String, ZLTextAnnotationHighlighting> getAnnotationHighlights() {
 		return myAnnotationHighlightingMap;
 	}
 	
