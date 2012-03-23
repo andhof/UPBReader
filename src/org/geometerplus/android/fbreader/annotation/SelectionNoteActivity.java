@@ -119,7 +119,7 @@ public class SelectionNoteActivity extends Activity {
 		
 		String tagsString = "";
 		StringBuffer result = new StringBuffer();
-	    if (annotation.getTags().size() > 0) {
+	    if (annotation.getTags().size() > 0 && annotation.getTags().get(0) != null) {
 	        result.append(annotation.getTags().get(0));
 	        for (int i = 1; i < annotation.getTags().size(); i++) {
 	            result.append(", ");

@@ -199,11 +199,15 @@ public class Annotation implements Parcelable {
     	
     	String tagString = "";
 		for (String tag : tags) {
-			tagString += tag;
-			tagString += ", ";
+			if (tag != null) {
+				tagString += tag;
+				tagString += ", ";
+			}
 		}
 		if (tagString.length() > 0) {
 			tagString = tagString.substring(0, tagString.length()-2);
+		} else {
+			tagString = "";
 		}
     	
     	return tagString;

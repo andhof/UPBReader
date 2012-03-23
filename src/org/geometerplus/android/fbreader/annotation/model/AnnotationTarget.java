@@ -31,6 +31,7 @@ public class AnnotationTarget implements Parcelable {
 	}
 	
 	public AnnotationTarget() {
+		this.bookId = "";
 		this.documentIdentifier = new DocumentIdentifier();
 		this.range = new Range();
 		this.markedText = "";
