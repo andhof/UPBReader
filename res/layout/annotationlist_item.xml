@@ -12,12 +12,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal" >
-
+        <RadioButton
+            android:id="@+id/radiobtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            />
         <TextView 
 	        android:id="@+id/annotation_title"
 	        android:layout_width="wrap_content" 
 	        android:layout_height="25dip" 
-	        android:layout_alignParentLeft="true"
+	        android:layout_toRightOf="@+id/radiobtn"
 	        android:paddingLeft="3dip"
 	        android:paddingRight="6dip"
 	        android:textColor="#fff"/>
@@ -64,7 +70,6 @@
                 android:paddingRight="12dip"
                 android:textColor="#fff"/>
         </LinearLayout>
-               
     </RelativeLayout>
                                
 </RelativeLayout>         

@@ -16,6 +16,7 @@ import org.geometerplus.android.fbreader.semapps.SemAppsListActivity;
 import org.geometerplus.android.fbreader.semapps.model.EPub;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotations;
+import org.geometerplus.android.util.NetworkUtil;
 import org.geometerplus.android.util.SQLiteUtil;
 import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.android.util.XMLUtil;
@@ -62,8 +63,11 @@ public class RefreshAnnotationsAction extends ZLAction {
 		if (scenario_id == -1) {
 			return;
 		}
-		asyncTask = new HttpHelper(baseActivity);
-		asyncTask.execute("http://epubdummy.provideal.net/api/scenarios/"+scenario_id+"/annotations");
+		if (NetworkUtil.isOnline(baseActivity)) {
+			asyncTask = new HttpHelper(baseActivity);
+			asyncTask.execute("http://epubdummy.provideal.net/api/scenarios/"+scenario_id+"/annotations");
+		}
+		
 	}
 	
 	private class HttpHelper extends AsyncTask<String, Void, String> {

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.geometerplus.android.fbreader.annotation.AnnotationListActivity;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.api.PluginApi;
 import org.geometerplus.android.fbreader.library.KillerCallback;
@@ -31,6 +32,8 @@ import org.geometerplus.android.fbreader.quickactionbar.AnnotationListItem;
 import org.geometerplus.android.fbreader.quickactionbar.AnnotationListPopup;
 import org.geometerplus.android.fbreader.quickactionbar.QuickActionBar;
 import org.geometerplus.android.fbreader.quickactionbar.QuickActionItem;
+import org.geometerplus.android.fbreader.semapps.EPubListActivity;
+import org.geometerplus.android.fbreader.semapps.ScenarioListActivity;
 import org.geometerplus.android.fbreader.tips.TipsActivity;
 import org.geometerplus.android.util.UIUtil;
 import org.geometerplus.fbreader.bookmodel.BookModel;
@@ -490,27 +493,33 @@ public final class FBReader extends ZLAndroidActivity {
 		final FBReaderApp fbreader = (FBReaderApp)ZLApplication.Instance();
 		ArrayList<String> annotation_ids = new ArrayList<String>();
 		annotationListPopup.dismiss();
-//		quickSelectionActionBar.dismiss();
 		quickAnnotationActionBar.dismiss();
-		annotationListPopup = new AnnotationListPopup(this, fbreader);
-		AnnotationListItem aItem;
+//		annotationListPopup = new AnnotationListPopup(this, fbreader);
+//		AnnotationListItem aItem;
+//		
+//		int i = 0;
+//		for (Annotation annotation : annotationsOnPosition) {
+//			annotation_ids.add(annotation.getId());
+//			i++;
+//			Log.v("FBReader", "Ein Item hinzugefügt");
+//			aItem	= new AnnotationListItem(ActionCode.SELECTION_SHOW_ANNOTATION_PANEL, true, "#"+i);
+//			
+//			annotationListPopup.addQuickActionItem(aItem, x, y, annotation);
+//		}
 		
-		int i = 0;
-		for (Annotation annotation : annotationsOnPosition) {
-			annotation_ids.add(annotation.getId());
-			i++;
-			Log.v("FBReader", "Ein Item hinzugefügt");
-			aItem	= new AnnotationListItem(ActionCode.SELECTION_SHOW_ANNOTATION_PANEL, true, "#"+i);
-			
-			annotationListPopup.addQuickActionItem(aItem, x, y, annotation);
-		}
-		fbreader.BookTextView.clearSelectionHighlight();
-		fbreader.BookTextView.setAnnotationHighlightColors(annotation_ids, true);
-		fbreader.BookTextView.repaintAll();
+		startActivity(
+			new Intent(getApplicationContext(), AnnotationListActivity.class)
+				.putParcelableArrayListExtra("annotations", annotationsOnPosition)
+		);
 		
-		annotationListPopup.show(this.findViewById(R.id.root_view), x, y, annotationsOnPosition);
 		
-		annotationListPopup.removeAllActionItems();
+//		fbreader.BookTextView.clearSelectionHighlight();
+//		fbreader.BookTextView.setAnnotationHighlightColors(annotation_ids, true);
+//		fbreader.BookTextView.repaintAll();
+		
+//		annotationListPopup.show(this.findViewById(R.id.root_view), x, y, annotationsOnPosition);
+//		
+//		annotationListPopup.removeAllActionItems();
 	}
 	
 	

@@ -12,6 +12,7 @@ import org.apache.http.util.EntityUtils;
 import org.geometerplus.android.fbreader.annotation.model.Annotation;
 import org.geometerplus.android.fbreader.httpconnection.ConnectionManager;
 import org.geometerplus.android.fbreader.semapps.model.SemAppsAnnotation;
+import org.geometerplus.android.util.NetworkUtil;
 import org.geometerplus.android.util.SQLiteUtil;
 import org.geometerplus.android.util.XMLUtil;
 import org.geometerplus.fbreader.fbreader.FBReaderApp;
@@ -56,8 +57,6 @@ public class AnnotationService extends Service {
 		settings = getSharedPreferences("upblogin", 0);
 		username = settings.getString("user", "Localuser");
 		password = settings.getString("password", null);
-		
-		Log.v("AnnotationService", "Der Service läuft soweit!");
 		
 		settings = getSharedPreferences("annotation_stack", 0);
 		

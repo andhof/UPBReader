@@ -1,6 +1,7 @@
 package org.geometerplus.android.fbreader.receiver;
 
 import org.geometerplus.android.fbreader.services.AnnotationService;
+import org.geometerplus.android.util.NetworkUtil;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,7 +14,11 @@ public class ConnectivityReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		Log.d(ConnectivityReceiver.class.getSimpleName(), "action: "
                 + intent.getAction());
-		Intent service = new Intent(context, AnnotationService.class);
-		context.startService(service);
+		if (NetworkUtil.isOnline(context)) {
+			Intent service = new Intent(context, AnnotationService.class);
+			context.startService(service);
+		} else {
+			Log.v("ConnectivityReceiver", "No connection to internet.");
+		}
 	}
 }

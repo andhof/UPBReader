@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/comments_layout"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:orientation="vertical"
+>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.1">
+        <ListView
+            android:choiceMode="singleChoice"
+            android:id="@+id/AnnotationListView1"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp" />
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.1">
+        <Button
+	        android:id="@+id/show_annotation_button"
+	        android:layout_width="wrap_content"
+	        android:minWidth="75dp"
+	        android:layout_height="wrap_content"/>
+	    <Button
+	        android:id="@+id/edit_annotation_button"
+	        android:layout_width="wrap_content"
+	        android:minWidth="75dp"
+	        android:layout_height="wrap_content"/>
+	    <Button
+	        android:id="@+id/remove_annotation_button"
+	        android:layout_width="wrap_content"
+	        android:minWidth="75dp"
+	        android:layout_height="wrap_content" />
+	    <Button
+	        android:id="@+id/cancel_button"
+	        android:layout_width="wrap_content"
+	        android:minWidth="75dp"
+	        android:layout_height="wrap_content" />
+    </LinearLayout>
+    <!--  -->
+ </LinearLayout>
