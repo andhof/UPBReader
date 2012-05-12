@@ -197,17 +197,31 @@ public final class ZLTextWritablePlainModel extends ZLTextPlainModel implements 
 	 * @return
 	 */
 	private String getXPathFromTagStack(String[] tagStack) {
-		String xPath = "";
+		String xPath = "/xhtml:";
 		for (int i = 0; i < tagStack.length; i++) {
 			if (tagStack[i] == null) {
 				break;
 			}
 			if (tagStack[i].contains("html")) {
 				tagStack[i] = "html";
+				xPath += tagStack[i];
+			} else {
+				xPath += "/" + tagStack[i];
 			}
-			xPath += "/*[local-name()='" + tagStack[i] + "']";
+			
 		}
 		return xPath;
+//		String xPath = "";
+//		for (int i = 0; i < tagStack.length; i++) {
+//			if (tagStack[i] == null) {
+//				break;
+//			}
+//			if (tagStack[i].contains("html")) {
+//				tagStack[i] = "html";
+//			}
+//			xPath += "/*[local-name()='" + tagStack[i] + "']";
+//		}
+//		return xPath;
 	}
 
 	private char[] getDataBlock(int minimumLength) {

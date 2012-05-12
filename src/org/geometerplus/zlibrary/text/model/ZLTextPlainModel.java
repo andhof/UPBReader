@@ -24,6 +24,8 @@ import java.util.*;
 import org.geometerplus.zlibrary.core.util.*;
 import org.geometerplus.zlibrary.core.image.ZLImageMap;
 
+import android.util.Log;
+
 public class ZLTextPlainModel implements ZLTextModel {
 	protected final String myId;
 	private final String myLanguage;
@@ -384,6 +386,18 @@ public class ZLTextPlainModel implements ZLTextModel {
 		for (int i = startIndex; i <= endIndex; i++) {
 			if (myParagraphXPaths[i] != null && myParagraphXPaths[i].equals(xpath)) {
 				indexList.add(new Integer(i));
+			} else {
+				// use this if the xpath is like /*[local-name='html']/*...
+				String tmpxpath;
+				tmpxpath = xpath;
+				tmpxpath = tmpxpath.replace("/*[local-name()='", "/");
+				tmpxpath = tmpxpath.replace("html", "xhtml:html");
+				tmpxpath = tmpxpath.replace("']", "");
+				tmpxpath = tmpxpath.substring(tmpxpath.indexOf('/'), tmpxpath.length());
+				Log.v("ZLTextPlainModel", "tmpxpath: "+tmpxpath);
+				if (myParagraphXPaths[i] != null && myParagraphXPaths[i].equals(tmpxpath)) {
+					indexList.add(new Integer(i));
+				}
 			}
 		}
 		return indexList;
