@@ -92,7 +92,10 @@ public class AnnotationAdapter extends BaseAdapter implements OnClickListener {
 		
 		Annotation annotation = listOfAnnotations.get(position);
 		holder.author.setText(context.getText(R.string.shownote_author)+annotation.getAuthor().getName());
-		holder.updated_at.setText(annotation.getUpdatedAt());
+		String updated_at = annotation.getUpdatedAt();
+		updated_at = updated_at.replace("T", "   ");
+		updated_at = updated_at.replace("Z", "");
+		holder.updated_at.setText(updated_at);
 		holder.tags.setText(context.getText(R.string.shownote_tags)+annotation.getTagsAsString());
 		holder.category.setText(context.getText(R.string.shownote_category)+annotation.getCategory());
 		

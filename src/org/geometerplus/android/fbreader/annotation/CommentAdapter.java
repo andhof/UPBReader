@@ -64,21 +64,19 @@ public class CommentAdapter extends BaseAdapter implements OnItemClickListener {
         TextView tvUpdatedAt = (TextView) convertView.findViewById(R.id.comment_updated_at);
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         //SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss zzzz");
-        Date date = null;
-        try {
-        	String dateString;
-			if (comment.getUpdatedAt().isEmpty()) {
-				date = new Date(comment.getModified());
-				TextView tvLocal = (TextView) convertView.findViewById(R.id.comment_local);
-				tvLocal.setText(R.string.shownote_local);
-			} else {
-				date = format.parse(comment.getUpdatedAt());
-			}
-        	tvUpdatedAt.setText(date.toString());
-        	
-		} catch (ParseException e) {
-			e.printStackTrace();
+        String date = null;
+        String dateString;
+		if (comment.getUpdatedAt().isEmpty()) {
+			date = new Date(comment.getModified()).toString();
+			TextView tvLocal = (TextView) convertView.findViewById(R.id.comment_local);
+			tvLocal.setText(R.string.shownote_local);
+		} else {
+//				date = format.parse(comment.getUpdatedAt());
+			date  = comment.getUpdatedAt();
+			date = date.replace("T", "   ");
+			date = date.replace("Z", "");
 		}
+		tvUpdatedAt.setText(date);
         
         
         TextView tvContent = (TextView) convertView.findViewById(R.id.comment_content);

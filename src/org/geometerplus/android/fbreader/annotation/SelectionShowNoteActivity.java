@@ -108,13 +108,13 @@ public class SelectionShowNoteActivity extends Activity {
 		findTextView(R.id.show_note_author_text).setText(annotation.getAuthor().getName());
 		findTextView(R.id.show_note_category_text).setText(annotation.getCategory());
 		findTextView(R.id.show_note_tags_text).setText(annotation.getTagsAsString());
-		try {
-			findTextView(R.id.show_note_modified_text).setText(
-					format.parse(annotation.getUpdatedAt()).toString());
-		} catch (ParseException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+		String date;
+		date  = annotation.getUpdatedAt();
+		date = date.replace("T", "   ");
+		date = date.replace("Z", "");
+//			findTextView(R.id.show_note_modified_text).setText(
+//					format.parse(annotation.getUpdatedAt()).toString());
+		findTextView(R.id.show_note_modified_text).setText(date);
 		findTextView(R.id.show_note_content_text).setText(
 				annotation.getAnnotationContent().getAnnotationText());
 		
